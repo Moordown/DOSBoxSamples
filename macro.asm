@@ -74,6 +74,11 @@ l1:
 end:
 endm
 
+set_zero macro state
+    mov al, 0
+    mov byte ptr [state], al
+endm
+
 print_range macro args
     irp d,<args>
         print <offset d>
@@ -114,7 +119,24 @@ put macro from, to, position
     mov bl, byte ptr [position]
     add dx, bx
 
-    inc [position]
     mov bl, byte ptr [from]
     mov byte ptr [edx], bl
+    inc [position]
+endm
+
+clear_mes macro mes, lastidx
+    local l1, end
+    mov bx, offset mes
+    mov cl, byte ptr [lastidx]
+    inc cl
+l1:
+    cmp cl, 0
+    je end
+    mov byte ptr [bx], '$'
+    inc bx
+    dec cl
+    jmp l1
+end:
+    mov bl, 0
+    mov byte ptr [lastidx], bl
 endm
