@@ -1,0 +1,1232 @@
+This is nasm.info, produced by makeinfo version 4.3 from nasmdoc.texi.
+
+INFO-DIR-SECTION Programming
+START-INFO-DIR-ENTRY
+* NASM: (nasm).                The Netwide Assembler for x86.
+END-INFO-DIR-ENTRY
+
+   This file documents NASM, the Netwide Assembler: an assembler
+targetting the Intel x86 series of processors, with portable source.
+
+   Copyright 2003 The NASM Development Team
+
+   All rights reserved. This document is redistributable under the
+licence given in the file "COPYING" distributed in the NASM archive.
+
+
+File: nasm.info,  Node: Section 5.3,  Next: Section 5.4,  Prev: Section 5.2.1,  Up: Chapter 5
+
+5.3. `ABSOLUTE': Defining Absolute Labels
+=========================================
+
+   The `ABSOLUTE' directive can be thought of as an alternative form of
+`SECTION': it causes the subsequent code to be directed at no physical
+section, but at the hypothetical section starting at the given absolute
+address. The only instructions you can use in this mode are the `RESB'
+family.
+
+   `ABSOLUTE' is used as follows:
+
+     absolute 0x1A
+     
+         kbuf_chr    resw    1
+         kbuf_free   resw    1
+         kbuf        resw    16
+
+   This example describes a section of the PC BIOS data area, at segment
+address 0x40: the above code defines `kbuf_chr' to be 0x1A, `kbuf_free'
+to be 0x1C, and `kbuf' to be 0x1E.
+
+   The user-level form of `ABSOLUTE', like that of `SECTION', redefines
+the `__SECT__' macro when it is invoked.
+
+   `STRUC' and `ENDSTRUC' are defined as macros which use `ABSOLUTE'
+(and also `__SECT__').
+
+   `ABSOLUTE' doesn't have to take an absolute constant as an argument:
+it can take an expression (actually, a critical expression: see *Note
+Section 3.8::) and it can be a value in a segment. For example, a TSR
+can re-use its setup code as run-time BSS like this:
+
+             org     100h               ; it's a .COM program
+     
+             jmp     setup              ; setup code comes last
+     
+             ; the resident part of the TSR goes here
+     setup:
+             ; now write the code that installs the TSR here
+     
+     absolute setup
+     
+     runtimevar1     resw    1
+     runtimevar2     resd    20
+     
+     tsr_end:
+
+   This defines some variables `on top of' the setup code, so that
+after the setup has finished running, the space it took up can be
+re-used as data storage for the running TSR. The symbol `tsr_end' can
+be used to calculate the total size of the part of the TSR that needs
+to be made resident.
+
+
+File: nasm.info,  Node: Section 5.4,  Next: Section 5.5,  Prev: Section 5.3,  Up: Chapter 5
+
+5.4. `EXTERN': Importing Symbols from Other Modules
+===================================================
+
+   `EXTERN' is similar to the MASM directive `EXTRN' and the C keyword
+`extern': it is used to declare a symbol which is not defined anywhere
+in the module being assembled, but is assumed to be defined in some
+other module and needs to be referred to by this one. Not every
+object-file format can support external variables: the `bin' format
+cannot.
+
+   The `EXTERN' directive takes as many arguments as you like. Each
+argument is the name of a symbol:
+
+     extern  _printf
+     extern  _sscanf,_fscanf
+
+   Some object-file formats provide extra features to the `EXTERN'
+directive. In all cases, the extra features are used by suffixing a
+colon to the symbol name followed by object-format specific text. For
+example, the `obj' format allows you to declare that the default
+segment base of an external should be the group `dgroup' by means of
+the directive
+
+     extern  _variable:wrt dgroup
+
+   The primitive form of `EXTERN' differs from the user-level form only
+in that it can take only one argument at a time: the support for
+multiple arguments is implemented at the preprocessor level.
+
+   You can declare the same variable as `EXTERN' more than once: NASM
+will quietly ignore the second and later redeclarations. You can't
+declare a variable as `EXTERN' as well as something else, though.
+
+
+File: nasm.info,  Node: Section 5.5,  Next: Section 5.6,  Prev: Section 5.4,  Up: Chapter 5
+
+5.5. `GLOBAL': Exporting Symbols to Other Modules
+=================================================
+
+   `GLOBAL' is the other end of `EXTERN': if one module declares a
+symbol as `EXTERN' and refers to it, then in order to prevent linker
+errors, some other module must actually _define_ the symbol and declare
+it as `GLOBAL'. Some assemblers use the name `PUBLIC' for this purpose.
+
+   The `GLOBAL' directive applying to a symbol must appear _before_ the
+definition of the symbol.
+
+   `GLOBAL' uses the same syntax as `EXTERN', except that it must refer
+to symbols which _are_ defined in the same module as the `GLOBAL'
+directive. For example:
+
+     global _main
+     _main:
+             ; some code
+
+   `GLOBAL', like `EXTERN', allows object formats to define private
+extensions by means of a colon. The `elf' object format, for example,
+lets you specify whether global data items are functions or data:
+
+     global  hashlookup:function, hashtable:data
+
+   Like `EXTERN', the primitive form of `GLOBAL' differs from the
+user-level form only in that it can take only one argument at a time.
+
+
+File: nasm.info,  Node: Section 5.6,  Next: Section 5.7,  Prev: Section 5.5,  Up: Chapter 5
+
+5.6. `COMMON': Defining Common Data Areas
+=========================================
+
+   The `COMMON' directive is used to declare _common variables_. A
+common variable is much like a global variable declared in the
+uninitialised data section, so that
+
+     common  intvar  4
+
+   is similar in function to
+
+     global  intvar
+     section .bss
+     
+     intvar  resd    1
+
+   The difference is that if more than one module defines the same
+common variable, then at link time those variables will be _merged_, and
+references to `intvar' in all modules will point at the same piece of
+memory.
+
+   Like `GLOBAL' and `EXTERN', `COMMON' supports object-format specific
+extensions. For example, the `obj' format allows common variables to be
+NEAR or FAR, and the `elf' format allows you to specify the alignment
+requirements of a common variable:
+
+     common  commvar  4:near  ; works in OBJ
+     common  intarray 100:4   ; works in ELF: 4 byte aligned
+
+   Once again, like `EXTERN' and `GLOBAL', the primitive form of
+`COMMON' differs from the user-level form only in that it can take only
+one argument at a time.
+
+
+File: nasm.info,  Node: Section 5.7,  Next: Chapter 6,  Prev: Section 5.6,  Up: Chapter 5
+
+5.7. `CPU': Defining CPU Dependencies
+=====================================
+
+   The `CPU' directive restricts assembly to those instructions which
+are available on the specified CPU.
+
+   Options are:
+
+   * `CPU 8086' Assemble only 8086 instruction set
+
+   * `CPU 186' Assemble instructions up to the 80186 instruction set
+
+   * `CPU 286' Assemble instructions up to the 286 instruction set
+
+   * `CPU 386' Assemble instructions up to the 386 instruction set
+
+   * `CPU 486' 486 instruction set
+
+   * `CPU 586' Pentium instruction set
+
+   * `CPU PENTIUM' Same as 586
+
+   * `CPU 686' P6 instruction set
+
+   * `CPU PPRO' Same as 686
+
+   * `CPU P2' Same as 686
+
+   * `CPU P3' Pentium III (Katmai) instruction sets
+
+   * `CPU KATMAI' Same as P3
+
+   * `CPU P4' Pentium 4 (Willamette) instruction set
+
+   * `CPU WILLAMETTE' Same as P4
+
+   * `CPU PRESCOTT' Prescott instruction set
+
+   * `CPU IA64' IA64 CPU (in x86 mode) instruction set
+
+   All options are case insensitive. All instructions will be selected
+only if they apply to the selected CPU or lower. By default, all
+instructions are available.
+
+
+File: nasm.info,  Node: Chapter 6,  Next: Section 6.1,  Prev: Section 5.7,  Up: Top
+
+Chapter 6: Output Formats
+*************************
+
+   NASM is a portable assembler, designed to be able to compile on any
+ANSI C- supporting platform and produce output to run on a variety of
+Intel x86 operating systems. For this reason, it has a large number of
+available output formats, selected using the `-f' option on the NASM
+command line. Each of these formats, along with its extensions to the
+base NASM syntax, is detailed in this chapter.
+
+   As stated in *Note Section 2.1.1::, NASM chooses a default name for
+your output file based on the input file name and the chosen output
+format. This will be generated by removing the extension (`.asm', `.s',
+or whatever you like to use) from the input file name, and substituting
+an extension defined by the output format. The extensions are given
+with each format below.
+
+* Menu:
+
+* Section 6.1:: `bin': Flat-Form Binary Output
+* Section 6.2:: `obj': Microsoft OMF Object Files
+* Section 6.3:: `win32': Microsoft Win32 Object Files
+* Section 6.4:: `coff': Common Object File Format
+* Section 6.5:: `elf': Executable and Linkable Format Object Files
+* Section 6.6:: `aout': Linux `a.out' Object Files
+* Section 6.7:: `aoutb': NetBSD/FreeBSD/OpenBSD `a.out' Object Files
+* Section 6.8:: `as86': Minix/Linux `as86' Object Files
+* Section 6.9:: `rdf': Relocatable Dynamic Object File Format
+* Section 6.10:: `dbg': Debugging Format
+
+
+File: nasm.info,  Node: Section 6.1,  Next: Section 6.1.1,  Prev: Chapter 6,  Up: Chapter 6
+
+6.1. `bin': Flat-Form Binary Output
+===================================
+
+   The `bin' format does not produce object files: it generates nothing
+in the output file except the code you wrote. Such `pure binary' files
+are used by MS-DOS: `.COM' executables and `.SYS' device drivers are
+pure binary files. Pure binary output is also useful for operating
+system and boot loader development.
+
+   The `bin' format supports multiple section names. For details of how
+nasm handles sections in the `bin' format, see *Note Section 6.1.3::.
+
+   Using the `bin' format puts NASM by default into 16-bit mode (see
+*Note Section 5.1::). In order to use `bin' to write 32-bit code such as
+an OS kernel, you need to explicitly issue the `BITS 32' directive.
+
+   `bin' has no default output file name extension: instead, it leaves
+your file name as it is once the original extension has been removed.
+Thus, the default is for NASM to assemble `binprog.asm' into a binary
+file called `binprog'.
+
+* Menu:
+
+* Section 6.1.1:: `ORG': Binary File Program Origin
+* Section 6.1.2:: `bin' Extensions to the `SECTION' Directive
+* Section 6.1.3:: `Multisection' support for the BIN format.
+* Section 6.1.4:: Map files
+
+
+File: nasm.info,  Node: Section 6.1.1,  Next: Section 6.1.2,  Prev: Section 6.1,  Up: Section 6.1
+
+6.1.1. `ORG': Binary File Program Origin
+----------------------------------------
+
+   The `bin' format provides an additional directive to the list given
+in *Note Chapter 5::: `ORG'. The function of the `ORG' directive is to
+specify the origin address which NASM will assume the program begins at
+when it is loaded into memory.
+
+   For example, the following code will generate the longword
+`0x00000104':
+
+             org     0x100
+             dd      label
+     label:
+
+   Unlike the `ORG' directive provided by MASM-compatible assemblers,
+which allows you to jump around in the object file and overwrite code
+you have already generated, NASM's `ORG' does exactly what the directive
+says: _origin_. Its sole function is to specify one offset which is
+added to all internal address references within the section; it does not
+permit any of the trickery that MASM's version does. See *Note Section
+10.1.3:: for further comments.
+
+
+File: nasm.info,  Node: Section 6.1.2,  Next: Section 6.1.3,  Prev: Section 6.1.1,  Up: Section 6.1
+
+6.1.2. `bin' Extensions to the `SECTION' Directive
+--------------------------------------------------
+
+   The `bin' output format extends the `SECTION' (or `SEGMENT')
+directive to allow you to specify the alignment requirements of
+segments.  This is done by appending the `ALIGN' qualifier to the end
+of the section-definition line. For example,
+
+     section .data   align=16
+
+   switches to the section `.data' and also specifies that it must be
+aligned on a 16-byte boundary.
+
+   The parameter to `ALIGN' specifies how many low bits of the section
+start address must be forced to zero. The alignment value given may be
+any power of two.
+
+
+File: nasm.info,  Node: Section 6.1.3,  Next: Section 6.1.4,  Prev: Section 6.1.2,  Up: Section 6.1
+
+6.1.3. `Multisection' support for the BIN format.
+-------------------------------------------------
+
+   The `bin' format allows the use of multiple sections, of arbitrary
+names, besides the "known" `.text', `.data', and `.bss' names.
+
+   * Sections may be designated `progbits' or `nobits'. Default is
+     `progbits' (except `.bss', which defaults to `nobits', of course).
+
+   * Sections can be aligned at a specified boundary following the
+     previous section with `align=', or at an arbitrary byte-granular
+     position with `start='.
+
+   * Sections can be given a virtual start address, which will be used
+     for the calculation of all memory references within that section
+     with `vstart='.
+
+   * Sections can be ordered using `follows='`<section>' or
+     `vfollows='`<section>' as an alternative to specifying an explicit
+     start address.
+
+   * Arguments to `org', `start', `vstart', and `align=' are critical
+     expressions. See *Note Section 3.8::. E.g.  `align=(1 <<
+     ALIGN_SHIFT)' - `ALIGN_SHIFT' must be defined before it is used
+     here.
+
+   * Any code which comes before an explicit `SECTION' directive is
+     directed by default into the `.text' section.
+
+   * If an `ORG' statement is not given, `ORG 0' is used by default.
+
+   * The `.bss' section will be placed after the last `progbits'
+     section, unless `start=', `vstart=', `follows=', or `vfollows='
+     has been specified.
+
+   * All sections are aligned on dword boundaries, unless a different
+     alignment has been specified.
+
+   * Sections may not overlap.
+
+   * Nasm creates the `section.<secname>.start' for each section, which
+     may be used in your code.
+
+
+File: nasm.info,  Node: Section 6.1.4,  Next: Section 6.2,  Prev: Section 6.1.3,  Up: Section 6.1
+
+6.1.4. Map files
+----------------
+
+   Map files can be generated in `-f bin' format by means of the
+`[map]' option. Map types of `all' (default), `brief', `sections',
+`segments', or `symbols' may be specified.  Output may be directed to
+`stdout' (default), `stderr', or a specified file. E.g. `[map symbols
+myfile.map]'. No "user form" exists, the square brackets must be used.
+
+
+File: nasm.info,  Node: Section 6.2,  Next: Section 6.2.1,  Prev: Section 6.1.4,  Up: Chapter 6
+
+6.2. `obj': Microsoft OMF Object Files
+======================================
+
+   The `obj' file format (NASM calls it `obj' rather than `omf' for
+historical reasons) is the one produced by MASM and TASM, which is
+typically fed to 16-bit DOS linkers to produce `.EXE' files. It is also
+the format used by OS/2.
+
+   `obj' provides a default output file-name extension of `.obj'.
+
+   `obj' is not exclusively a 16-bit format, though: NASM has full
+support for the 32-bit extensions to the format. In particular, 32-bit
+`obj' format files are used by Borland's Win32 compilers, instead of
+using Microsoft's newer `win32' object file format.
+
+   The `obj' format does not define any special segment names: you can
+call your segments anything you like. Typical names for segments in
+`obj' format files are `CODE', `DATA' and `BSS'.
+
+   If your source file contains code before specifying an explicit
+`SEGMENT' directive, then NASM will invent its own segment called
+`__NASMDEFSEG' for you.
+
+   When you define a segment in an `obj' file, NASM defines the segment
+name as a symbol as well, so that you can access the segment address of
+the segment. So, for example:
+
+     segment data
+     
+     dvar:   dw      1234
+     
+     segment code
+     
+     function:
+             mov     ax,data         ; get segment address of data
+             mov     ds,ax           ; and move it into DS
+             inc     word [dvar]     ; now this reference will work
+             ret
+
+   The `obj' format also enables the use of the `SEG' and `WRT'
+operators, so that you can write code which does things like
+
+     extern  foo
+     
+           mov   ax,seg foo            ; get preferred segment of foo
+           mov   ds,ax
+           mov   ax,data               ; a different segment
+           mov   es,ax
+           mov   ax,[ds:foo]           ; this accesses `foo'
+           mov   [es:foo wrt data],bx  ; so does this
+
+* Menu:
+
+* Section 6.2.1:: `obj' Extensions to the `SEGMENT' Directive
+* Section 6.2.2:: `GROUP': Defining Groups of Segments
+* Section 6.2.3:: `UPPERCASE': Disabling Case Sensitivity in Output
+* Section 6.2.4:: `IMPORT': Importing DLL Symbols
+* Section 6.2.5:: `EXPORT': Exporting DLL Symbols
+* Section 6.2.6:: `..start': Defining the Program Entry Point
+* Section 6.2.7:: `obj' Extensions to the `EXTERN' Directive
+* Section 6.2.8:: `obj' Extensions to the `COMMON' Directive
+
+
+File: nasm.info,  Node: Section 6.2.1,  Next: Section 6.2.2,  Prev: Section 6.2,  Up: Section 6.2
+
+6.2.1. `obj' Extensions to the `SEGMENT' Directive
+--------------------------------------------------
+
+   The `obj' output format extends the `SEGMENT' (or `SECTION')
+directive to allow you to specify various properties of the segment you
+are defining. This is done by appending extra qualifiers to the end of
+the segment-definition line. For example,
+
+     segment code private align=16
+
+   defines the segment `code', but also declares it to be a private
+segment, and requires that the portion of it described in this code
+module must be aligned on a 16-byte boundary.
+
+   The available qualifiers are:
+
+   * `PRIVATE', `PUBLIC', `COMMON' and `STACK' specify the combination
+     characteristics of the segment. `PRIVATE' segments do not get
+     combined with any others by the linker; `PUBLIC' and `STACK'
+     segments get concatenated together at link time; and `COMMON'
+     segments all get overlaid on top of each other rather than stuck
+     end-to-end.
+
+   * `ALIGN' is used, as shown above, to specify how many low bits of
+     the segment start address must be forced to zero. The alignment
+     value given may be any power of two from 1 to 4096; in reality,
+     the only values supported are 1, 2, 4, 16, 256 and 4096, so if 8
+     is specified it will be rounded up to 16, and 32, 64 and 128 will
+     all be rounded up to 256, and so on. Note that alignment to
+     4096-byte boundaries is a PharLap extension to the format and may
+     not be supported by all linkers.
+
+   * `CLASS' can be used to specify the segment class; this feature
+     indicates to the linker that segments of the same class should be
+     placed near each other in the output file. The class name can be
+     any word, e.g.  `CLASS=CODE'.
+
+   * `OVERLAY', like `CLASS', is specified with an arbitrary word as an
+     argument, and provides overlay information to an overlay-capable
+     linker.
+
+   * Segments can be declared as `USE16' or `USE32', which has the
+     effect of recording the choice in the object file and also
+     ensuring that NASM's default assembly mode when assembling in that
+     segment is 16-bit or 32-bit respectively.
+
+   * When writing OS/2 object files, you should declare 32-bit segments
+     as `FLAT', which causes the default segment base for anything in
+     the segment to be the special group `FLAT', and also defines the
+     group if it is not already defined.
+
+   * The `obj' file format also allows segments to be declared as
+     having a pre-defined absolute segment address, although no linkers
+     are currently known to make sensible use of this feature;
+     nevertheless, NASM allows you to declare a segment such as
+     `SEGMENT SCREEN ABSOLUTE=0xB800' if you need to. The `ABSOLUTE'
+     and `ALIGN' keywords are mutually exclusive.
+
+   NASM's default segment attributes are `PUBLIC', `ALIGN=1', no class,
+no overlay, and `USE16'.
+
+
+File: nasm.info,  Node: Section 6.2.2,  Next: Section 6.2.3,  Prev: Section 6.2.1,  Up: Section 6.2
+
+6.2.2. `GROUP': Defining Groups of Segments
+-------------------------------------------
+
+   The `obj' format also allows segments to be grouped, so that a single
+segment register can be used to refer to all the segments in a group.
+NASM therefore supplies the `GROUP' directive, whereby you can code
+
+     segment data
+     
+             ; some data
+     
+     segment bss
+     
+             ; some uninitialised data
+     
+     group dgroup data bss
+
+   which will define a group called `dgroup' to contain the segments
+`data' and `bss'. Like `SEGMENT', `GROUP' causes the group name to be
+defined as a symbol, so that you can refer to a variable `var' in the
+`data' segment as `var wrt data' or as `var wrt dgroup', depending on
+which segment value is currently in your segment register.
+
+   If you just refer to `var', however, and `var' is declared in a
+segment which is part of a group, then NASM will default to giving you
+the offset of `var' from the beginning of the _group_, not the
+_segment_. Therefore `SEG var', also, will return the group base rather
+than the segment base.
+
+   NASM will allow a segment to be part of more than one group, but will
+generate a warning if you do this. Variables declared in a segment
+which is part of more than one group will default to being relative to
+the first group that was defined to contain the segment.
+
+   A group does not have to contain any segments; you can still make
+`WRT' references to a group which does not contain the variable you are
+referring to. OS/2, for example, defines the special group `FLAT' with
+no segments in it.
+
+
+File: nasm.info,  Node: Section 6.2.3,  Next: Section 6.2.4,  Prev: Section 6.2.2,  Up: Section 6.2
+
+6.2.3. `UPPERCASE': Disabling Case Sensitivity in Output
+--------------------------------------------------------
+
+   Although NASM itself is case sensitive, some OMF linkers are not;
+therefore it can be useful for NASM to output single-case object files.
+The `UPPERCASE' format-specific directive causes all segment, group and
+symbol names that are written to the object file to be forced to upper
+case just before being written. Within a source file, NASM is still
+case- sensitive; but the object file can be written entirely in upper
+case if desired.
+
+   `UPPERCASE' is used alone on a line; it requires no parameters.
+
+
+File: nasm.info,  Node: Section 6.2.4,  Next: Section 6.2.5,  Prev: Section 6.2.3,  Up: Section 6.2
+
+6.2.4. `IMPORT': Importing DLL Symbols
+--------------------------------------
+
+   The `IMPORT' format-specific directive defines a symbol to be
+imported from a DLL, for use if you are writing a DLL's import library
+in NASM. You still need to declare the symbol as `EXTERN' as well as
+using the `IMPORT' directive.
+
+   The `IMPORT' directive takes two required parameters, separated by
+white space, which are (respectively) the name of the symbol you wish to
+import and the name of the library you wish to import it from. For
+example:
+
+         import  WSAStartup wsock32.dll
+
+   A third optional parameter gives the name by which the symbol is
+known in the library you are importing it from, in case this is not the
+same as the name you wish the symbol to be known by to your code once
+you have imported it. For example:
+
+         import  asyncsel wsock32.dll WSAAsyncSelect
+
+
+File: nasm.info,  Node: Section 6.2.5,  Next: Section 6.2.6,  Prev: Section 6.2.4,  Up: Section 6.2
+
+6.2.5. `EXPORT': Exporting DLL Symbols
+--------------------------------------
+
+   The `EXPORT' format-specific directive defines a global symbol to be
+exported as a DLL symbol, for use if you are writing a DLL in NASM. You
+still need to declare the symbol as `GLOBAL' as well as using the
+`EXPORT' directive.
+
+   `EXPORT' takes one required parameter, which is the name of the
+symbol you wish to export, as it was defined in your source file. An
+optional second parameter (separated by white space from the first)
+gives the _external_ name of the symbol: the name by which you wish the
+symbol to be known to programs using the DLL. If this name is the same
+as the internal name, you may leave the second parameter off.
+
+   Further parameters can be given to define attributes of the exported
+symbol. These parameters, like the second, are separated by white
+space. If further parameters are given, the external name must also be
+specified, even if it is the same as the internal name. The available
+attributes are:
+
+   * `resident' indicates that the exported name is to be kept resident
+     by the system loader. This is an optimisation for frequently used
+     symbols imported by name.
+
+   * `nodata' indicates that the exported symbol is a function which
+     does not make use of any initialised data.
+
+   * `parm=NNN', where `NNN' is an integer, sets the number of
+     parameter words for the case in which the symbol is a call gate
+     between 32- bit and 16-bit segments.
+
+   * An attribute which is just a number indicates that the symbol
+     should be exported with an identifying number (ordinal), and gives
+     the desired number.
+
+   For example:
+
+         export  myfunc
+         export  myfunc TheRealMoreFormalLookingFunctionName
+         export  myfunc myfunc 1234  ; export by ordinal
+         export  myfunc myfunc resident parm=23 nodata
+
+
+File: nasm.info,  Node: Section 6.2.6,  Next: Section 6.2.7,  Prev: Section 6.2.5,  Up: Section 6.2
+
+6.2.6. `..start': Defining the Program Entry Point
+--------------------------------------------------
+
+   `OMF' linkers require exactly one of the object files being linked to
+define the program entry point, where execution will begin when the
+program is run. If the object file that defines the entry point is
+assembled using NASM, you specify the entry point by declaring the
+special symbol `..start' at the point where you wish execution to begin.
+
+
+File: nasm.info,  Node: Section 6.2.7,  Next: Section 6.2.8,  Prev: Section 6.2.6,  Up: Section 6.2
+
+6.2.7. `obj' Extensions to the `EXTERN' Directive
+-------------------------------------------------
+
+   If you declare an external symbol with the directive
+
+         extern  foo
+
+   then references such as `mov ax,foo' will give you the offset of
+`foo' from its preferred segment base (as specified in whichever module
+`foo' is actually defined in). So to access the contents of `foo' you
+will usually need to do something like
+
+             mov     ax,seg foo      ; get preferred segment base
+             mov     es,ax           ; move it into ES
+             mov     ax,[es:foo]     ; and use offset `foo' from it
+
+   This is a little unwieldy, particularly if you know that an external
+is going to be accessible from a given segment or group, say `dgroup'.
+So if `DS' already contained `dgroup', you could simply code
+
+             mov     ax,[foo wrt dgroup]
+
+   However, having to type this every time you want to access `foo' can
+be a pain; so NASM allows you to declare `foo' in the alternative form
+
+         extern  foo:wrt dgroup
+
+   This form causes NASM to pretend that the preferred segment base of
+`foo' is in fact `dgroup'; so the expression `seg foo' will now return
+`dgroup', and the expression `foo' is equivalent to `foo wrt dgroup'.
+
+   This default-`WRT' mechanism can be used to make externals appear to
+be relative to any group or segment in your program. It can also be
+applied to common variables: see *Note Section 6.2.8::.
+
+
+File: nasm.info,  Node: Section 6.2.8,  Next: Section 6.3,  Prev: Section 6.2.7,  Up: Section 6.2
+
+6.2.8. `obj' Extensions to the `COMMON' Directive
+-------------------------------------------------
+
+   The `obj' format allows common variables to be either near or far;
+NASM allows you to specify which your variables should be by the use of
+the syntax
+
+     common  nearvar 2:near   ; `nearvar' is a near common
+     common  farvar  10:far   ; and `farvar' is far
+
+   Far common variables may be greater in size than 64Kb, and so the OMF
+specification says that they are declared as a number of _elements_ of
+a given size. So a 10-byte far common variable could be declared as ten
+one-byte elements, five two-byte elements, two five-byte elements or one
+ten-byte element.
+
+   Some `OMF' linkers require the element size, as well as the variable
+size, to match when resolving common variables declared in more than one
+module. Therefore NASM must allow you to specify the element size on
+your far common variables. This is done by the following syntax:
+
+     common  c_5by2  10:far 5        ; two five-byte elements
+     common  c_2by5  10:far 2        ; five two-byte elements
+
+   If no element size is specified, the default is 1. Also, the `FAR'
+keyword is not required when an element size is specified, since only
+far commons may have element sizes at all. So the above declarations
+could equivalently be
+
+     common  c_5by2  10:5            ; two five-byte elements
+     common  c_2by5  10:2            ; five two-byte elements
+
+   In addition to these extensions, the `COMMON' directive in `obj'
+also supports default-`WRT' specification like `EXTERN' does (explained
+in *Note Section 6.2.7::). So you can also declare things like
+
+     common  foo     10:wrt dgroup
+     common  bar     16:far 2:wrt data
+     common  baz     24:wrt data:6
+
+
+File: nasm.info,  Node: Section 6.3,  Next: Section 6.3.1,  Prev: Section 6.2.8,  Up: Chapter 6
+
+6.3. `win32': Microsoft Win32 Object Files
+==========================================
+
+   The `win32' output format generates Microsoft Win32 object files,
+suitable for passing to Microsoft linkers such as Visual C++. Note that
+Borland Win32 compilers do not use this format, but use `obj' instead
+(see *Note Section 6.2::).
+
+   `win32' provides a default output file-name extension of `.obj'.
+
+   Note that although Microsoft say that Win32 object files follow the
+`COFF' (Common Object File Format) standard, the object files produced
+by Microsoft Win32 compilers are not compatible with COFF linkers such
+as DJGPP's, and vice versa. This is due to a difference of opinion over
+the precise semantics of PC-relative relocations. To produce COFF files
+suitable for DJGPP, use NASM's `coff' output format; conversely, the
+`coff' format does not produce object files that Win32 linkers can
+generate correct output from.
+
+* Menu:
+
+* Section 6.3.1:: `win32' Extensions to the `SECTION' Directive
+
+
+File: nasm.info,  Node: Section 6.3.1,  Next: Section 6.4,  Prev: Section 6.3,  Up: Section 6.3
+
+6.3.1. `win32' Extensions to the `SECTION' Directive
+----------------------------------------------------
+
+   Like the `obj' format, `win32' allows you to specify additional
+information on the `SECTION' directive line, to control the type and
+properties of sections you declare. Section types and properties are
+generated automatically by NASM for the standard section names `.text',
+`.data' and `.bss', but may still be overridden by these qualifiers.
+
+   The available qualifiers are:
+
+   * `code', or equivalently `text', defines the section to be a code
+     section. This marks the section as readable and executable, but not
+     writable, and also indicates to the linker that the type of the
+     section is code.
+
+   * `data' and `bss' define the section to be a data section,
+     analogously to `code'. Data sections are marked as readable and
+     writable, but not executable. `data' declares an initialised data
+     section, whereas `bss' declares an uninitialised data section.
+
+   * `rdata' declares an initialised data section that is readable but
+     not writable. Microsoft compilers use this section to place
+     constants in it.
+
+   * `info' defines the section to be an informational section, which is
+     not included in the executable file by the linker, but may (for
+     example) pass information _to_ the linker. For example, declaring
+     an `info'-type section called `.drectve' causes the linker to
+     interpret the contents of the section as command-line options.
+
+   * `align=', used with a trailing number as in `obj', gives the
+     alignment requirements of the section. The maximum you may specify
+     is 64: the Win32 object file format contains no means to request a
+     greater section alignment than this. If alignment is not
+     explicitly specified, the defaults are 16-byte alignment for code
+     sections, 8-byte alignment for rdata sections and 4-byte alignment
+     for data (and BSS) sections. Informational sections get a default
+     alignment of 1 byte (no alignment), though the value does not
+     matter.
+
+   The defaults assumed by NASM if you do not specify the above
+qualifiers are:
+
+     section .text    code  align=16
+     section .data    data  align=4
+     section .rdata   rdata align=8
+     section .bss     bss   align=4
+
+   Any other section name is treated by default like `.text'.
+
+
+File: nasm.info,  Node: Section 6.4,  Next: Section 6.5,  Prev: Section 6.3.1,  Up: Chapter 6
+
+6.4. `coff': Common Object File Format
+======================================
+
+   The `coff' output type produces `COFF' object files suitable for
+linking with the DJGPP linker.
+
+   `coff' provides a default output file-name extension of `.o'.
+
+   The `coff' format supports the same extensions to the `SECTION'
+directive as `win32' does, except that the `align' qualifier and the
+`info' section type are not supported.
+
+
+File: nasm.info,  Node: Section 6.5,  Next: Section 6.5.1,  Prev: Section 6.4,  Up: Chapter 6
+
+6.5. `elf': Executable and Linkable Format Object Files
+=======================================================
+
+   The `elf' output format generates `ELF32' (Executable and Linkable
+Format) object files, as used by Linux as well as Unix System V,
+including Solaris x86, UnixWare and SCO Unix. `elf' provides a default
+output file-name extension of `.o'.
+
+* Menu:
+
+* Section 6.5.1:: `elf' Extensions to the `SECTION' Directive
+* Section 6.5.2:: Position-Independent Code: `elf' Special Symbols and `WRT'
+* Section 6.5.3:: `elf' Extensions to the `GLOBAL' Directive
+* Section 6.5.4:: `elf' Extensions to the `COMMON' Directive
+* Section 6.5.5:: 16-bit code and ELF
+
+
+File: nasm.info,  Node: Section 6.5.1,  Next: Section 6.5.2,  Prev: Section 6.5,  Up: Section 6.5
+
+6.5.1. `elf' Extensions to the `SECTION' Directive
+--------------------------------------------------
+
+   Like the `obj' format, `elf' allows you to specify additional
+information on the `SECTION' directive line, to control the type and
+properties of sections you declare. Section types and properties are
+generated automatically by NASM for the standard section names `.text',
+`.data' and `.bss', but may still be overridden by these qualifiers.
+
+   The available qualifiers are:
+
+   * `alloc' defines the section to be one which is loaded into memory
+     when the program is run. `noalloc' defines it to be one which is
+     not, such as an informational or comment section.
+
+   * `exec' defines the section to be one which should have execute
+     permission when the program is run. `noexec' defines it as one
+     which should not.
+
+   * `write' defines the section to be one which should be writable when
+     the program is run. `nowrite' defines it as one which should not.
+
+   * `progbits' defines the section to be one with explicit contents
+     stored in the object file: an ordinary code or data section, for
+     example, `nobits' defines the section to be one with no explicit
+     contents given, such as a BSS section.
+
+   * `align=', used with a trailing number as in `obj', gives the
+     alignment requirements of the section.
+
+   The defaults assumed by NASM if you do not specify the above
+qualifiers are:
+
+     section .text    progbits  alloc  exec    nowrite  align=16
+     section .rodata  progbits  alloc  noexec  nowrite  align=4
+     section .data    progbits  alloc  noexec  write    align=4
+     section .bss     nobits    alloc  noexec  write    align=4
+     section other    progbits  alloc  noexec  nowrite  align=1
+
+   (Any section name other than `.text', `.rodata', `.data' and `.bss'
+is treated by default like `other' in the above code.)
+
+
+File: nasm.info,  Node: Section 6.5.2,  Next: Section 6.5.3,  Prev: Section 6.5.1,  Up: Section 6.5
+
+6.5.2. Position-Independent Code: `elf' Special Symbols and `WRT'
+-----------------------------------------------------------------
+
+   The `ELF' specification contains enough features to allow position-
+independent code (PIC) to be written, which makes ELF shared libraries
+very flexible. However, it also means NASM has to be able to generate a
+variety of strange relocation types in ELF object files, if it is to be
+an assembler which can write PIC.
+
+   Since `ELF' does not support segment-base references, the `WRT'
+operator is not used for its normal purpose; therefore NASM's `elf'
+output format makes use of `WRT' for a different purpose, namely the
+PIC-specific relocation types.
+
+   `elf' defines five special symbols which you can use as the
+right-hand side of the `WRT' operator to obtain PIC relocation types.
+They are `..gotpc', `..gotoff', `..got', `..plt' and `..sym'. Their
+functions are summarised here:
+
+   * Referring to the symbol marking the global offset table base using
+     `wrt ..gotpc' will end up giving the distance from the beginning of
+     the current section to the global offset table.
+     (`_GLOBAL_OFFSET_TABLE_' is the standard symbol name used to refer
+     to the GOT.) So you would then need to add `$$' to the result to
+     get the real address of the GOT.
+
+   * Referring to a location in one of your own sections using `wrt
+     ..gotoff' will give the distance from the beginning of the GOT to
+     the specified location, so that adding on the address of the GOT
+     would give the real address of the location you wanted.
+
+   * Referring to an external or global symbol using `wrt ..got' causes
+     the linker to build an entry _in_ the GOT containing the address
+     of the symbol, and the reference gives the distance from the
+     beginning of the GOT to the entry; so you can add on the address
+     of the GOT, load from the resulting address, and end up with the
+     address of the symbol.
+
+   * Referring to a procedure name using `wrt ..plt' causes the linker
+     to build a procedure linkage table entry for the symbol, and the
+     reference gives the address of the PLT entry. You can only use
+     this in contexts which would generate a PC-relative relocation
+     normally (i.e. as the destination for `CALL' or `JMP'), since ELF
+     contains no relocation type to refer to PLT entries absolutely.
+
+   * Referring to a symbol name using `wrt ..sym' causes NASM to write
+     an ordinary relocation, but instead of making the relocation
+     relative to the start of the section and then adding on the offset
+     to the symbol, it will write a relocation record aimed directly at
+     the symbol in question. The distinction is a necessary one due to
+     a peculiarity of the dynamic linker.
+
+   A fuller explanation of how to use these relocation types to write
+shared libraries entirely in NASM is given in *Note Section 8.2::.
+
+
+File: nasm.info,  Node: Section 6.5.3,  Next: Section 6.5.4,  Prev: Section 6.5.2,  Up: Section 6.5
+
+6.5.3. `elf' Extensions to the `GLOBAL' Directive
+-------------------------------------------------
+
+   `ELF' object files can contain more information about a global symbol
+than just its address: they can contain the size of the symbol and its
+type as well. These are not merely debugger conveniences, but are
+actually necessary when the program being written is a shared library.
+NASM therefore supports some extensions to the `GLOBAL' directive,
+allowing you to specify these features.
+
+   You can specify whether a global variable is a function or a data
+object by suffixing the name with a colon and the word `function' or
+`data'. (`object' is a synonym for `data'.) For example:
+
+     global   hashlookup:function, hashtable:data
+
+   exports the global symbol `hashlookup' as a function and `hashtable'
+as a data object.
+
+   You can also specify the size of the data associated with the
+symbol, as a numeric expression (which may involve labels, and even
+forward references) after the type specifier. Like this:
+
+     global  hashtable:data (hashtable.end - hashtable)
+     
+     hashtable:
+             db this,that,theother  ; some data here
+     .end:
+
+   This makes NASM automatically calculate the length of the table and
+place that information into the `ELF' symbol table.
+
+   Declaring the type and size of global symbols is necessary when
+writing shared library code. For more information, see *Note Section
+8.2.4::.
+
+
+File: nasm.info,  Node: Section 6.5.4,  Next: Section 6.5.5,  Prev: Section 6.5.3,  Up: Section 6.5
+
+6.5.4. `elf' Extensions to the `COMMON' Directive
+-------------------------------------------------
+
+   `ELF' also allows you to specify alignment requirements on common
+variables. This is done by putting a number (which must be a power of
+two) after the name and size of the common variable, separated (as
+usual) by a colon. For example, an array of doublewords would benefit
+from 4-byte alignment:
+
+     common  dwordarray 128:4
+
+   This declares the total size of the array to be 128 bytes, and
+requires that it be aligned on a 4-byte boundary.
+
+
+File: nasm.info,  Node: Section 6.5.5,  Next: Section 6.6,  Prev: Section 6.5.4,  Up: Section 6.5
+
+6.5.5. 16-bit code and ELF
+--------------------------
+
+   The `ELF32' specification doesn't provide relocations for 8- and 16-
+bit values, but the GNU `ld' linker adds these as an extension. NASM
+can generate GNU-compatible relocations, to allow 16-bit code to be
+linked as ELF using GNU `ld'. If NASM is used with the
+`-w+gnu-elf-extensions' option, a warning is issued when one of these
+relocations is generated.
+
+
+File: nasm.info,  Node: Section 6.6,  Next: Section 6.7,  Prev: Section 6.5.5,  Up: Chapter 6
+
+6.6. `aout': Linux `a.out' Object Files
+=======================================
+
+   The `aout' format generates `a.out' object files, in the form used
+by early Linux systems (current Linux systems use ELF, see *Note
+Section 6.5::.) These differ from other `a.out' object files in that
+the magic number in the first four bytes of the file is different;
+also, some implementations of `a.out', for example NetBSD's, support
+position-independent code, which Linux's implementation does not.
+
+   `a.out' provides a default output file-name extension of `.o'.
+
+   `a.out' is a very simple object format. It supports no special
+directives, no special symbols, no use of `SEG' or `WRT', and no
+extensions to any standard directives. It supports only the three
+standard section names `.text', `.data' and `.bss'.
+
+
+File: nasm.info,  Node: Section 6.7,  Next: Section 6.8,  Prev: Section 6.6,  Up: Chapter 6
+
+6.7. `aoutb': NetBSD/FreeBSD/OpenBSD `a.out' Object Files
+=========================================================
+
+   The `aoutb' format generates `a.out' object files, in the form used
+by the various free `BSD Unix' clones, `NetBSD', `FreeBSD' and
+`OpenBSD'. For simple object files, this object format is exactly the
+same as `aout' except for the magic number in the first four bytes of
+the file. However, the `aoutb' format supports position-independent
+code in the same way as the `elf' format, so you can use it to write
+`BSD' shared libraries.
+
+   `aoutb' provides a default output file-name extension of `.o'.
+
+   `aoutb' supports no special directives, no special symbols, and only
+the three standard section names `.text', `.data' and `.bss'. However,
+it also supports the same use of `WRT' as `elf' does, to provide
+position-independent code relocation types. See *Note Section 6.5.2::
+for full documentation of this feature.
+
+   `aoutb' also supports the same extensions to the `GLOBAL' directive
+as `elf' does: see *Note Section 6.5.3:: for documentation of this.
+
+
+File: nasm.info,  Node: Section 6.8,  Next: Section 6.9,  Prev: Section 6.7,  Up: Chapter 6
+
+6.8. `as86': Minix/Linux `as86' Object Files
+============================================
+
+   The Minix/Linux 16-bit assembler `as86' has its own non-standard
+object file format. Although its companion linker `ld86' produces
+something close to ordinary `a.out' binaries as output, the object file
+format used to communicate between `as86' and `ld86' is not itself
+`a.out'.
+
+   NASM supports this format, just in case it is useful, as `as86'.
+`as86' provides a default output file-name extension of `.o'.
+
+   `as86' is a very simple object format (from the NASM user's point of
+view). It supports no special directives, no special symbols, no use of
+`SEG' or `WRT', and no extensions to any standard directives. It
+supports only the three standard section names `.text', `.data' and
+`.bss'.
+
+
+File: nasm.info,  Node: Section 6.9,  Next: Section 6.9.1,  Prev: Section 6.8,  Up: Chapter 6
+
+6.9. `rdf': Relocatable Dynamic Object File Format
+==================================================
+
+   The `rdf' output format produces `RDOFF' object files.  `RDOFF'
+(Relocatable Dynamic Object File Format) is a home-grown object-file
+format, designed alongside NASM itself and reflecting in its file
+format the internal structure of the assembler.
+
+   `RDOFF' is not used by any well-known operating systems. Those
+writing their own systems, however, may well wish to use `RDOFF' as
+their object format, on the grounds that it is designed primarily for
+simplicity and contains very little file-header bureaucracy.
+
+   The Unix NASM archive, and the DOS archive which includes sources,
+both contain an `rdoff' subdirectory holding a set of RDOFF utilities:
+an RDF linker, an `RDF' static-library manager, an RDF file dump
+utility, and a program which will load and execute an RDF executable
+under Linux.
+
+   `rdf' supports only the standard section names `.text', `.data' and
+`.bss'.
+
+* Menu:
+
+* Section 6.9.1:: Requiring a Library: The `LIBRARY' Directive
+* Section 6.9.2:: Specifying a Module Name: The `MODULE' Directive
+* Section 6.9.3:: `rdf' Extensions to the `GLOBAL' directive
+
+
+File: nasm.info,  Node: Section 6.9.1,  Next: Section 6.9.2,  Prev: Section 6.9,  Up: Section 6.9
+
+6.9.1. Requiring a Library: The `LIBRARY' Directive
+---------------------------------------------------
+
+   `RDOFF' contains a mechanism for an object file to demand a given
+library to be linked to the module, either at load time or run time.
+This is done by the `LIBRARY' directive, which takes one argument which
+is the name of the module:
+
+         library  mylib.rdl
+
+
+File: nasm.info,  Node: Section 6.9.2,  Next: Section 6.9.3,  Prev: Section 6.9.1,  Up: Section 6.9
+
+6.9.2. Specifying a Module Name: The `MODULE' Directive
+-------------------------------------------------------
+
+   Special `RDOFF' header record is used to store the name of the
+module.  It can be used, for example, by run-time loader to perform
+dynamic linking.  `MODULE' directive takes one argument which is the
+name of current module:
+
+         module  mymodname
+
+   Note that when you statically link modules and tell linker to strip
+the symbols from output file, all module names will be stripped too. To
+avoid it, you should start module names with `$', like:
+
+         module  $kernel.core
+
+
+File: nasm.info,  Node: Section 6.9.3,  Next: Section 6.10,  Prev: Section 6.9.2,  Up: Section 6.9
+
+6.9.3. `rdf' Extensions to the `GLOBAL' directive
+-------------------------------------------------
+
+   `RDOFF' global symbols can contain additional information needed by
+the static linker. You can mark a global symbol as exported, thus
+telling the linker do not strip it from target executable or library
+file. Like in `ELF', you can also specify whether an exported symbol is
+a procedure (function) or data object.
+
+   Suffixing the name with a colon and the word `export' you make the
+symbol exported:
+
+         global  sys_open:export
+
+   To specify that exported symbol is a procedure (function), you add
+the word `proc' or `function' after declaration:
+
+         global  sys_open:export proc
+
+   Similarly, to specify exported data object, add the word `data' or
+`object' to the directive:
+
+         global  kernel_ticks:export data
+
+
+File: nasm.info,  Node: Section 6.10,  Next: Chapter 7,  Prev: Section 6.9.3,  Up: Chapter 6
+
+6.10. `dbg': Debugging Format
+=============================
+
+   The `dbg' output format is not built into NASM in the default
+configuration. If you are building your own NASM executable from the
+sources, you can define `OF_DBG' in `outform.h' or on the compiler
+command line, and obtain the `dbg' output format.
+
+   The `dbg' format does not output an object file as such; instead, it
+outputs a text file which contains a complete list of all the
+transactions between the main body of NASM and the output-format back
+end module. It is primarily intended to aid people who want to write
+their own output drivers, so that they can get a clearer idea of the
+various requests the main program makes of the output driver, and in
+what order they happen.
+
+   For simple files, one can easily use the `dbg' format like this:
+
+     nasm -f dbg filename.asm
+
+   which will generate a diagnostic file called `filename.dbg'. However,
+this will not work well on files which were designed for a different
+object format, because each object format defines its own macros
+(usually user- level forms of directives), and those macros will not be
+defined in the `dbg' format. Therefore it can be useful to run NASM
+twice, in order to do the preprocessing with the native object format
+selected:
+
+     nasm -e -f rdf -o rdfprog.i rdfprog.asm
+     nasm -a -f dbg rdfprog.i
+
+   This preprocesses `rdfprog.asm' into `rdfprog.i', keeping the `rdf'
+object format selected in order to make sure RDF special directives are
+converted into primitive form correctly. Then the preprocessed source
+is fed through the `dbg' format to generate the final diagnostic output.
+
+   This workaround will still typically not work for programs intended
+for `obj' format, because the `obj' `SEGMENT' and `GROUP' directives
+have side effects of defining the segment and group names as symbols;
+`dbg' will not do this, so the program will not assemble. You will have
+to work around that by defining the symbols yourself (using `EXTERN',
+for example) if you really need to get a `dbg' trace of an
+`obj'-specific source file.
+
+   `dbg' accepts any section name and any directives at all, and logs
+them all to its output file.
+

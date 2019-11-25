@@ -1,0 +1,1312 @@
+This is nasm.info, produced by makeinfo version 4.3 from nasmdoc.texi.
+
+INFO-DIR-SECTION Programming
+START-INFO-DIR-ENTRY
+* NASM: (nasm).                The Netwide Assembler for x86.
+END-INFO-DIR-ENTRY
+
+   This file documents NASM, the Netwide Assembler: an assembler
+targetting the Intel x86 series of processors, with portable source.
+
+   Copyright 2003 The NASM Development Team
+
+   All rights reserved. This document is redistributable under the
+licence given in the file "COPYING" distributed in the NASM archive.
+
+
+File: nasm.info,  Node: Section 3.2.5,  Next: Section 3.3,  Prev: Section 3.2.4,  Up: Section 3.2
+
+3.2.5. `TIMES': Repeating Instructions or Data
+----------------------------------------------
+
+   The `TIMES' prefix causes the instruction to be assembled multiple
+times. This is partly present as NASM's equivalent of the `DUP' syntax
+supported by MASM-compatible assemblers, in that you can code
+
+     zerobuf:        times 64 db 0
+
+   or similar things; but `TIMES' is more versatile than that. The
+argument to `TIMES' is not just a numeric constant, but a numeric
+_expression_, so you can do things like
+
+     buffer: db      'hello, world'
+             times 64-$+buffer db ' '
+
+   which will store exactly enough spaces to make the total length of
+`buffer' up to 64. Finally, `TIMES' can be applied to ordinary
+instructions, so you can code trivial unrolled loops in it:
+
+             times 100 movsb
+
+   Note that there is no effective difference between `times 100 resb 1'
+and `resb 100', except that the latter will be assembled about 100
+times faster due to the internal structure of the assembler.
+
+   The operand to `TIMES', like that of `EQU' and those of `RESB' and
+friends, is a critical expression (*Note Section 3.8::).
+
+   Note also that `TIMES' can't be applied to macros: the reason for
+this is that `TIMES' is processed after the macro phase, which allows
+the argument to `TIMES' to contain expressions such as `64-$+buffer' as
+above. To repeat more than one line of code, or a complex macro, use the
+preprocessor `%rep' directive.
+
+
+File: nasm.info,  Node: Section 3.3,  Next: Section 3.4,  Prev: Section 3.2.5,  Up: Chapter 3
+
+3.3. Effective Addresses
+========================
+
+   An effective address is any operand to an instruction which
+references memory. Effective addresses, in NASM, have a very simple
+syntax: they consist of an expression evaluating to the desired
+address, enclosed in square brackets. For example:
+
+     wordvar dw      123
+             mov     ax,[wordvar]
+             mov     ax,[wordvar+1]
+             mov     ax,[es:wordvar+bx]
+
+   Anything not conforming to this simple system is not a valid memory
+reference in NASM, for example `es:wordvar[bx]'.
+
+   More complicated effective addresses, such as those involving more
+than one register, work in exactly the same way:
+
+             mov     eax,[ebx*2+ecx+offset]
+             mov     ax,[bp+di+8]
+
+   NASM is capable of doing algebra on these effective addresses, so
+that things which don't necessarily _look_ legal are perfectly all
+right:
+
+         mov     eax,[ebx*5]             ; assembles as [ebx*4+ebx]
+         mov     eax,[label1*2-label2]   ; ie [label1+(label1-label2)]
+
+   Some forms of effective address have more than one assembled form;
+in most such cases NASM will generate the smallest form it can. For
+example, there are distinct assembled forms for the 32-bit effective
+addresses `[eax*2+0]' and `[eax+eax]', and NASM will generally generate
+the latter on the grounds that the former requires four bytes to store
+a zero offset.
+
+   NASM has a hinting mechanism which will cause `[eax+ebx]' and
+`[ebx+eax]' to generate different opcodes; this is occasionally useful
+because `[esi+ebp]' and `[ebp+esi]' have different default segment
+registers.
+
+   However, you can force NASM to generate an effective address in a
+particular form by the use of the keywords `BYTE', `WORD', `DWORD' and
+`NOSPLIT'. If you need `[eax+3]' to be assembled using a double-word
+offset field instead of the one byte NASM will normally generate, you
+can code `[dword eax+3]'. Similarly, you can force NASM to use a byte
+offset for a small value which it hasn't seen on the first pass (see
+*Note Section 3.8:: for an example of such a code fragment) by using
+`[byte eax+offset]'. As special cases, `[byte eax]' will code `[eax+0]'
+with a byte offset of zero, and `[dword eax]' will code it with a
+double-word offset of zero. The normal form, `[eax]', will be coded
+with no offset field.
+
+   The form described in the previous paragraph is also useful if you
+are trying to access data in a 32-bit segment from within 16 bit code.
+For more information on this see the section on mixed-size addressing
+(*Note Section 9.2::). In particular, if you need to access data with a
+known offset that is larger than will fit in a 16-bit value, if you
+don't specify that it is a dword offset, nasm will cause the high word
+of the offset to be lost.
+
+   Similarly, NASM will split `[eax*2]' into `[eax+eax]' because that
+allows the offset field to be absent and space to be saved; in fact, it
+will also split `[eax*2+offset]' into `[eax+eax+offset]'. You can
+combat this behaviour by the use of the `NOSPLIT' keyword: `[nosplit
+eax*2]' will force `[eax*2+0]' to be generated literally.
+
+
+File: nasm.info,  Node: Section 3.4,  Next: Section 3.4.1,  Prev: Section 3.3,  Up: Chapter 3
+
+3.4. Constants
+==============
+
+   NASM understands four different types of constant: numeric,
+character, string and floating-point.
+
+* Menu:
+
+* Section 3.4.1:: Numeric Constants
+* Section 3.4.2:: Character Constants
+* Section 3.4.3:: String Constants
+* Section 3.4.4:: Floating-Point Constants
+
+
+File: nasm.info,  Node: Section 3.4.1,  Next: Section 3.4.2,  Prev: Section 3.4,  Up: Section 3.4
+
+3.4.1. Numeric Constants
+------------------------
+
+   A numeric constant is simply a number. NASM allows you to specify
+numbers in a variety of number bases, in a variety of ways: you can
+suffix `H', `Q' or `O', and `B' for hex, octal and binary, or you can
+prefix `0x' for hex in the style of C, or you can prefix `$' for hex in
+the style of Borland Pascal. Note, though, that the `$' prefix does
+double duty as a prefix on identifiers (see *Note Section 3.1::), so a
+hex number prefixed with a `$' sign must have a digit after the `$'
+rather than a letter.
+
+   Some examples:
+
+             mov     ax,100          ; decimal
+             mov     ax,0a2h         ; hex
+             mov     ax,$0a2         ; hex again: the 0 is required
+             mov     ax,0xa2         ; hex yet again
+             mov     ax,777q         ; octal
+             mov     ax,777o         ; octal again
+             mov     ax,10010011b    ; binary
+
+
+File: nasm.info,  Node: Section 3.4.2,  Next: Section 3.4.3,  Prev: Section 3.4.1,  Up: Section 3.4
+
+3.4.2. Character Constants
+--------------------------
+
+   A character constant consists of up to four characters enclosed in
+either single or double quotes. The type of quote makes no difference
+to NASM, except of course that surrounding the constant with single
+quotes allows double quotes to appear within it and vice versa.
+
+   A character constant with more than one character will be arranged
+with little-endian order in mind: if you code
+
+               mov eax,'abcd'
+
+   then the constant generated is not `0x61626364', but `0x64636261',
+so that if you were then to store the value into memory, it would read
+`abcd' rather than `dcba'. This is also the sense of character
+constants understood by the Pentium's `CPUID' instruction (see *Note
+Section B.4.34::).
+
+
+File: nasm.info,  Node: Section 3.4.3,  Next: Section 3.4.4,  Prev: Section 3.4.2,  Up: Section 3.4
+
+3.4.3. String Constants
+-----------------------
+
+   String constants are only acceptable to some pseudo-instructions,
+namely the `DB' family and `INCBIN'.
+
+   A string constant looks like a character constant, only longer. It is
+treated as a concatenation of maximum-size character constants for the
+conditions. So the following are equivalent:
+
+           db    'hello'               ; string constant
+           db    'h','e','l','l','o'   ; equivalent character constants
+
+   And the following are also equivalent:
+
+           dd    'ninechars'           ; doubleword string constant
+           dd    'nine','char','s'     ; becomes three doublewords
+           db    'ninechars',0,0,0     ; and really looks like this
+
+   Note that when used as an operand to `db', a constant like `'ab'' is
+treated as a string constant despite being short enough to be a
+character constant, because otherwise `db 'ab'' would have the same
+effect as `db 'a'', which would be silly. Similarly, three-character or
+four-character constants are treated as strings when they are operands
+to `dw'.
+
+
+File: nasm.info,  Node: Section 3.4.4,  Next: Section 3.5,  Prev: Section 3.4.3,  Up: Section 3.4
+
+3.4.4. Floating-Point Constants
+-------------------------------
+
+   Floating-point constants are acceptable only as arguments to `DD',
+`DQ' and `DT'. They are expressed in the traditional form: digits, then
+a period, then optionally more digits, then optionally an `E' followed
+by an exponent. The period is mandatory, so that NASM can distinguish
+between `dd 1', which declares an integer constant, and `dd 1.0' which
+declares a floating-point constant.
+
+   Some examples:
+
+           dd    1.2                     ; an easy one
+           dq    1.e10                   ; 10,000,000,000
+           dq    1.e+10                  ; synonymous with 1.e10
+           dq    1.e-10                  ; 0.000 000 000 1
+           dt    3.141592653589793238462 ; pi
+
+   NASM cannot do compile-time arithmetic on floating-point constants.
+This is because NASM is designed to be portable - although it always
+generates code to run on x86 processors, the assembler itself can run
+on any system with an ANSI C compiler. Therefore, the assembler cannot
+guarantee the presence of a floating-point unit capable of handling the
+Intel number formats, and so for NASM to be able to do floating
+arithmetic it would have to include its own complete set of
+floating-point routines, which would significantly increase the size of
+the assembler for very little benefit.
+
+
+File: nasm.info,  Node: Section 3.5,  Next: Section 3.5.1,  Prev: Section 3.4.4,  Up: Chapter 3
+
+3.5. Expressions
+================
+
+   Expressions in NASM are similar in syntax to those in C.
+
+   NASM does not guarantee the size of the integers used to evaluate
+expressions at compile time: since NASM can compile and run on 64-bit
+systems quite happily, don't assume that expressions are evaluated in
+32- bit registers and so try to make deliberate use of integer
+overflow. It might not always work. The only thing NASM will guarantee
+is what's guaranteed by ANSI C: you always have _at least_ 32 bits to
+work in.
+
+   NASM supports two special tokens in expressions, allowing
+calculations to involve the current assembly position: the `$' and `$$'
+tokens.  `$' evaluates to the assembly position at the beginning of the
+line containing the expression; so you can code an infinite loop using
+`JMP $'. `$$' evaluates to the beginning of the current section; so you
+can tell how far into the section you are by using `($-$$)'.
+
+   The arithmetic operators provided by NASM are listed here, in
+increasing order of precedence.
+
+* Menu:
+
+* Section 3.5.1:: `|': Bitwise OR Operator
+* Section 3.5.2:: `^': Bitwise XOR Operator
+* Section 3.5.3:: `&': Bitwise AND Operator
+* Section 3.5.4:: `<<' and `>>': Bit Shift Operators
+* Section 3.5.5:: `+' and `-': Addition and Subtraction Operators
+* Section 3.5.6:: `*', `/', `//', `%' and `%%': Multiplication and Division
+* Section 3.5.7:: Unary Operators: `+', `-', `~' and `SEG'
+
+
+File: nasm.info,  Node: Section 3.5.1,  Next: Section 3.5.2,  Prev: Section 3.5,  Up: Section 3.5
+
+3.5.1. `|': Bitwise OR Operator
+-------------------------------
+
+   The `|' operator gives a bitwise OR, exactly as performed by the
+`OR' machine instruction. Bitwise OR is the lowest-priority arithmetic
+operator supported by NASM.
+
+
+File: nasm.info,  Node: Section 3.5.2,  Next: Section 3.5.3,  Prev: Section 3.5.1,  Up: Section 3.5
+
+3.5.2. `^': Bitwise XOR Operator
+--------------------------------
+
+   `^' provides the bitwise XOR operation.
+
+
+File: nasm.info,  Node: Section 3.5.3,  Next: Section 3.5.4,  Prev: Section 3.5.2,  Up: Section 3.5
+
+3.5.3. `&': Bitwise AND Operator
+--------------------------------
+
+   `&' provides the bitwise AND operation.
+
+
+File: nasm.info,  Node: Section 3.5.4,  Next: Section 3.5.5,  Prev: Section 3.5.3,  Up: Section 3.5
+
+3.5.4. `<<' and `>>': Bit Shift Operators
+-----------------------------------------
+
+   `<<' gives a bit-shift to the left, just as it does in C. So `5<<3'
+evaluates to 5 times 8, or 40. `>>' gives a bit-shift to the right; in
+NASM, such a shift is _always_ unsigned, so that the bits shifted in
+from the left-hand end are filled with zero rather than a
+sign-extension of the previous highest bit.
+
+
+File: nasm.info,  Node: Section 3.5.5,  Next: Section 3.5.6,  Prev: Section 3.5.4,  Up: Section 3.5
+
+3.5.5. `+' and `-': Addition and Subtraction Operators
+------------------------------------------------------
+
+   The `+' and `-' operators do perfectly ordinary addition and
+subtraction.
+
+
+File: nasm.info,  Node: Section 3.5.6,  Next: Section 3.5.7,  Prev: Section 3.5.5,  Up: Section 3.5
+
+3.5.6. `*', `/', `//', `%' and `%%': Multiplication and Division
+----------------------------------------------------------------
+
+   `*' is the multiplication operator. `/' and `//' are both division
+operators: `/' is unsigned division and `//' is signed division.
+Similarly, `%' and `%%' provide unsigned and signed modulo operators
+respectively.
+
+   NASM, like ANSI C, provides no guarantees about the sensible
+operation of the signed modulo operator.
+
+   Since the `%' character is used extensively by the macro
+preprocessor, you should ensure that both the signed and unsigned
+modulo operators are followed by white space wherever they appear.
+
+
+File: nasm.info,  Node: Section 3.5.7,  Next: Section 3.6,  Prev: Section 3.5.6,  Up: Section 3.5
+
+3.5.7. Unary Operators: `+', `-', `~' and `SEG'
+-----------------------------------------------
+
+   The highest-priority operators in NASM's expression grammar are
+those which only apply to one argument. `-' negates its operand, `+'
+does nothing (it's provided for symmetry with `-'), `~' computes the
+one's complement of its operand, and `SEG' provides the segment address
+of its operand (explained in more detail in *Note Section 3.6::).
+
+
+File: nasm.info,  Node: Section 3.6,  Next: Section 3.7,  Prev: Section 3.5.7,  Up: Chapter 3
+
+3.6. `SEG' and `WRT'
+====================
+
+   When writing large 16-bit programs, which must be split into multiple
+segments, it is often necessary to be able to refer to the segment part
+of the address of a symbol. NASM supports the `SEG' operator to perform
+this function.
+
+   The `SEG' operator returns the _preferred_ segment base of a symbol,
+defined as the segment base relative to which the offset of the symbol
+makes sense. So the code
+
+             mov     ax,seg symbol
+             mov     es,ax
+             mov     bx,symbol
+
+   will load `ES:BX' with a valid pointer to the symbol `symbol'.
+
+   Things can be more complex than this: since 16-bit segments and
+groups may overlap, you might occasionally want to refer to some symbol
+using a different segment base from the preferred one. NASM lets you do
+this, by the use of the `WRT' (With Reference To) keyword. So you can
+do things like
+
+             mov     ax,weird_seg        ; weird_seg is a segment base
+             mov     es,ax
+             mov     bx,symbol wrt weird_seg
+
+   to load `ES:BX' with a different, but functionally equivalent,
+pointer to the symbol `symbol'.
+
+   NASM supports far (inter-segment) calls and jumps by means of the
+syntax `call segment:offset', where `segment' and `offset' both
+represent immediate values. So to call a far procedure, you could code
+either of
+
+             call    (seg procedure):procedure
+             call    weird_seg:(procedure wrt weird_seg)
+
+   (The parentheses are included for clarity, to show the intended
+parsing of the above instructions. They are not necessary in practice.)
+
+   NASM supports the syntax `call far procedure' as a synonym for the
+first of the above usages. `JMP' works identically to `CALL' in these
+examples.
+
+   To declare a far pointer to a data item in a data segment, you must
+code
+
+             dw      symbol, seg symbol
+
+   NASM supports no convenient synonym for this, though you can always
+invent one using the macro processor.
+
+
+File: nasm.info,  Node: Section 3.7,  Next: Section 3.8,  Prev: Section 3.6,  Up: Chapter 3
+
+3.7. `STRICT': Inhibiting Optimization
+======================================
+
+   When assembling with the optimizer set to level 2 or higher (see
+*Note Section 2.1.16::), NASM will use size specifiers (`BYTE', `WORD',
+`DWORD', `QWORD', or `TWORD'), but will give them the smallest possible
+size. The keyword `STRICT' can be used to inhibit optimization and
+force a particular operand to be emitted in the specified size. For
+example, with the optimizer on, and in `BITS 16' mode,
+
+             push dword 33
+
+   is encoded in three bytes `66 6A 21', whereas
+
+             push strict dword 33
+
+   is encoded in six bytes, with a full dword immediate operand `66 68
+21 00 00 00'.
+
+   With the optimizer off, the same code (six bytes) is generated
+whether the `STRICT' keyword was used or not.
+
+
+File: nasm.info,  Node: Section 3.8,  Next: Section 3.9,  Prev: Section 3.7,  Up: Chapter 3
+
+3.8. Critical Expressions
+=========================
+
+   A limitation of NASM is that it is a two-pass assembler; unlike TASM
+and others, it will always do exactly two assembly passes. Therefore it
+is unable to cope with source files that are complex enough to require
+three or more passes.
+
+   The first pass is used to determine the size of all the assembled
+code and data, so that the second pass, when generating all the code,
+knows all the symbol addresses the code refers to. So one thing NASM
+can't handle is code whose size depends on the value of a symbol
+declared after the code in question. For example,
+
+             times (label-$) db 0
+     label:  db      'Where am I?'
+
+   The argument to `TIMES' in this case could equally legally evaluate
+to anything at all; NASM will reject this example because it cannot
+tell the size of the `TIMES' line when it first sees it. It will just
+as firmly reject the slightly paradoxical code
+
+             times (label-$+1) db 0
+     label:  db      'NOW where am I?'
+
+   in which _any_ value for the `TIMES' argument is by definition wrong!
+
+   NASM rejects these examples by means of a concept called a _critical
+expression_, which is defined to be an expression whose value is
+required to be computable in the first pass, and which must therefore
+depend only on symbols defined before it. The argument to the `TIMES'
+prefix is a critical expression; for the same reason, the arguments to
+the `RESB' family of pseudo-instructions are also critical expressions.
+
+   Critical expressions can crop up in other contexts as well: consider
+the following code.
+
+                     mov     ax,symbol1
+     symbol1         equ     symbol2
+     symbol2:
+
+   On the first pass, NASM cannot determine the value of `symbol1',
+because `symbol1' is defined to be equal to `symbol2' which NASM hasn't
+seen yet. On the second pass, therefore, when it encounters the line
+`mov ax,symbol1', it is unable to generate the code for it because it
+still doesn't know the value of `symbol1'. On the next line, it would
+see the `EQU' again and be able to determine the value of `symbol1',
+but by then it would be too late.
+
+   NASM avoids this problem by defining the right-hand side of an `EQU'
+statement to be a critical expression, so the definition of `symbol1'
+would be rejected in the first pass.
+
+   There is a related issue involving forward references: consider this
+code fragment.
+
+             mov     eax,[ebx+offset]
+     offset  equ     10
+
+   NASM, on pass one, must calculate the size of the instruction `mov
+eax,[ebx+offset]' without knowing the value of `offset'. It has no way
+of knowing that `offset' is small enough to fit into a one- byte offset
+field and that it could therefore get away with generating a shorter
+form of the effective-address encoding; for all it knows, in pass one,
+`offset' could be a symbol in the code segment, and it might need the
+full four-byte form. So it is forced to compute the size of the
+instruction to accommodate a four-byte address part. In pass two, having
+made this decision, it is now forced to honour it and keep the
+instruction large, so the code generated in this case is not as small
+as it could have been. This problem can be solved by defining `offset'
+before using it, or by forcing byte size in the effective address by
+coding `[byte ebx+offset]'.
+
+   Note that use of the `-On' switch (with n>=2) makes some of the above
+no longer true (see *Note Section 2.1.16::).
+
+
+File: nasm.info,  Node: Section 3.9,  Next: Chapter 4,  Prev: Section 3.8,  Up: Chapter 3
+
+3.9. Local Labels
+=================
+
+   NASM gives special treatment to symbols beginning with a period. A
+label beginning with a single period is treated as a _local_ label,
+which means that it is associated with the previous non-local label.
+So, for example:
+
+     label1  ; some code
+     
+     .loop
+             ; some more code
+     
+             jne     .loop
+             ret
+     
+     label2  ; some code
+     
+     .loop
+             ; some more code
+     
+             jne     .loop
+             ret
+
+   In the above code fragment, each `JNE' instruction jumps to the line
+immediately before it, because the two definitions of `.loop' are kept
+separate by virtue of each being associated with the previous non-local
+label.
+
+   This form of local label handling is borrowed from the old Amiga
+assembler DevPac; however, NASM goes one step further, in allowing
+access to local labels from other parts of the code. This is achieved
+by means of _defining_ a local label in terms of the previous non-local
+label: the first definition of `.loop' above is really defining a
+symbol called `label1.loop', and the second defines a symbol called
+`label2.loop'. So, if you really needed to, you could write
+
+     label3  ; some more code
+             ; and some more
+     
+             jmp label1.loop
+
+   Sometimes it is useful - in a macro, for instance - to be able to
+define a label which can be referenced from anywhere but which doesn't
+interfere with the normal local-label mechanism. Such a label can't be
+non-local because it would interfere with subsequent definitions of,
+and references to, local labels; and it can't be local because the
+macro that defined it wouldn't know the label's full name. NASM
+therefore introduces a third type of label, which is probably only
+useful in macro definitions: if a label begins with the special prefix
+`..@', then it does nothing to the local label mechanism. So you could
+code
+
+     label1:                         ; a non-local label
+     .local:                         ; this is really label1.local
+     ..@foo:                         ; this is a special symbol
+     label2:                         ; another non-local label
+     .local:                         ; this is really label2.local
+     
+             jmp     ..@foo          ; this will jump three lines up
+
+   NASM has the capacity to define other special symbols beginning with
+a double period: for example, `..start' is used to specify the entry
+point in the `obj' output format (see *Note Section 6.2.6::).
+
+
+File: nasm.info,  Node: Chapter 4,  Next: Section 4.1,  Prev: Section 3.9,  Up: Top
+
+Chapter 4: The NASM Preprocessor
+********************************
+
+   NASM contains a powerful macro processor, which supports conditional
+assembly, multi-level file inclusion, two forms of macro (single-line
+and multi-line), and a `context stack' mechanism for extra macro power.
+Preprocessor directives all begin with a `%' sign.
+
+   The preprocessor collapses all lines which end with a backslash (\)
+character into a single line. Thus:
+
+     %define THIS_VERY_LONG_MACRO_NAME_IS_DEFINED_TO \
+             THIS_VALUE
+
+   will work like a single-line macro without the backslash-newline
+sequence.
+
+* Menu:
+
+* Section 4.1:: Single-Line Macros
+* Section 4.2:: String Handling in Macros: `%strlen' and `%substr'
+* Section 4.3:: Multi-Line Macros: `%macro'
+* Section 4.4:: Conditional Assembly
+* Section 4.5:: Preprocessor Loops: `%rep'
+* Section 4.6:: Including Other Files
+* Section 4.7:: The Context Stack
+* Section 4.8:: Standard Macros
+* Section 4.9:: TASM Compatible Preprocessor Directives
+* Section 4.10:: Other Preprocessor Directives
+
+
+File: nasm.info,  Node: Section 4.1,  Next: Section 4.1.1,  Prev: Chapter 4,  Up: Chapter 4
+
+4.1. Single-Line Macros
+=======================
+
+* Menu:
+
+* Section 4.1.1:: The Normal Way: `%define'
+* Section 4.1.2:: Enhancing %define: `%xdefine'
+* Section 4.1.3:: Concatenating Single Line Macro Tokens: `%+'
+* Section 4.1.4:: Undefining macros: `%undef'
+* Section 4.1.5:: Preprocessor Variables: `%assign'
+
+
+File: nasm.info,  Node: Section 4.1.1,  Next: Section 4.1.2,  Prev: Section 4.1,  Up: Section 4.1
+
+4.1.1. The Normal Way: `%define'
+--------------------------------
+
+   Single-line macros are defined using the `%define' preprocessor
+directive. The definitions work in a similar way to C; so you can do
+things like
+
+     %define ctrl    0x1F &
+     %define param(a,b) ((a)+(a)*(b))
+     
+             mov     byte [param(2,ebx)], ctrl 'D'
+
+   which will expand to
+
+             mov     byte [(2)+(2)*(ebx)], 0x1F & 'D'
+
+   When the expansion of a single-line macro contains tokens which
+invoke another macro, the expansion is performed at invocation time,
+not at definition time. Thus the code
+
+     %define a(x)    1+b(x)
+     %define b(x)    2*x
+     
+             mov     ax,a(8)
+
+   will evaluate in the expected way to `mov ax,1+2*8', even though the
+macro `b' wasn't defined at the time of definition of `a'.
+
+   Macros defined with `%define' are case sensitive: after `%define foo
+bar', only `foo' will expand to `bar': `Foo' or `FOO' will not. By
+using `%idefine' instead of `%define' (the `i' stands for
+`insensitive') you can define all the case variants of a macro at once,
+so that `%idefine foo bar' would cause `foo', `Foo', `FOO', `fOO' and
+so on all to expand to `bar'.
+
+   There is a mechanism which detects when a macro call has occurred as
+a result of a previous expansion of the same macro, to guard against
+circular references and infinite loops. If this happens, the
+preprocessor will only expand the first occurrence of the macro. Hence,
+if you code
+
+     %define a(x)    1+a(x)
+     
+             mov     ax,a(3)
+
+   the macro `a(3)' will expand once, becoming `1+a(3)', and will then
+expand no further. This behaviour can be useful: see *Note Section 8.1::
+for an example of its use.
+
+   You can overload single-line macros: if you write
+
+     %define foo(x)   1+x
+     %define foo(x,y) 1+x*y
+
+   the preprocessor will be able to handle both types of macro call, by
+counting the parameters you pass; so `foo(3)' will become `1+3' whereas
+`foo(ebx,2)' will become `1+ebx*2'. However, if you define
+
+     %define foo bar
+
+   then no other definition of `foo' will be accepted: a macro with no
+parameters prohibits the definition of the same name as a macro _with_
+parameters, and vice versa.
+
+   This doesn't prevent single-line macros being _redefined_: you can
+perfectly well define a macro with
+
+     %define foo bar
+
+   and then re-define it later in the same source file with
+
+     %define foo baz
+
+   Then everywhere the macro `foo' is invoked, it will be expanded
+according to the most recent definition. This is particularly useful
+when defining single-line macros with `%assign' (see *Note Section
+4.1.5::).
+
+   You can pre-define single-line macros using the `-d' option on the
+NASM command line: see *Note Section 2.1.12::.
+
+
+File: nasm.info,  Node: Section 4.1.2,  Next: Section 4.1.3,  Prev: Section 4.1.1,  Up: Section 4.1
+
+4.1.2. Enhancing %define: `%xdefine'
+------------------------------------
+
+   To have a reference to an embedded single-line macro resolved at the
+time that it is embedded, as opposed to when the calling macro is
+expanded, you need a different mechanism to the one offered by
+`%define'. The solution is to use `%xdefine', or it's case-insensitive
+counterpart `%xidefine'.
+
+   Suppose you have the following code:
+
+     %define  isTrue  1
+     %define  isFalse isTrue
+     %define  isTrue  0
+     
+     val1:    db      isFalse
+     
+     %define  isTrue  1
+     
+     val2:    db      isFalse
+
+   In this case, `val1' is equal to 0, and `val2' is equal to 1.  This
+is because, when a single-line macro is defined using `%define', it is
+expanded only when it is called. As `isFalse' expands to `isTrue', the
+expansion will be the current value of `isTrue'.  The first time it is
+called that is 0, and the second time it is 1.
+
+   If you wanted `isFalse' to expand to the value assigned to the
+embedded macro `isTrue' at the time that `isFalse' was defined, you
+need to change the above code to use `%xdefine'.
+
+     %xdefine isTrue  1
+     %xdefine isFalse isTrue
+     %xdefine isTrue  0
+     
+     val1:    db      isFalse
+     
+     %xdefine isTrue  1
+     
+     val2:    db      isFalse
+
+   Now, each time that `isFalse' is called, it expands to 1, as that is
+what the embedded macro `isTrue' expanded to at the time that `isFalse'
+was defined.
+
+
+File: nasm.info,  Node: Section 4.1.3,  Next: Section 4.1.4,  Prev: Section 4.1.2,  Up: Section 4.1
+
+4.1.3. Concatenating Single Line Macro Tokens: `%+'
+---------------------------------------------------
+
+   Individual tokens in single line macros can be concatenated, to
+produce longer tokens for later processing. This can be useful if there
+are several similar macros that perform similar functions.
+
+   As an example, consider the following:
+
+     %define BDASTART 400h                ; Start of BIOS data area
+
+     struc   tBIOSDA                      ; its structure
+             .COM1addr       RESW    1
+             .COM2addr       RESW    1
+             ; ..and so on
+     endstruc
+
+   Now, if we need to access the elements of tBIOSDA in different
+places, we can end up with:
+
+             mov     ax,BDASTART + tBIOSDA.COM1addr
+             mov     bx,BDASTART + tBIOSDA.COM2addr
+
+   This will become pretty ugly (and tedious) if used in many places,
+and can be reduced in size significantly by using the following macro:
+
+     ; Macro to access BIOS variables by their names (from tBDA):
+
+     %define BDA(x)  BDASTART + tBIOSDA. %+ x
+
+   Now the above code can be written as:
+
+             mov     ax,BDA(COM1addr)
+             mov     bx,BDA(COM2addr)
+
+   Using this feature, we can simplify references to a lot of macros
+(and, in turn, reduce typing errors).
+
+
+File: nasm.info,  Node: Section 4.1.4,  Next: Section 4.1.5,  Prev: Section 4.1.3,  Up: Section 4.1
+
+4.1.4. Undefining macros: `%undef'
+----------------------------------
+
+   Single-line macros can be removed with the `%undef' command. For
+example, the following sequence:
+
+     %define foo bar
+     %undef  foo
+     
+             mov     eax, foo
+
+   will expand to the instruction `mov eax, foo', since after `%undef'
+the macro `foo' is no longer defined.
+
+   Macros that would otherwise be pre-defined can be undefined on the
+command- line using the `-u' option on the NASM command line: see *Note
+Section 2.1.13::.
+
+
+File: nasm.info,  Node: Section 4.1.5,  Next: Section 4.2,  Prev: Section 4.1.4,  Up: Section 4.1
+
+4.1.5. Preprocessor Variables: `%assign'
+----------------------------------------
+
+   An alternative way to define single-line macros is by means of the
+`%assign' command (and its case-insensitive counterpart `%iassign',
+which differs from `%assign' in exactly the same way that `%idefine'
+differs from `%define').
+
+   `%assign' is used to define single-line macros which take no
+parameters and have a numeric value. This value can be specified in the
+form of an expression, and it will be evaluated once, when the
+`%assign' directive is processed.
+
+   Like `%define', macros defined using `%assign' can be re-defined
+later, so you can do things like
+
+     %assign i i+1
+
+   to increment the numeric value of a macro.
+
+   `%assign' is useful for controlling the termination of `%rep'
+preprocessor loops: see *Note Section 4.5:: for an example of this.
+Another use for `%assign' is given in *Note Section 7.4:: and *Note
+Section 8.1::.
+
+   The expression passed to `%assign' is a critical expression (see
+*Note Section 3.8::), and must also evaluate to a pure number (rather
+than a relocatable reference such as a code or data address, or
+anything involving a register).
+
+
+File: nasm.info,  Node: Section 4.2,  Next: Section 4.2.1,  Prev: Section 4.1.5,  Up: Chapter 4
+
+4.2. String Handling in Macros: `%strlen' and `%substr'
+=======================================================
+
+   It's often useful to be able to handle strings in macros. NASM
+supports two simple string handling macro operators from which more
+complex operations can be constructed.
+
+* Menu:
+
+* Section 4.2.1:: String Length: `%strlen'
+* Section 4.2.2:: Sub-strings: `%substr'
+
+
+File: nasm.info,  Node: Section 4.2.1,  Next: Section 4.2.2,  Prev: Section 4.2,  Up: Section 4.2
+
+4.2.1. String Length: `%strlen'
+-------------------------------
+
+   The `%strlen' macro is like `%assign' macro in that it creates (or
+redefines) a numeric value to a macro. The difference is that with
+`%strlen', the numeric value is the length of a string. An example of
+the use of this would be:
+
+     %strlen charcnt 'my string'
+
+   In this example, `charcnt' would receive the value 8, just as if an
+`%assign' had been used. In this example, `'my string'' was a literal
+string but it could also have been a single-line macro that expands to
+a string, as in the following example:
+
+     %define sometext 'my string'
+     %strlen charcnt sometext
+
+   As in the first case, this would result in `charcnt' being assigned
+the value of 8.
+
+
+File: nasm.info,  Node: Section 4.2.2,  Next: Section 4.3,  Prev: Section 4.2.1,  Up: Section 4.2
+
+4.2.2. Sub-strings: `%substr'
+-----------------------------
+
+   Individual letters in strings can be extracted using `%substr'. An
+example of its use is probably more useful than the description:
+
+     %substr mychar  'xyz' 1         ; equivalent to %define mychar 'x'
+     %substr mychar  'xyz' 2         ; equivalent to %define mychar 'y'
+     %substr mychar  'xyz' 3         ; equivalent to %define mychar 'z'
+
+   In this example, mychar gets the value of 'y'. As with `%strlen' (see
+*Note Section 4.2.1::), the first parameter is the single-line macro to
+be created and the second is the string. The third parameter specifies
+which character is to be selected. Note that the first index is 1, not
+0 and the last index is equal to the value that `%strlen' would assign
+given the same string. Index values out of range result in an empty
+string.
+
+
+File: nasm.info,  Node: Section 4.3,  Next: Section 4.3.1,  Prev: Section 4.2.2,  Up: Chapter 4
+
+4.3. Multi-Line Macros: `%macro'
+================================
+
+   Multi-line macros are much more like the type of macro seen in MASM
+and TASM: a multi-line macro definition in NASM looks something like
+this.
+
+     %macro  prologue 1
+     
+             push    ebp
+             mov     ebp,esp
+             sub     esp,%1
+     
+     %endmacro
+
+   This defines a C-like function prologue as a macro: so you would
+invoke the macro with a call such as
+
+     myfunc:   prologue 12
+
+   which would expand to the three lines of code
+
+     myfunc: push    ebp
+             mov     ebp,esp
+             sub     esp,12
+
+   The number `1' after the macro name in the `%macro' line defines the
+number of parameters the macro `prologue' expects to receive. The use
+of `%1' inside the macro definition refers to the first parameter to
+the macro call. With a macro taking more than one parameter, subsequent
+parameters would be referred to as `%2', `%3' and so on.
+
+   Multi-line macros, like single-line macros, are case-sensitive,
+unless you define them using the alternative directive `%imacro'.
+
+   If you need to pass a comma as _part_ of a parameter to a multi-line
+macro, you can do that by enclosing the entire parameter in braces. So
+you could code things like
+
+     %macro  silly 2
+     
+         %2: db      %1
+     
+     %endmacro
+     
+             silly 'a', letter_a             ; letter_a:  db 'a'
+             silly 'ab', string_ab           ; string_ab: db 'ab'
+             silly {13,10}, crlf             ; crlf:      db 13,10
+
+* Menu:
+
+* Section 4.3.1:: Overloading Multi-Line Macros
+* Section 4.3.2:: Macro-Local Labels
+* Section 4.3.3:: Greedy Macro Parameters
+* Section 4.3.4:: Default Macro Parameters
+* Section 4.3.5:: `%0': Macro Parameter Counter
+* Section 4.3.6:: `%rotate': Rotating Macro Parameters
+* Section 4.3.7:: Concatenating Macro Parameters
+* Section 4.3.8:: Condition Codes as Macro Parameters
+* Section 4.3.9:: Disabling Listing Expansion
+
+
+File: nasm.info,  Node: Section 4.3.1,  Next: Section 4.3.2,  Prev: Section 4.3,  Up: Section 4.3
+
+4.3.1. Overloading Multi-Line Macros
+------------------------------------
+
+   As with single-line macros, multi-line macros can be overloaded by
+defining the same macro name several times with different numbers of
+parameters.  This time, no exception is made for macros with no
+parameters at all. So you could define
+
+     %macro  prologue 0
+     
+             push    ebp
+             mov     ebp,esp
+     
+     %endmacro
+
+   to define an alternative form of the function prologue which
+allocates no local stack space.
+
+   Sometimes, however, you might want to `overload' a machine
+instruction; for example, you might want to define
+
+     %macro  push 2
+     
+             push    %1
+             push    %2
+     
+     %endmacro
+
+   so that you could code
+
+             push    ebx             ; this line is not a macro call
+             push    eax,ecx         ; but this one is
+
+   Ordinarily, NASM will give a warning for the first of the above two
+lines, since `push' is now defined to be a macro, and is being invoked
+with a number of parameters for which no definition has been given. The
+correct code will still be generated, but the assembler will give a
+warning. This warning can be disabled by the use of the
+`-w-macro-params' command- line option (see *Note Section 2.1.18::).
+
+
+File: nasm.info,  Node: Section 4.3.2,  Next: Section 4.3.3,  Prev: Section 4.3.1,  Up: Section 4.3
+
+4.3.2. Macro-Local Labels
+-------------------------
+
+   NASM allows you to define labels within a multi-line macro
+definition in such a way as to make them local to the macro call: so
+calling the same macro multiple times will use a different label each
+time. You do this by prefixing `%%' to the label name. So you can
+invent an instruction which executes a `RET' if the `Z' flag is set by
+doing this:
+
+     %macro  retz 0
+     
+             jnz     %%skip
+             ret
+         %%skip:
+     
+     %endmacro
+
+   You can call this macro as many times as you want, and every time
+you call it NASM will make up a different `real' name to substitute for
+the label `%%skip'. The names NASM invents are of the form
+`..@2345.skip', where the number 2345 changes with every macro call.
+The `..@' prefix prevents macro-local labels from interfering with the
+local label mechanism, as described in *Note Section 3.9::. You should
+avoid defining your own labels in this form (the `..@' prefix, then a
+number, then another period) in case they interfere with macro-local
+labels.
+
+
+File: nasm.info,  Node: Section 4.3.3,  Next: Section 4.3.4,  Prev: Section 4.3.2,  Up: Section 4.3
+
+4.3.3. Greedy Macro Parameters
+------------------------------
+
+   Occasionally it is useful to define a macro which lumps its entire
+command line into one parameter definition, possibly after extracting
+one or two smaller parameters from the front. An example might be a
+macro to write a text string to a file in MS-DOS, where you might want
+to be able to write
+
+             writefile [filehandle],"hello, world",13,10
+
+   NASM allows you to define the last parameter of a macro to be
+_greedy_, meaning that if you invoke the macro with more parameters
+than it expects, all the spare parameters get lumped into the last
+defined one along with the separating commas. So if you code:
+
+     %macro  writefile 2+
+     
+             jmp     %%endstr
+       %%str:        db      %2
+       %%endstr:
+             mov     dx,%%str
+             mov     cx,%%endstr-%%str
+             mov     bx,%1
+             mov     ah,0x40
+             int     0x21
+     
+     %endmacro
+
+   then the example call to `writefile' above will work as expected: the
+text before the first comma, `[filehandle]', is used as the first macro
+parameter and expanded when `%1' is referred to, and all the subsequent
+text is lumped into `%2' and placed after the `db'.
+
+   The greedy nature of the macro is indicated to NASM by the use of the
+`+' sign after the parameter count on the `%macro' line.
+
+   If you define a greedy macro, you are effectively telling NASM how it
+should expand the macro given _any_ number of parameters from the
+actual number specified up to infinity; in this case, for example, NASM
+now knows what to do when it sees a call to `writefile' with 2, 3, 4 or
+more parameters. NASM will take this into account when overloading
+macros, and will not allow you to define another form of `writefile'
+taking 4 parameters (for example).
+
+   Of course, the above macro could have been implemented as a
+non-greedy macro, in which case the call to it would have had to look
+like
+
+               writefile [filehandle], {"hello, world",13,10}
+
+   NASM provides both mechanisms for putting commas in macro
+parameters, and you choose which one you prefer for each macro
+definition.
+
+   See *Note Section 5.2.1:: for a better way to write the above macro.
+
+
+File: nasm.info,  Node: Section 4.3.4,  Next: Section 4.3.5,  Prev: Section 4.3.3,  Up: Section 4.3
+
+4.3.4. Default Macro Parameters
+-------------------------------
+
+   NASM also allows you to define a multi-line macro with a _range_ of
+allowable parameter counts. If you do this, you can specify defaults for
+omitted parameters. So, for example:
+
+     %macro  die 0-1 "Painful program death has occurred."
+     
+             writefile 2,%1
+             mov     ax,0x4c01
+             int     0x21
+     
+     %endmacro
+
+   This macro (which makes use of the `writefile' macro defined in
+*Note Section 4.3.3::) can be called with an explicit error message,
+which it will display on the error output stream before exiting, or it
+can be called with no parameters, in which case it will use the default
+error message supplied in the macro definition.
+
+   In general, you supply a minimum and maximum number of parameters
+for a macro of this type; the minimum number of parameters are then
+required in the macro call, and then you provide defaults for the
+optional ones. So if a macro definition began with the line
+
+     %macro foobar 1-3 eax,[ebx+2]
+
+   then it could be called with between one and three parameters, and
+`%1' would always be taken from the macro call. `%2', if not specified
+by the macro call, would default to `eax', and `%3' if not specified
+would default to `[ebx+2]'.
+
+   You may omit parameter defaults from the macro definition, in which
+case the parameter default is taken to be blank. This can be useful for
+macros which can take a variable number of parameters, since the `%0'
+token (see *Note Section 4.3.5::) allows you to determine how many
+parameters were really passed to the macro call.
+
+   This defaulting mechanism can be combined with the greedy-parameter
+mechanism; so the `die' macro above could be made more powerful, and
+more useful, by changing the first line of the definition to
+
+     %macro die 0-1+ "Painful program death has occurred.",13,10
+
+   The maximum parameter count can be infinite, denoted by `*'. In this
+case, of course, it is impossible to provide a _full_ set of default
+parameters. Examples of this usage are shown in *Note Section 4.3.6::.
+
+
+File: nasm.info,  Node: Section 4.3.5,  Next: Section 4.3.6,  Prev: Section 4.3.4,  Up: Section 4.3
+
+4.3.5. `%0': Macro Parameter Counter
+------------------------------------
+
+   For a macro which can take a variable number of parameters, the
+parameter reference `%0' will return a numeric constant giving the
+number of parameters passed to the macro. This can be used as an
+argument to `%rep' (see *Note Section 4.5::) in order to iterate
+through all the parameters of a macro. Examples are given in *Note
+Section 4.3.6::.
+
+
+File: nasm.info,  Node: Section 4.3.6,  Next: Section 4.3.7,  Prev: Section 4.3.5,  Up: Section 4.3
+
+4.3.6. `%rotate': Rotating Macro Parameters
+-------------------------------------------
+
+   Unix shell programmers will be familiar with the `shift' shell
+command, which allows the arguments passed to a shell script
+(referenced as `$1', `$2' and so on) to be moved left by one place, so
+that the argument previously referenced as `$2' becomes available as
+`$1', and the argument previously referenced as `$1' is no longer
+available at all.
+
+   NASM provides a similar mechanism, in the form of `%rotate'. As its
+name suggests, it differs from the Unix `shift' in that no parameters
+are lost: parameters rotated off the left end of the argument list
+reappear on the right, and vice versa.
+
+   `%rotate' is invoked with a single numeric argument (which may be an
+expression). The macro parameters are rotated to the left by that many
+places. If the argument to `%rotate' is negative, the macro parameters
+are rotated to the right.
+
+   So a pair of macros to save and restore a set of registers might
+work as follows:
+
+     %macro  multipush 1-*
+     
+       %rep  %0
+             push    %1
+       %rotate 1
+       %endrep
+     
+     %endmacro
+
+   This macro invokes the `PUSH' instruction on each of its arguments in
+turn, from left to right. It begins by pushing its first argument,
+`%1', then invokes `%rotate' to move all the arguments one place to the
+left, so that the original second argument is now available as `%1'.
+Repeating this procedure as many times as there were arguments
+(achieved by supplying `%0' as the argument to `%rep') causes each
+argument in turn to be pushed.
+
+   Note also the use of `*' as the maximum parameter count, indicating
+that there is no upper limit on the number of parameters you may supply
+to the `multipush' macro.
+
+   It would be convenient, when using this macro, to have a `POP'
+equivalent, which _didn't_ require the arguments to be given in reverse
+order. Ideally, you would write the `multipush' macro call, then
+cut-and-paste the line to where the pop needed to be done, and change
+the name of the called macro to `multipop', and the macro would take
+care of popping the registers in the opposite order from the one in
+which they were pushed.
+
+   This can be done by the following definition:
+
+     %macro  multipop 1-*
+     
+       %rep %0
+       %rotate -1
+             pop     %1
+       %endrep
+     
+     %endmacro
+
+   This macro begins by rotating its arguments one place to the _right_,
+so that the original _last_ argument appears as `%1'. This is then
+popped, and the arguments are rotated right again, so the second-to-
+last argument becomes `%1'. Thus the arguments are iterated through in
+reverse order.
+
+
+File: nasm.info,  Node: Section 4.3.7,  Next: Section 4.3.8,  Prev: Section 4.3.6,  Up: Section 4.3
+
+4.3.7. Concatenating Macro Parameters
+-------------------------------------
+
+   NASM can concatenate macro parameters on to other text surrounding
+them.  This allows you to declare a family of symbols, for example, in
+a macro definition. If, for example, you wanted to generate a table of
+key codes along with offsets into the table, you could code something
+like
+
+     %macro keytab_entry 2
+     
+         keypos%1    equ     $-keytab
+                     db      %2
+     
+     %endmacro
+     
+     keytab:
+               keytab_entry F1,128+1
+               keytab_entry F2,128+2
+               keytab_entry Return,13
+
+   which would expand to
+
+     keytab:
+     keyposF1        equ     $-keytab
+                     db     128+1
+     keyposF2        equ     $-keytab
+                     db      128+2
+     keyposReturn    equ     $-keytab
+                     db      13
+
+   You can just as easily concatenate text on to the other end of a
+macro parameter, by writing `%1foo'.
+
+   If you need to append a _digit_ to a macro parameter, for example
+defining labels `foo1' and `foo2' when passed the parameter `foo', you
+can't code `%11' because that would be taken as the eleventh macro
+parameter. Instead, you must code `%{1}1', which will separate the
+first `1' (giving the number of the macro parameter) from the second
+(literal text to be concatenated to the parameter).
+
+   This concatenation can also be applied to other preprocessor in-line
+objects, such as macro-local labels (*Note Section 4.3.2::) and
+context-local labels (*Note Section 4.7.2::). In all cases, ambiguities
+in syntax can be resolved by enclosing everything after the `%' sign
+and before the literal text in braces: so `%{%foo}bar' concatenates the
+text `bar' to the end of the real name of the macro-local label
+`%%foo'. (This is unnecessary, since the form NASM uses for the real
+names of macro-local labels means that the two usages `%{%foo}bar' and
+`%%foobar' would both expand to the same thing anyway; nevertheless,
+the capability is there.)
+

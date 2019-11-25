@@ -1,0 +1,35 @@
+Makefcfg 1.0  -- A Fractint video utility by The Stone Soup Group 
+
+Makefcfg reads your VESA Video BIOS and writes a Fractint 
+   fractint.cfg file with VESA video modes set up.
+
+Syntax: makefcfg [commands ...]
+   optional commands (space separated) include:
+      16        -- causes 16 color modes to be included
+      true      -- causes true color modes to be included
+      <fkey>    -- starting Fractint video mode key. <fkey> is 
+                   one of F1, F2, ..., AF1, AF2, ..., CF1, CF1 ...
+      overwrite -- program will overwrite fractcfg.old if it exists
+                   (note: fractint.cfg is always saved to fractcfg.old)
+
+You can abbreviate the overwrite and true commands with 'o' and 't'.
+The idea of allowing you to set the starting function key is to facilitate
+inserting the resulting fractint.cfg file inside your existing fractint.cfg.
+When using this command, don't type in '<' or '>'; these symbols just indicate
+that <fkey> is not literally what you type - you type in F1, F2, etc.
+
+This utility is particularly useful for setting up Fractint to use
+semi-standard VESA video modes such as 1600x1200. As of Fractint version 20
+the truecolor modes are still not very useful, so this capability looks to 
+the future.
+
+Example: 
+
+   makefcfg 16 AF1 overwrite
+
+will create an fractint.cfg file with 256 color modes, 16 color modes, 
+but no truecolor modes, with the function keys starting with AF1.
+
+Tim Wegner
+September, 1999
+

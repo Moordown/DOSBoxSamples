@@ -1,0 +1,44 @@
+; ; - comment
+; ! - file name, .! - file extension , ~ - pause, ' - not special
+
+;-------------------------- Archive's
+zip c:\nu\arcview.exe !.!
+lzh c:\nu\arcview.exe !.!
+ice c:\nu\arcview.exe !.!
+arc c:\nu\arcview.exe !.!
+zoo c:\nu\arcview.exe !.!
+hyp c:\nu\arcview.exe !.!
+arj c:\nu\arcview.exe !.!
+a0? c:\nu\arcview.exe !.!
+a1? c:\nu\arcview.exe !.!
+a2? c:\nu\arcview.exe !.!
+ar? c:\nu\arcview.exe !.!
+
+;pak c:\nu\lgaview.exe !.!
+;chz c:\nu\lgaview.exe !.!
+
+;-------------------------- Program's
+;exe e:\debug\hiew.exe !.!
+;com e:\debug\hiew.exe !.!
+
+;-------------------------- Norton viewer's
+dbf c:\nu\dbview.exe !.!
+rbf c:\nu\rbview.exe !.!
+rxd c:\nu\refview.exe !.!
+db  c:\nu\paraview.exe !.!
+txt c:\nu\wpview.exe !.!
+doc c:\nu\wpview.exe !.!
+;Lib c:\nu\Libview !.!
+
+;-------------------------- Other
+fnt c:\nu\fntview.exe !.!
+pcx c:\nu\pcxview !.!
+chi c:\nu\chiview.exe !.!
+fli c:\nu\aaplay.exe !.!
+
+;gif e:\util\cshow832\cshow !.!+
+;pic e:\util\cshow832\cshow !.!+
+;lbm c:\norton\viewer's\vpic /a !.!
+;bmp c:\norton\viewer's\vpic /a !.!
+;ico c:\nu\iconedit.exe !.!
+*    c:\nu\wpview.exe !.!

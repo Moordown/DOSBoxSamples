@@ -1,0 +1,346 @@
+*
+*  QCONFIG.DAT:  Default config file for QEdit 2.x.
+*
+*  Specify control-key commands via: ^f1 - This means Control-F1
+*  Specify alt-key commands via: @f1     - This means Alt-F1
+*  Specify shift-key commands via: #f1   - This means Shift-F1
+*
+*  There is also a provision for "two key commands".
+*  For example, to make the Control-F1, Control-F2 sequence issue the
+*  exit command, try the following:
+*
+*  ^f1_^f2     Exit
+*
+*  The key here is that the commands must be separated by a '_'.
+*
+*  Multiple commands and/or text may be entered for a single key.  To do so,
+*  specify "MacroBegin" as the first command.  To enter text, enclose the
+*  text in single or double quote marks.  For example:
+*
+*  f1  MacroBegin EditFile 'help.dat' Return
+*
+*  This command would load the file 'help.dat'.  Note the return command is
+*  issued after the text.  This is required to terminate the QEdit prompt.
+*
+*  Following is a macro that will run make and load the results into a window:
+*
+*  MacroBegin EditFile 'errors.lst' Return Quit Dos 'make >errors.lst' Return Return HorizontalWindow EditFile 'errors.lst' Return
+*
+*  Following macro will run Turbo C on the current file:
+*
+*  MacroBegin GSave Dos 'tcc -y -M ' CurrentFilename Return
+*
+*  Finally, you can also use the scancode to represent "special keys", as
+*  long as this key returns a ascii character code of 0.
+*  For example Alt-F9 returns an ascii character of 0 and a scan code of
+*  112 decimal.  To make Alt-F9 issue the EditFile command, you could:
+*
+*  112  EditFile
+*      or
+*  @f9  EditFile
+*
+*  Either will work.  This becomes especially useful if you have a macro
+*  processor and/or special keyboard that has extended keys that QEdit
+*  doesn't have names for.  This gives you a method to use them.
+*
+*  Note that the order of this file is NOT important.  Arrange it however
+*  makes sense to you.
+*
+*^f3     macro_begin write_block 'C:\NOTES\BB&C-LIB\LIB.NEW' unmark_block
+*Sort
+*
+*f11     macro_begin edit_file 'MSG' return mark_block_begin end_file mark_block_end prev_file copy_block unmark_block end_file return return close_window
+*f12     MacroBegin SaveFile Dos 'SS ' CurrentFilename Return Return "M" EditFile CurrentFilename Return NewFile "N" Return
+*@f3     macro_begin edit_file 'MSG' return pause mark_block_begin pause mark_block_end prev_file copy_block unmark_block end_file return return
+*@f3              CloseWindow
+*@f4
+*escape		  Escape
+*ScreenRight
+*ScreenLeft 
+*@p               MacroBegin MainMenu 'p'
+*@s               SplitLine
+*@w               WriteBlock
+
+
+
+*
+* function key set
+*
+
+f1               QuickHelp
+f2               savefile
+f3               editfile
+f4               DupLine
+f5               MakeTopOfScreen
+f6               DelToEol
+f7               UnKill
+f8               UndoCursorLine
+f9               ChangeFileName
+f10              MainMenu
+
+#f1              ToggleBoxDraw
+#f2              GotoBlockBeg
+#f3              GotoBlockEnd                               
+#f4              MarkColumn
+#f5              MakeCtrOfScreen
+#f6              DropAnchor
+#f7              MarkBlockBegin                       
+#f8              MarkBlockEnd                         
+#f9              MarkLine
+#f10             MarkWord
+
+
+* enhanced keyboard only
+*#f11
+*#f12
+
+^f1               InsertDate
+^f2               InsertTime
+^f3               HorizontalWindow
+^f4               Close_Window
+^f5               NextWindow
+^f6               PrevWindow
+^f7               ZoomWindow
+^f8               ShrinkWindow
+^f9               GrowWindow
+^f10              Dos
+
+
+* enhanced keyboard only
+*^f11
+*^f12
+
+@f1              ToggleBoxType
+@f2              DeleteBlock
+@f3              MoveBlock
+@f4              CopyBlock
+@f5              ShowEntryScreen
+@f6              Paste 
+@f7              Copy  
+@f8              Cut   
+@f9              PasteOver
+@f10             Shell
+
+* enhanced keyboard only
+*@f11
+*@f12
+
+*
+* special keys
+*
+
+cursorup         CursorUp
+cursordown       CursorDown
+cursorleft       CursorLeft
+cursorright      CursorRight
+^cursorleft      WordLeft
+^cursorright     WordRight
+home             BegLine
+end              EndLine
+^home            BegScreen
+^end             EndScreen
+pgup             PageUp
+pgdn             PageDown
+^pgdn            EndFile
+^pgup            BegFile
+
+#tab             TabLt
+tab              TabRt
+^tab             ShiftRight
+@tab             ShiftLeft 
+ins              ToggleInsert
+del              DelCh
+
+backspace        Backspace
+^backspace       DelLtWord
+
+enter            Return
+^enter           ExecuteScrap
+
+escape           GExit
+
+
+^grey*           Paste
+@grey*           PasteOver
+^grey*           Paste
+^grey+           Copy
+^grey-           Cut
+#del
+#ins
+
+*^prtsc           PasteOver
+^2
+^6
+^[
+^\
+*
+* Macro to edit the file whose name is sitting at the cursor in the editor
+*
+^]                 MacroBegin AltWordSet MarkWord Copy DefaultWordSet EditFile Paste Return
+^-                 GetPrev
+
+*
+* alternate keys
+*
+
+@a               DropAnchor
+@b               WrapPara
+@c               CopyBlock
+@d               DelLine
+@e               EditFile
+@f               MacroBegin MainMenu 'f'
+@g               DeleteBlock
+@h               QuickHelp
+@i               ToggleTabsOut
+@j               JoinLine
+@k               MarkColumn
+@l               MarkLine
+@m               MoveBlock
+@n               NextFile
+@o               ChangeFilename
+@p               PrevFile
+@q               MacroBegin MainMenu 'q'
+@r               ReadBlock
+@s               MacroBegin MainMenu 's'
+@t		 PQuit
+@u               UnmarkBlock
+@v               ToggleTabsExpand
+@w               WriteBlock
+@x               GExit
+@y               GSave
+@z               CopyOverBlock
+@1               Upper
+@2               Lower
+@3               Flip
+@4               ToggleEGA43
+@5
+@6
+@7
+@8
+@9                                  
+@0
+@-               Find
+@=               MacroBegin MarkWord Copy Find Paste Return Return
+
+*
+* control keys
+*
+
+
+^a               WordLeft
+^b_a		 AppendScrBuff
+^b_l		 GetScrBuff
+^b_s		 StoreScrBuff
+^c               MacroBegin GSave Dos 'tc ' CurrentFilename Return
+^d               MacroBegin GSave Dos 'make ' CurrentFilename Return
+^e               CursorUp
+^f               MacroBegin GSave Dos 'd:\elec\fox\foxpcomp -oD:\ELEC\DEMOS ' CurrentFilename Return
+^g               DelCh
+^h               Backspace
+^i               TabRt
+^j               GotoLine
+^k_b             MarkBlockBegin
+^k_c             CopyBlock
+^k_d             Exit
+^k_e             EditFile
+^k_f             ChangeFilename
+^k_h             UnmarkBlock
+^k_k             MarkBlockEnd
+^k_n             NextFile
+^k_p             PrevFile
+^k_q             PQuit
+^k_r             ReadBlock
+^k_s             SaveFile
+^k_t             MarkWord
+^k_v             MoveBlock
+^k_w             WriteBlock
+^k_x             File
+^k_y             DeleteBlock
+^k_z             KillFile
+^l               RepeatFind
+^m               MacroRecord
+^n               MacroBegin Dos 'c:\n\nc ' Return
+^o_c             CloseWindow
+^o_g             GrowWindow
+^o_h             HorizontalWindow
+^o_l             SetPrintLeftMargin
+^o_n             NextWindow
+^o_o             OneWindow
+^o_p             PrevWindow
+^o_r             SetRMargin
+^o_s             ShrinkWindow
+^o_w             ToggleWordWrap
+^o_z             ZoomWindow
+^p               Literal
+^q_a             FindReplace
+^q_b             GotoBlockBeg
+^q_c             EndFile
+^q_d             EndLine
+^q_e             BegScreen
+^q_f             Find
+^q_i             ToggleIndent
+^q_k             GotoBlockEnd
+^q_l             UndoCursorline
+^q_p             PrevPosition
+^q_r             BegFile
+^q_s             BegLine
+^q_t             ToggleSmartTabs
+^q_x             EndScreen
+^q_y             DelToEol
+^r               PageUp
+^s               CursorLeft
+^t               DelRtWord
+^u               UnKill
+^v               ToggleInsert
+^w               ScrollUp
+^x               CursorDown
+^y               DelLine
+^z               ScrollDown
+
+*
+* other enhanced only keys
+*
+@'
+*@,               FindReplace
+*@.               RepeatFind
+*@/               Find
+*@;
+@[
+@\
+@]
+@`              MacroBegin MarkWord Copy Find Paste Return Return
+@backspace
+@enter          
+@escape		PQuit
+*@grey*
+*@grey+
+*@grey-            
+*@grey/
+@greycursordown
+@greycursorleft
+@greycursorright
+@greycursorup
+@greydel
+@greyend
+@greyhome
+@greyins
+@greypgup       MarkBlockBegin
+@greypgdn       MarkBlockEnd
+@greyenter
+@tab
+
+greyenter        Return
+^greyenter       ExecuteScrap
+^centercursor
+^cursordown      LineDown
+^cursorup        LineUp
+^del
+
+*^grey*
+*^grey+
+*^grey-
+*^grey/
+^ins		Escape
+^tab
+
+centercursor    MarkColumn

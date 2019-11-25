@@ -1,0 +1,27 @@
+T: TSR
+  c:\dos\nu\si/tsr
+M: MEM
+  mem/p|more
+I: Ints
+  c:\dos\ints\intsum
+G: Goto
+{
+D: DOS
+  c:
+  cd\dos
+  cls
+N: NC
+  c:
+  cd\dos\nc
+  cls
+U: Users
+  d:
+  cd\users
+  cls
+}
+P: Pentix
+  c:
+  cd\dos\util
+  pentix
+F: Fractint
+  c:\dos\frac\fractint

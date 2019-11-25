@@ -1,0 +1,20 @@
+Warning: Blatant advertisement follows
+
+Ever wanted the full scoop on undocumented MSDOS calls?  Run to your
+favorite bookstore and ask for
+
+     Undocumented DOS:
+       A Programmer's Guide to Reserved MS-DOS Functions and Data Structures
+     Andrew Schulman, Raymond J. Michels, Jim Kyle, Tim Paterson, David
+       Maxey, and Ralf Brown
+
+     ~700 pages, 7-3/8" x 9-1/8"
+     Addison-Wesley
+     ISBN 0-201-57064-5
+     $39.95 (book and two 5.25" disks)
+     Available now
+
+Don't buy it for the Appendix derived from the Interrupt List, buy it for a
+full hypertext version of INTER490, a script-based interrupt monitoring
+utility, discussions of TSRs/multitasking/networks/installable file
+systems/debugging, lots of examples, etc.

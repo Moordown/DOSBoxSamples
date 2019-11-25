@@ -1,0 +1,1003 @@
+This is nasm.info, produced by makeinfo version 4.3 from nasmdoc.texi.
+
+INFO-DIR-SECTION Programming
+START-INFO-DIR-ENTRY
+* NASM: (nasm).                The Netwide Assembler for x86.
+END-INFO-DIR-ENTRY
+
+   This file documents NASM, the Netwide Assembler: an assembler
+targetting the Intel x86 series of processors, with portable source.
+
+   Copyright 2003 The NASM Development Team
+
+   All rights reserved. This document is redistributable under the
+licence given in the file "COPYING" distributed in the NASM archive.
+
+
+File: nasm.info,  Node: Section B.2.2,  Next: Section B.2.3,  Prev: Section B.2.1,  Up: Section B.2
+
+B.2.2. Condition Codes
+----------------------
+
+   The available condition codes are given here, along with their
+numeric representations as part of opcodes. Many of these condition
+codes have synonyms, so several will be listed at a time.
+
+   In the following descriptions, the word `either', when applied to two
+possible trigger conditions, is used to mean `either or both'. If
+`either but not both' is meant, the phrase `exactly one of' is used.
+
+   * `O' is 0 (trigger if the overflow flag is set); `NO' is 1.
+
+   * `B', `C' and `NAE' are 2 (trigger if the carry flag is set); `AE',
+     `NB' and `NC' are 3.
+
+   * `E' and `Z' are 4 (trigger if the zero flag is set); `NE' and `NZ'
+     are 5.
+
+   * `BE' and `NA' are 6 (trigger if either of the carry or zero flags
+     is set); `A' and `NBE' are 7.
+
+   * `S' is 8 (trigger if the sign flag is set); `NS' is 9.
+
+   * `P' and `PE' are 10 (trigger if the parity flag is set); `NP' and
+     `PO' are 11.
+
+   * `L' and `NGE' are 12 (trigger if exactly one of the sign and
+     overflow flags is set); `GE' and `NL' are 13.
+
+   * `LE' and `NG' are 14 (trigger if either the zero flag is set, or
+     exactly one of the sign and overflow flags is set); `G' and `NLE'
+     are 15.
+
+   Note that in all cases, the sense of a condition code may be
+reversed by changing the low bit of the numeric representation.
+
+   For details of when an instruction sets each of the status flags,
+see the individual instruction, plus the Status Flags reference in
+*Note Section B.2.4::
+
+
+File: nasm.info,  Node: Section B.2.3,  Next: Section B.2.4,  Prev: Section B.2.2,  Up: Section B.2
+
+B.2.3. SSE Condition Predicates
+-------------------------------
+
+   The condition predicates for SSE comparison instructions are the
+codes used as part of the opcode, to determine what form of comparison
+is being carried out. In each case, the imm8 value is the final byte of
+the opcode encoding, and the predicate is the code used as part of the
+mnemonic for the instruction (equivalent to the "cc" in an integer
+instruction that used a condition code). The instructions that use this
+will give details of what the various mnemonics are, this table is used
+to help you work out details of what is happening.
+
+     Predi-  imm8  Description Relation where:   Emula- Result   QNaN
+      cate  Encod-             A Is 1st Operand  tion   if NaN   Signal
+             ing               B Is 2nd Operand         Operand  Invalid
+     
+     EQ     000B   equal       A = B                    False     No
+     
+     LT     001B   less-than   A < B                    False     Yes
+     
+     LE     010B   less-than-  A <= B                   False     Yes
+                    or-equal
+     
+     ---    ----   greater     A > B             Swap   False     Yes
+                   than                          Operands,
+                                                 Use LT
+     
+     ---    ----   greater-    A >= B            Swap   False     Yes
+                   than-or-equal                 Operands,
+                                                 Use LE
+     
+     UNORD  011B   unordered   A, B = Unordered         True      No
+     
+     NEQ    100B   not-equal   A != B                   True      No
+     
+     NLT    101B   not-less-   NOT(A < B)               True      Yes
+                   than
+     
+     NLE    110B   not-less-   NOT(A <= B)              True      Yes
+                   than-or-
+                   equal
+     
+     ---    ----   not-greater NOT(A > B)        Swap   True      Yes
+                   than                          Operands,
+                                                 Use NLT
+     
+     ---    ----   not-greater NOT(A >= B)       Swap   True      Yes
+                   than-                         Operands,
+                   or-equal                      Use NLE
+     
+     ORD    111B   ordered      A , B = Ordered         False     No
+
+   The unordered relationship is true when at least one of the two
+values being compared is a NaN or in an unsupported format.
+
+   Note that the comparisons which are listed as not having a predicate
+or encoding can only be achieved through software emulation, as
+described in the "emulation" column. Note in particular that an
+instruction such as `greater-than' is not the same as `NLE', as, unlike
+with the `CMP' instruction, it has to take into account the possibility
+of one operand containing a NaN or an unsupported numeric format.
+
+
+File: nasm.info,  Node: Section B.2.4,  Next: Section B.2.5,  Prev: Section B.2.3,  Up: Section B.2
+
+B.2.4. Status Flags
+-------------------
+
+   The status flags provide some information about the result of the
+arithmetic instructions. This information can be used by conditional
+instructions (such a `Jcc' and `CMOVcc') as well as by some of the
+other instructions (such as `ADC' and `INTO').
+
+   There are 6 status flags:
+
+     CF - Carry flag.
+
+   Set if an arithmetic operation generates a carry or a borrow out of
+the most-significant bit of the result; cleared otherwise. This flag
+indicates an overflow condition for unsigned-integer arithmetic. It is
+also used in multiple-precision arithmetic.
+
+     PF - Parity flag.
+
+   Set if the least-significant byte of the result contains an even
+number of 1 bits; cleared otherwise.
+
+     AF - Adjust flag.
+
+   Set if an arithmetic operation generates a carry or a borrow out of
+bit 3 of the result; cleared otherwise. This flag is used in
+binary-coded decimal (BCD) arithmetic.
+
+     ZF - Zero flag.
+
+   Set if the result is zero; cleared otherwise.
+
+     SF - Sign flag.
+
+   Set equal to the most-significant bit of the result, which is the
+sign bit of a signed integer. (0 indicates a positive value and 1
+indicates a negative value.)
+
+     OF - Overflow flag.
+
+   Set if the integer result is too large a positive number or too
+small a negative number (excluding the sign-bit) to fit in the
+destination operand; cleared otherwise. This flag indicates an overflow
+condition for signed- integer (two's complement) arithmetic.
+
+
+File: nasm.info,  Node: Section B.2.5,  Next: Section B.3,  Prev: Section B.2.4,  Up: Section B.2
+
+B.2.5. Effective Address Encoding: ModR/M and SIB
+-------------------------------------------------
+
+   An effective address is encoded in up to three parts: a ModR/M byte,
+an optional SIB byte, and an optional byte, word or doubleword
+displacement field.
+
+   The ModR/M byte consists of three fields: the `mod' field, ranging
+from 0 to 3, in the upper two bits of the byte, the `r/m' field,
+ranging from 0 to 7, in the lower three bits, and the spare (register)
+field in the middle (bit 3 to bit 5). The spare field is not relevant to
+the effective address being encoded, and either contains an extension to
+the instruction opcode or the register value of another operand.
+
+   The ModR/M system can be used to encode a direct register reference
+rather than a memory access. This is always done by setting the `mod'
+field to 3 and the `r/m' field to the register value of the register in
+question (it must be a general-purpose register, and the size of the
+register must already be implicit in the encoding of the rest of the
+instruction). In this case, the SIB byte and displacement field are both
+absent.
+
+   In 16-bit addressing mode (either `BITS 16' with no `67' prefix, or
+`BITS 32' with a `67' prefix), the SIB byte is never used. The general
+rules for `mod' and `r/m' (there is an exception, given below) are:
+
+   * The `mod' field gives the length of the displacement field: 0
+     means no displacement, 1 means one byte, and 2 means two bytes.
+
+   * The `r/m' field encodes the combination of registers to be added to
+     the displacement to give the accessed address: 0 means `BX+SI', 1
+     means `BX+DI', 2 means `BP+SI', 3 means `BP+DI', 4 means `SI'
+     only, 5 means `DI' only, 6 means `BP' only, and 7 means `BX' only.
+
+   However, there is a special case:
+
+   * If `mod' is 0 and `r/m' is 6, the effective address encoded is not
+     `[BP]' as the above rules would suggest, but instead `[disp16]':
+     the displacement field is present and is two bytes long, and no
+     registers are added to the displacement.
+
+   Therefore the effective address `[BP]' cannot be encoded as
+efficiently as `[BX]'; so if you code `[BP]' in a program, NASM adds a
+notional 8-bit zero displacement, and sets `mod' to 1, `r/m' to 6, and
+the one-byte displacement field to 0.
+
+   In 32-bit addressing mode (either `BITS 16' with a `67' prefix, or
+`BITS 32' with no `67' prefix) the general rules (again, there are
+exceptions) for `mod' and `r/m' are:
+
+   * The `mod' field gives the length of the displacement field: 0
+     means no displacement, 1 means one byte, and 2 means four bytes.
+
+   * If only one register is to be added to the displacement, and it is
+     not `ESP', the `r/m' field gives its register value, and the SIB
+     byte is absent. If the `r/m' field is 4 (which would encode `ESP'),
+     the SIB byte is present and gives the combination and scaling of
+     registers to be added to the displacement.
+
+   If the SIB byte is present, it describes the combination of
+registers (an optional base register, and an optional index register
+scaled by multiplication by 1, 2, 4 or 8) to be added to the
+displacement. The SIB byte is divided into the `scale' field, in the
+top two bits, the `index' field in the next three, and the `base' field
+in the bottom three. The general rules are:
+
+   * The `base' field encodes the register value of the base register.
+
+   * The `index' field encodes the register value of the index register,
+     unless it is 4, in which case no index register is used (so `ESP'
+     cannot be used as an index register).
+
+   * The `scale' field encodes the multiplier by which the index
+     register is scaled before adding it to the base and displacement:
+     0 encodes a multiplier of 1, 1 encodes 2, 2 encodes 4 and 3
+     encodes 8.
+
+   The exceptions to the 32-bit encoding rules are:
+
+   * If `mod' is 0 and `r/m' is 5, the effective address encoded is not
+     `[EBP]' as the above rules would suggest, but instead `[disp32]':
+     the displacement field is present and is four bytes long, and no
+     registers are added to the displacement.
+
+   * If `mod' is 0, `r/m' is 4 (meaning the SIB byte is present) and
+     `base' is 4, the effective address encoded is not `[EBP+index]' as
+     the above rules would suggest, but instead `[disp32+index]': the
+     displacement field is present and is four bytes long, and there is
+     no base register (but the index register is still processed in the
+     normal way).
+
+
+File: nasm.info,  Node: Section B.3,  Next: Section B.4,  Prev: Section B.2.5,  Up: Appendix B
+
+B.3. Key to Instruction Flags
+=============================
+
+   Given along with each instruction in this appendix is a set of flags,
+denoting the type of the instruction. The types are as follows:
+
+   * `8086', `186', `286', `386', `486', `PENT' and `P6' denote the
+     lowest processor type that supports the instruction. Most
+     instructions run on all processors above the given type; those
+     that do not are documented. The Pentium II contains no additional
+     instructions beyond the P6 (Pentium Pro); from the point of view
+     of its instruction set, it can be thought of as a P6 with MMX
+     capability.
+
+   * `3DNOW' indicates that the instruction is a 3DNow! one, and will
+     run on the AMD K6-2 and later processors. ATHLON extensions to the
+     3DNow!  instruction set are documented as such.
+
+   * `CYRIX' indicates that the instruction is specific to Cyrix
+     processors, for example the extra MMX instructions in the Cyrix
+     extended MMX instruction set.
+
+   * `FPU' indicates that the instruction is a floating-point one, and
+     will only run on machines with a coprocessor (automatically
+     including 486DX, Pentium and above).
+
+   * `KATMAI' indicates that the instruction was introduced as part of
+     the Katmai New Instruction set. These instructions are available
+     on the Pentium III and later processors. Those which are not
+     specifically SSE instructions are also available on the AMD Athlon.
+
+   * `MMX' indicates that the instruction is an MMX one, and will run on
+     MMX-capable Pentium processors and the Pentium II.
+
+   * `PRIV' indicates that the instruction is a protected-mode
+     management instruction. Many of these may only be used in
+     protected mode, or only at privilege level zero.
+
+   * `SSE' and `SSE2' indicate that the instruction is a Streaming SIMD
+     Extension instruction. These instructions operate on multiple
+     values in a single operation. SSE was introduced with the Pentium
+     III and SSE2 was introduced with the Pentium 4.
+
+   * `UNDOC' indicates that the instruction is an undocumented one, and
+     not part of the official Intel Architecture; it may or may not be
+     supported on any given machine.
+
+   * `WILLAMETTE' indicates that the instruction was introduced as part
+     of the new instruction set in the Pentium 4 and Intel Xeon
+     processors. These instructions are also known as SSE2 instructions.
+
+
+File: nasm.info,  Node: Section B.4,  Next: Section B.4.1,  Prev: Section B.3,  Up: Appendix B
+
+B.4. x86 Instruction Set
+========================
+
+* Menu:
+
+* Section B.4.1:: `AAA', `AAS', `AAM', `AAD': ASCII Adjustments
+* Section B.4.2:: `ADC': Add with Carry
+* Section B.4.3:: `ADD': Add Integers
+* Section B.4.4:: `ADDPD': ADD Packed Double-Precision FP Values
+* Section B.4.5:: `ADDPS': ADD Packed Single-Precision FP Values
+* Section B.4.6:: `ADDSD': ADD Scalar Double-Precision FP Values
+* Section B.4.7:: `ADDSS': ADD Scalar Single-Precision FP Values
+* Section B.4.8:: `AND': Bitwise AND
+* Section B.4.9:: `ANDNPD': Bitwise Logical AND NOT of Packed Double-Precision FP Values
+* Section B.4.10:: `ANDNPS': Bitwise Logical AND NOT of Packed Single-Precision FP Values
+* Section B.4.11:: `ANDPD': Bitwise Logical AND For Single FP
+* Section B.4.12:: `ANDPS': Bitwise Logical AND For Single FP
+* Section B.4.13:: `ARPL': Adjust RPL Field of Selector
+* Section B.4.14:: `BOUND': Check Array Index against Bounds
+* Section B.4.15:: `BSF', `BSR': Bit Scan
+* Section B.4.16:: `BSWAP': Byte Swap
+* Section B.4.17:: `BT', `BTC', `BTR', `BTS': Bit Test
+* Section B.4.18:: `CALL': Call Subroutine
+* Section B.4.19:: `CBW', `CWD', `CDQ', `CWDE': Sign Extensions
+* Section B.4.20:: `CLC', `CLD', `CLI', `CLTS': Clear Flags
+* Section B.4.21:: `CLFLUSH': Flush Cache Line
+* Section B.4.22:: `CMC': Complement Carry Flag
+* Section B.4.23:: `CMOVcc': Conditional Move
+* Section B.4.24:: `CMP': Compare Integers
+* Section B.4.25:: `CMPccPD': Packed Double-Precision FP Compare
+* Section B.4.26:: `CMPccPS': Packed Single-Precision FP Compare
+* Section B.4.27:: `CMPSB', `CMPSW', `CMPSD': Compare Strings
+* Section B.4.28:: `CMPccSD': Scalar Double-Precision FP Compare
+* Section B.4.29:: `CMPccSS': Scalar Single-Precision FP Compare
+* Section B.4.30:: `CMPXCHG', `CMPXCHG486': Compare and Exchange
+* Section B.4.31:: `CMPXCHG8B': Compare and Exchange Eight Bytes
+* Section B.4.32:: `COMISD': Scalar Ordered Double-Precision FP Compare and Set EFLAGS
+* Section B.4.33:: `COMISS': Scalar Ordered Single-Precision FP Compare and Set EFLAGS
+* Section B.4.34:: `CPUID': Get CPU Identification Code
+* Section B.4.35:: `CVTDQ2PD': Packed Signed INT32 to Packed Double-Precision FP Conversion
+* Section B.4.36:: `CVTDQ2PS': Packed Signed INT32 to Packed Single-Precision FP Conversion
+* Section B.4.37:: `CVTPD2DQ': Packed Double-Precision FP to Packed Signed INT32 Conversion
+* Section B.4.38:: `CVTPD2PI': Packed Double-Precision FP to Packed Signed INT32 Conversion
+* Section B.4.39:: `CVTPD2PS': Packed Double-Precision FP to Packed Single-Precision FP Conversion
+* Section B.4.40:: `CVTPI2PD': Packed Signed INT32 to Packed Double-Precision FP Conversion
+* Section B.4.41:: `CVTPI2PS': Packed Signed INT32 to Packed Single-FP Conversion
+* Section B.4.42:: `CVTPS2DQ': Packed Single-Precision FP to Packed Signed INT32 Conversion
+* Section B.4.43:: `CVTPS2PD': Packed Single-Precision FP to Packed Double-Precision FP Conversion
+* Section B.4.44:: `CVTPS2PI': Packed Single-Precision FP to Packed Signed INT32 Conversion
+* Section B.4.45:: `CVTSD2SI': Scalar Double-Precision FP to Signed INT32 Conversion
+* Section B.4.46:: `CVTSD2SS': Scalar Double-Precision FP to Scalar Single-Precision FP Conversion
+* Section B.4.47:: `CVTSI2SD': Signed INT32 to Scalar Double-Precision FP Conversion
+* Section B.4.48:: `CVTSI2SS': Signed INT32 to Scalar Single-Precision FP Conversion
+* Section B.4.49:: `CVTSS2SD': Scalar Single-Precision FP to Scalar Double-Precision FP Conversion
+* Section B.4.50:: `CVTSS2SI': Scalar Single-Precision FP to Signed INT32 Conversion
+* Section B.4.51:: `CVTTPD2DQ': Packed Double-Precision FP to Packed Signed INT32 Conversion with Truncation
+* Section B.4.52:: `CVTTPD2PI': Packed Double-Precision FP to Packed Signed INT32 Conversion with Truncation
+* Section B.4.53:: `CVTTPS2DQ': Packed Single-Precision FP to Packed Signed INT32 Conversion with Truncation
+* Section B.4.54:: `CVTTPS2PI': Packed Single-Precision FP to Packed Signed INT32 Conversion with Truncation
+* Section B.4.55:: `CVTTSD2SI': Scalar Double-Precision FP to Signed INT32 Conversion with Truncation
+* Section B.4.56:: `CVTTSS2SI': Scalar Single-Precision FP to Signed INT32 Conversion with Truncation
+* Section B.4.57:: `DAA', `DAS': Decimal Adjustments
+* Section B.4.58:: `DEC': Decrement Integer
+* Section B.4.59:: `DIV': Unsigned Integer Divide
+* Section B.4.60:: `DIVPD': Packed Double-Precision FP Divide
+* Section B.4.61:: `DIVPS': Packed Single-Precision FP Divide
+* Section B.4.62:: `DIVSD': Scalar Double-Precision FP Divide
+* Section B.4.63:: `DIVSS': Scalar Single-Precision FP Divide
+* Section B.4.64:: `EMMS': Empty MMX State
+* Section B.4.65:: `ENTER': Create Stack Frame
+* Section B.4.66:: `F2XM1': Calculate 2**X-1
+* Section B.4.67:: `FABS': Floating-Point Absolute Value
+* Section B.4.68:: `FADD', `FADDP': Floating-Point Addition
+* Section B.4.69:: `FBLD', `FBSTP': BCD Floating-Point Load and Store
+* Section B.4.70:: `FCHS': Floating-Point Change Sign
+* Section B.4.71:: `FCLEX', `FNCLEX': Clear Floating-Point Exceptions
+* Section B.4.72:: `FCMOVcc': Floating-Point Conditional Move
+* Section B.4.73:: `FCOM', `FCOMP', `FCOMPP', `FCOMI', `FCOMIP': Floating-Point Compare
+* Section B.4.74:: `FCOS': Cosine
+* Section B.4.75:: `FDECSTP': Decrement Floating-Point Stack Pointer
+* Section B.4.76:: `FxDISI', `FxENI': Disable and Enable Floating-Point Interrupts
+* Section B.4.77:: `FDIV', `FDIVP', `FDIVR', `FDIVRP': Floating-Point Division
+* Section B.4.78:: `FEMMS': Faster Enter/Exit of the MMX or floating-point state
+* Section B.4.79:: `FFREE': Flag Floating-Point Register as Unused
+* Section B.4.80:: `FIADD': Floating-Point/Integer Addition
+* Section B.4.81:: `FICOM', `FICOMP': Floating-Point/Integer Compare
+* Section B.4.82:: `FIDIV', `FIDIVR': Floating-Point/Integer Division
+* Section B.4.83:: `FILD', `FIST', `FISTP': Floating-Point/Integer Conversion
+* Section B.4.84:: `FIMUL': Floating-Point/Integer Multiplication
+* Section B.4.85:: `FINCSTP': Increment Floating-Point Stack Pointer
+* Section B.4.86:: `FINIT', `FNINIT': Initialise Floating-Point Unit
+* Section B.4.87:: `FISUB': Floating-Point/Integer Subtraction
+* Section B.4.88:: `FLD': Floating-Point Load
+* Section B.4.89:: `FLDxx': Floating-Point Load Constants
+* Section B.4.90:: `FLDCW': Load Floating-Point Control Word
+* Section B.4.91:: `FLDENV': Load Floating-Point Environment
+* Section B.4.92:: `FMUL', `FMULP': Floating-Point Multiply
+* Section B.4.93:: `FNOP': Floating-Point No Operation
+* Section B.4.94:: `FPATAN', `FPTAN': Arctangent and Tangent
+* Section B.4.95:: `FPREM', `FPREM1': Floating-Point Partial Remainder
+* Section B.4.96:: `FRNDINT': Floating-Point Round to Integer
+* Section B.4.97:: `FSAVE', `FRSTOR': Save/Restore Floating-Point State
+* Section B.4.98:: `FSCALE': Scale Floating-Point Value by Power of Two
+* Section B.4.99:: `FSETPM': Set Protected Mode
+* Section B.4.100:: `FSIN', `FSINCOS': Sine and Cosine
+* Section B.4.101:: `FSQRT': Floating-Point Square Root
+* Section B.4.102:: `FST', `FSTP': Floating-Point Store
+* Section B.4.103:: `FSTCW': Store Floating-Point Control Word
+* Section B.4.104:: `FSTENV': Store Floating-Point Environment
+* Section B.4.105:: `FSTSW': Store Floating-Point Status Word
+* Section B.4.106:: `FSUB', `FSUBP', `FSUBR', `FSUBRP': Floating-Point Subtract
+* Section B.4.107:: `FTST': Test `ST0' Against Zero
+* Section B.4.108:: `FUCOMxx': Floating-Point Unordered Compare
+* Section B.4.109:: `FXAM': Examine Class of Value in `ST0'
+* Section B.4.110:: `FXCH': Floating-Point Exchange
+* Section B.4.111:: `FXRSTOR': Restore `FP', `MMX' and `SSE' State
+* Section B.4.112:: `FXSAVE': Store `FP', `MMX' and `SSE' State
+* Section B.4.113:: `FXTRACT': Extract Exponent and Significand
+* Section B.4.114:: `FYL2X', `FYL2XP1': Compute Y times Log2(X) or Log2(X+1)
+* Section B.4.115:: `HLT': Halt Processor
+* Section B.4.116:: `IBTS': Insert Bit String
+* Section B.4.117:: `IDIV': Signed Integer Divide
+* Section B.4.118:: `IMUL': Signed Integer Multiply
+* Section B.4.119:: `IN': Input from I/O Port
+* Section B.4.120:: `INC': Increment Integer
+* Section B.4.121:: `INSB', `INSW', `INSD': Input String from I/O Port
+* Section B.4.122:: `INT': Software Interrupt
+* Section B.4.123:: `INT3', `INT1', `ICEBP', `INT01': Breakpoints
+* Section B.4.124:: `INTO': Interrupt if Overflow
+* Section B.4.125:: `INVD': Invalidate Internal Caches
+* Section B.4.126:: `INVLPG': Invalidate TLB Entry
+* Section B.4.127:: `IRET', `IRETW', `IRETD': Return from Interrupt
+* Section B.4.128:: `Jcc': Conditional Branch
+* Section B.4.129:: `JCXZ', `JECXZ': Jump if CX/ECX Zero
+* Section B.4.130:: `JMP': Jump
+* Section B.4.131:: `LAHF': Load AH from Flags
+* Section B.4.132:: `LAR': Load Access Rights
+* Section B.4.133:: `LDMXCSR': Load Streaming SIMD Extension Control/Status
+* Section B.4.134:: `LDS', `LES', `LFS', `LGS', `LSS': Load Far Pointer
+* Section B.4.135:: `LEA': Load Effective Address
+* Section B.4.136:: `LEAVE': Destroy Stack Frame
+* Section B.4.137:: `LFENCE': Load Fence
+* Section B.4.138:: `LGDT', `LIDT', `LLDT': Load Descriptor Tables
+* Section B.4.139:: `LMSW': Load/Store Machine Status Word
+* Section B.4.140:: `LOADALL', `LOADALL286': Load Processor State
+* Section B.4.141:: `LODSB', `LODSW', `LODSD': Load from String
+* Section B.4.142:: `LOOP', `LOOPE', `LOOPZ', `LOOPNE', `LOOPNZ': Loop with Counter
+* Section B.4.143:: `LSL': Load Segment Limit
+* Section B.4.144:: `LTR': Load Task Register
+* Section B.4.145:: `MASKMOVDQU': Byte Mask Write
+* Section B.4.146:: `MASKMOVQ': Byte Mask Write
+* Section B.4.147:: `MAXPD': Return Packed Double-Precision FP Maximum
+* Section B.4.148:: `MAXPS': Return Packed Single-Precision FP Maximum
+* Section B.4.149:: `MAXSD': Return Scalar Double-Precision FP Maximum
+* Section B.4.150:: `MAXSS': Return Scalar Single-Precision FP Maximum
+* Section B.4.151:: `MFENCE': Memory Fence
+* Section B.4.152:: `MINPD': Return Packed Double-Precision FP Minimum
+* Section B.4.153:: `MINPS': Return Packed Single-Precision FP Minimum
+* Section B.4.154:: `MINSD': Return Scalar Double-Precision FP Minimum
+* Section B.4.155:: `MINSS': Return Scalar Single-Precision FP Minimum
+* Section B.4.156:: `MOV': Move Data
+* Section B.4.157:: `MOVAPD': Move Aligned Packed Double-Precision FP Values
+* Section B.4.158:: `MOVAPS': Move Aligned Packed Single-Precision FP Values
+* Section B.4.159:: `MOVD': Move Doubleword to/from MMX Register
+* Section B.4.160:: `MOVDQ2Q': Move Quadword from XMM to MMX register.
+* Section B.4.161:: `MOVDQA': Move Aligned Double Quadword
+* Section B.4.162:: `MOVDQU': Move Unaligned Double Quadword
+* Section B.4.163:: `MOVHLPS': Move Packed Single-Precision FP High to Low
+* Section B.4.164:: `MOVHPD': Move High Packed Double-Precision FP
+* Section B.4.165:: `MOVHPS': Move High Packed Single-Precision FP
+* Section B.4.166:: `MOVLHPS': Move Packed Single-Precision FP Low to High
+* Section B.4.167:: `MOVLPD': Move Low Packed Double-Precision FP
+* Section B.4.168:: `MOVLPS': Move Low Packed Single-Precision FP
+* Section B.4.169:: `MOVMSKPD': Extract Packed Double-Precision FP Sign Mask
+* Section B.4.170:: `MOVMSKPS': Extract Packed Single-Precision FP Sign Mask
+* Section B.4.171:: `MOVNTDQ': Move Double Quadword Non Temporal
+* Section B.4.172:: `MOVNTI': Move Doubleword Non Temporal
+* Section B.4.173:: `MOVNTPD': Move Aligned Four Packed Single-Precision FP Values Non Temporal
+* Section B.4.174:: `MOVNTPS': Move Aligned Four Packed Single-Precision FP Values Non Temporal
+* Section B.4.175:: `MOVNTQ': Move Quadword Non Temporal
+* Section B.4.176:: `MOVQ': Move Quadword to/from MMX Register
+* Section B.4.177:: `MOVQ2DQ': Move Quadword from MMX to XMM register.
+* Section B.4.178:: `MOVSB', `MOVSW', `MOVSD': Move String
+* Section B.4.179:: `MOVSD': Move Scalar Double-Precision FP Value
+* Section B.4.180:: `MOVSS': Move Scalar Single-Precision FP Value
+* Section B.4.181:: `MOVSX', `MOVZX': Move Data with Sign or Zero Extend
+* Section B.4.182:: `MOVUPD': Move Unaligned Packed Double-Precision FP Values
+* Section B.4.183:: `MOVUPS': Move Unaligned Packed Single-Precision FP Values
+* Section B.4.184:: `MUL': Unsigned Integer Multiply
+* Section B.4.185:: `MULPD': Packed Single-FP Multiply
+* Section B.4.186:: `MULPS': Packed Single-FP Multiply
+* Section B.4.187:: `MULSD': Scalar Single-FP Multiply
+* Section B.4.188:: `MULSS': Scalar Single-FP Multiply
+* Section B.4.189:: `NEG', `NOT': Two's and One's Complement
+* Section B.4.190:: `NOP': No Operation
+* Section B.4.191:: `OR': Bitwise OR
+* Section B.4.192:: `ORPD': Bit-wise Logical OR of Double-Precision FP Data
+* Section B.4.193:: `ORPS': Bit-wise Logical OR of Single-Precision FP Data
+* Section B.4.194:: `OUT': Output Data to I/O Port
+* Section B.4.195:: `OUTSB', `OUTSW', `OUTSD': Output String to I/O Port
+* Section B.4.196:: `PACKSSDW', `PACKSSWB', `PACKUSWB': Pack Data
+* Section B.4.197:: `PADDB', `PADDW', `PADDD': Add Packed Integers
+* Section B.4.198:: `PADDQ': Add Packed Quadword Integers
+* Section B.4.199:: `PADDSB', `PADDSW': Add Packed Signed Integers With Saturation
+* Section B.4.200:: `PADDSIW': MMX Packed Addition to Implicit Destination
+* Section B.4.201:: `PADDUSB', `PADDUSW': Add Packed Unsigned Integers With Saturation
+* Section B.4.202:: `PAND', `PANDN': MMX Bitwise AND and AND-NOT
+* Section B.4.203:: `PAUSE': Spin Loop Hint
+* Section B.4.204:: `PAVEB': MMX Packed Average
+* Section B.4.205:: `PAVGB' `PAVGW': Average Packed Integers
+* Section B.4.206:: `PAVGUSB': Average of unsigned packed 8-bit values
+* Section B.4.207:: `PCMPxx': Compare Packed Integers.
+* Section B.4.208:: `PDISTIB': MMX Packed Distance and Accumulate with Implied Register
+* Section B.4.209:: `PEXTRW': Extract Word
+* Section B.4.210:: `PF2ID': Packed Single-Precision FP to Integer Convert
+* Section B.4.211:: `PF2IW': Packed Single-Precision FP to Integer Word Convert
+* Section B.4.212:: `PFACC': Packed Single-Precision FP Accumulate
+* Section B.4.213:: `PFADD': Packed Single-Precision FP Addition
+* Section B.4.214:: `PFCMPxx': Packed Single-Precision FP Compare
+* Section B.4.215:: `PFMAX': Packed Single-Precision FP Maximum
+* Section B.4.216:: `PFMIN': Packed Single-Precision FP Minimum
+* Section B.4.217:: `PFMUL': Packed Single-Precision FP Multiply
+* Section B.4.218:: `PFNACC': Packed Single-Precision FP Negative Accumulate
+* Section B.4.219:: `PFPNACC': Packed Single-Precision FP Mixed Accumulate
+* Section B.4.220:: `PFRCP': Packed Single-Precision FP Reciprocal Approximation
+* Section B.4.221:: `PFRCPIT1': Packed Single-Precision FP Reciprocal, First Iteration Step
+* Section B.4.222:: `PFRCPIT2': Packed Single-Precision FP Reciprocal/ Reciprocal Square Root, Second Iteration Step
+* Section B.4.223:: `PFRSQIT1': Packed Single-Precision FP Reciprocal Square Root, First Iteration Step
+* Section B.4.224:: `PFRSQRT': Packed Single-Precision FP Reciprocal Square Root Approximation
+* Section B.4.225:: `PFSUB': Packed Single-Precision FP Subtract
+* Section B.4.226:: `PFSUBR': Packed Single-Precision FP Reverse Subtract
+* Section B.4.227:: `PI2FD': Packed Doubleword Integer to Single-Precision FP Convert
+* Section B.4.228:: `PF2IW': Packed Word Integer to Single-Precision FP Convert
+* Section B.4.229:: `PINSRW': Insert Word
+* Section B.4.230:: `PMACHRIW': Packed Multiply and Accumulate with Rounding
+* Section B.4.231:: `PMADDWD': MMX Packed Multiply and Add
+* Section B.4.232:: `PMAGW': MMX Packed Magnitude
+* Section B.4.233:: `PMAXSW': Packed Signed Integer Word Maximum
+* Section B.4.234:: `PMAXUB': Packed Unsigned Integer Byte Maximum
+* Section B.4.235:: `PMINSW': Packed Signed Integer Word Minimum
+* Section B.4.236:: `PMINUB': Packed Unsigned Integer Byte Minimum
+* Section B.4.237:: `PMOVMSKB': Move Byte Mask To Integer
+* Section B.4.238:: `PMULHRWC', `PMULHRIW': Multiply Packed 16-bit Integers With Rounding, and Store High Word
+* Section B.4.239:: `PMULHRWA': Multiply Packed 16-bit Integers With Rounding, and Store High Word
+* Section B.4.240:: `PMULHUW': Multiply Packed 16-bit Integers, and Store High Word
+* Section B.4.241:: `PMULHW', `PMULLW': Multiply Packed 16-bit Integers, and Store
+* Section B.4.242:: `PMULUDQ': Multiply Packed Unsigned 32-bit Integers, and Store.
+* Section B.4.243:: `PMVccZB': MMX Packed Conditional Move
+* Section B.4.244:: `POP': Pop Data from Stack
+* Section B.4.245:: `POPAx': Pop All General-Purpose Registers
+* Section B.4.246:: `POPFx': Pop Flags Register
+* Section B.4.247:: `POR': MMX Bitwise OR
+* Section B.4.248:: `PREFETCH': Prefetch Data Into Caches
+* Section B.4.249:: `PREFETCHh': Prefetch Data Into Caches
+* Section B.4.250:: `PSADBW': Packed Sum of Absolute Differences
+* Section B.4.251:: `PSHUFD': Shuffle Packed Doublewords
+* Section B.4.252:: `PSHUFHW': Shuffle Packed High Words
+* Section B.4.253:: `PSHUFLW': Shuffle Packed Low Words
+* Section B.4.254:: `PSHUFW': Shuffle Packed Words
+* Section B.4.255:: `PSLLx': Packed Data Bit Shift Left Logical
+* Section B.4.256:: `PSRAx': Packed Data Bit Shift Right Arithmetic
+* Section B.4.257:: `PSRLx': Packed Data Bit Shift Right Logical
+* Section B.4.258:: `PSUBx': Subtract Packed Integers
+* Section B.4.259:: `PSUBSxx', `PSUBUSx': Subtract Packed Integers With Saturation
+* Section B.4.260:: `PSUBSIW': MMX Packed Subtract with Saturation to Implied Destination
+* Section B.4.261:: `PSWAPD': Swap Packed Data
+* Section B.4.262:: `PUNPCKxxx': Unpack and Interleave Data
+* Section B.4.263:: `PUSH': Push Data on Stack
+* Section B.4.264:: `PUSHAx': Push All General-Purpose Registers
+* Section B.4.265:: `PUSHFx': Push Flags Register
+* Section B.4.266:: `PXOR': MMX Bitwise XOR
+* Section B.4.267:: `RCL', `RCR': Bitwise Rotate through Carry Bit
+* Section B.4.268:: `RCPPS': Packed Single-Precision FP Reciprocal
+* Section B.4.269:: `RCPSS': Scalar Single-Precision FP Reciprocal
+* Section B.4.270:: `RDMSR': Read Model-Specific Registers
+* Section B.4.271:: `RDPMC': Read Performance-Monitoring Counters
+* Section B.4.272:: `RDSHR': Read SMM Header Pointer Register
+* Section B.4.273:: `RDTSC': Read Time-Stamp Counter
+* Section B.4.274:: `RET', `RETF', `RETN': Return from Procedure Call
+* Section B.4.275:: `ROL', `ROR': Bitwise Rotate
+* Section B.4.276:: `RSDC': Restore Segment Register and Descriptor
+* Section B.4.277:: `RSLDT': Restore Segment Register and Descriptor
+* Section B.4.278:: `RSM': Resume from System-Management Mode
+* Section B.4.279:: `RSQRTPS': Packed Single-Precision FP Square Root Reciprocal
+* Section B.4.280:: `RSQRTSS': Scalar Single-Precision FP Square Root Reciprocal
+* Section B.4.281:: `RSTS': Restore TSR and Descriptor
+* Section B.4.282:: `SAHF': Store AH to Flags
+* Section B.4.283:: `SAL', `SAR': Bitwise Arithmetic Shifts
+* Section B.4.284:: `SALC': Set AL from Carry Flag
+* Section B.4.285:: `SBB': Subtract with Borrow
+* Section B.4.286:: `SCASB', `SCASW', `SCASD': Scan String
+* Section B.4.287:: `SETcc': Set Register from Condition
+* Section B.4.288:: `SFENCE': Store Fence
+* Section B.4.289:: `SGDT', `SIDT', `SLDT': Store Descriptor Table Pointers
+* Section B.4.290:: `SHL', `SHR': Bitwise Logical Shifts
+* Section B.4.291:: `SHLD', `SHRD': Bitwise Double-Precision Shifts
+* Section B.4.292:: `SHUFPD': Shuffle Packed Double-Precision FP Values
+* Section B.4.293:: `SHUFPS': Shuffle Packed Single-Precision FP Values
+* Section B.4.294:: `SMI': System Management Interrupt
+* Section B.4.295:: `SMINT', `SMINTOLD': Software SMM Entry (CYRIX)
+* Section B.4.296:: `SMSW': Store Machine Status Word
+* Section B.4.297:: `SQRTPD': Packed Double-Precision FP Square Root
+* Section B.4.298:: `SQRTPS': Packed Single-Precision FP Square Root
+* Section B.4.299:: `SQRTSD': Scalar Double-Precision FP Square Root
+* Section B.4.300:: `SQRTSS': Scalar Single-Precision FP Square Root
+* Section B.4.301:: `STC', `STD', `STI': Set Flags
+* Section B.4.302:: `STMXCSR': Store Streaming SIMD Extension Control/Status
+* Section B.4.303:: `STOSB', `STOSW', `STOSD': Store Byte to String
+* Section B.4.304:: `STR': Store Task Register
+* Section B.4.305:: `SUB': Subtract Integers
+* Section B.4.306:: `SUBPD': Packed Double-Precision FP Subtract
+* Section B.4.307:: `SUBPS': Packed Single-Precision FP Subtract
+* Section B.4.308:: `SUBSD': Scalar Single-FP Subtract
+* Section B.4.309:: `SUBSS': Scalar Single-FP Subtract
+* Section B.4.310:: `SVDC': Save Segment Register and Descriptor
+* Section B.4.311:: `SVLDT': Save LDTR and Descriptor
+* Section B.4.312:: `SVTS': Save TSR and Descriptor
+* Section B.4.313:: `SYSCALL': Call Operating System
+* Section B.4.314:: `SYSENTER': Fast System Call
+* Section B.4.315:: `SYSEXIT': Fast Return From System Call
+* Section B.4.316:: `SYSRET': Return From Operating System
+* Section B.4.317:: `TEST': Test Bits (notional bitwise AND)
+* Section B.4.318:: `UCOMISD': Unordered Scalar Double-Precision FP compare and set EFLAGS
+* Section B.4.319:: `UCOMISS': Unordered Scalar Single-Precision FP compare and set EFLAGS
+* Section B.4.320:: `UD0', `UD1', `UD2': Undefined Instruction
+* Section B.4.321:: `UMOV': User Move Data
+* Section B.4.322:: `UNPCKHPD': Unpack and Interleave High Packed Double-Precision FP Values
+* Section B.4.323:: `UNPCKHPS': Unpack and Interleave High Packed Single-Precision FP Values
+* Section B.4.324:: `UNPCKLPD': Unpack and Interleave Low Packed Double-Precision FP Data
+* Section B.4.325:: `UNPCKLPS': Unpack and Interleave Low Packed Single-Precision FP Data
+* Section B.4.326:: `VERR', `VERW': Verify Segment Readability/Writability
+* Section B.4.327:: `WAIT': Wait for Floating-Point Processor
+* Section B.4.328:: `WBINVD': Write Back and Invalidate Cache
+* Section B.4.329:: `WRMSR': Write Model-Specific Registers
+* Section B.4.330:: `WRSHR': Write SMM Header Pointer Register
+* Section B.4.331:: `XADD': Exchange and Add
+* Section B.4.332:: `XBTS': Extract Bit String
+* Section B.4.333:: `XCHG': Exchange
+* Section B.4.334:: `XLATB': Translate Byte in Lookup Table
+* Section B.4.335:: `XOR': Bitwise Exclusive OR
+* Section B.4.336:: `XORPD': Bitwise Logical XOR of Double-Precision FP Values
+* Section B.4.337:: `XORPS': Bitwise Logical XOR of Single-Precision FP Values
+
+
+File: nasm.info,  Node: Section B.4.1,  Next: Section B.4.2,  Prev: Section B.4,  Up: Section B.4
+
+B.4.1. `AAA', `AAS', `AAM', `AAD': ASCII Adjustments
+----------------------------------------------------
+
+     AAA                           ; 37                   [8086]
+
+     AAS                           ; 3F                   [8086]
+
+     AAD                           ; D5 0A                [8086]
+     AAD imm                       ; D5 ib                [8086]
+
+     AAM                           ; D4 0A                [8086]
+     AAM imm                       ; D4 ib                [8086]
+
+   These instructions are used in conjunction with the add, subtract,
+multiply and divide instructions to perform binary-coded decimal
+arithmetic in _unpacked_ (one BCD digit per byte - easy to translate to
+and from `ASCII', hence the instruction names) form. There are also
+packed BCD instructions `DAA' and `DAS': see *Note Section B.4.57::.
+
+   * `AAA' (ASCII Adjust After Addition) should be used after a one-byte
+     `ADD' instruction whose destination was the `AL' register: by
+     means of examining the value in the low nibble of `AL' and also the
+     auxiliary carry flag `AF', it determines whether the addition has
+     overflowed, and adjusts it (and sets the carry flag) if so. You
+     can add long BCD strings together by doing `ADD'/`AAA' on the low
+     digits, then doing `ADC'/`AAA' on each subsequent digit.
+
+   * `AAS' (ASCII Adjust AL After Subtraction) works similarly to
+     `AAA', but is for use after `SUB' instructions rather than `ADD'.
+
+   * `AAM' (ASCII Adjust AX After Multiply) is for use after you have
+     multiplied two decimal digits together and left the result in
+     `AL': it divides `AL' by ten and stores the quotient in `AH',
+     leaving the remainder in `AL'. The divisor 10 can be changed by
+     specifying an operand to the instruction: a particularly handy use
+     of this is `AAM 16', causing the two nibbles in `AL' to be
+     separated into `AH' and `AL'.
+
+   * `AAD' (ASCII Adjust AX Before Division) performs the inverse
+     operation to `AAM': it multiplies `AH' by ten, adds it to `AL', and
+     sets `AH' to zero. Again, the multiplier 10 can be changed.
+
+
+File: nasm.info,  Node: Section B.4.2,  Next: Section B.4.3,  Prev: Section B.4.1,  Up: Section B.4
+
+B.4.2. `ADC': Add with Carry
+----------------------------
+
+     ADC r/m8,reg8                 ; 10 /r                [8086]
+     ADC r/m16,reg16               ; o16 11 /r            [8086]
+     ADC r/m32,reg32               ; o32 11 /r            [386]
+
+     ADC reg8,r/m8                 ; 12 /r                [8086]
+     ADC reg16,r/m16               ; o16 13 /r            [8086]
+     ADC reg32,r/m32               ; o32 13 /r            [386]
+
+     ADC r/m8,imm8                 ; 80 /2 ib             [8086]
+     ADC r/m16,imm16               ; o16 81 /2 iw         [8086]
+     ADC r/m32,imm32               ; o32 81 /2 id         [386]
+
+     ADC r/m16,imm8                ; o16 83 /2 ib         [8086]
+     ADC r/m32,imm8                ; o32 83 /2 ib         [386]
+
+     ADC AL,imm8                   ; 14 ib                [8086]
+     ADC AX,imm16                  ; o16 15 iw            [8086]
+     ADC EAX,imm32                 ; o32 15 id            [386]
+
+   `ADC' performs integer addition: it adds its two operands together,
+plus the value of the carry flag, and leaves the result in its
+destination (first) operand. The destination operand can be a register
+or a memory location. The source operand can be a register, a memory
+location or an immediate value.
+
+   The flags are set according to the result of the operation: in
+particular, the carry flag is affected and can be used by a subsequent
+`ADC' instruction.
+
+   In the forms with an 8-bit immediate second operand and a longer
+first operand, the second operand is considered to be signed, and is
+sign- extended to the length of the first operand. In these cases, the
+`BYTE' qualifier is necessary to force NASM to generate this form of
+the instruction.
+
+   To add two numbers without also adding the contents of the carry
+flag, use `ADD' (*Note Section B.4.3::).
+
+
+File: nasm.info,  Node: Section B.4.3,  Next: Section B.4.4,  Prev: Section B.4.2,  Up: Section B.4
+
+B.4.3. `ADD': Add Integers
+--------------------------
+
+     ADD r/m8,reg8                 ; 00 /r                [8086]
+     ADD r/m16,reg16               ; o16 01 /r            [8086]
+     ADD r/m32,reg32               ; o32 01 /r            [386]
+
+     ADD reg8,r/m8                 ; 02 /r                [8086]
+     ADD reg16,r/m16               ; o16 03 /r            [8086]
+     ADD reg32,r/m32               ; o32 03 /r            [386]
+
+     ADD r/m8,imm8                 ; 80 /0 ib             [8086]
+     ADD r/m16,imm16               ; o16 81 /0 iw         [8086]
+     ADD r/m32,imm32               ; o32 81 /0 id         [386]
+
+     ADD r/m16,imm8                ; o16 83 /0 ib         [8086]
+     ADD r/m32,imm8                ; o32 83 /0 ib         [386]
+
+     ADD AL,imm8                   ; 04 ib                [8086]
+     ADD AX,imm16                  ; o16 05 iw            [8086]
+     ADD EAX,imm32                 ; o32 05 id            [386]
+
+   `ADD' performs integer addition: it adds its two operands together,
+and leaves the result in its destination (first) operand. The
+destination operand can be a register or a memory location. The source
+operand can be a register, a memory location or an immediate value.
+
+   The flags are set according to the result of the operation: in
+particular, the carry flag is affected and can be used by a subsequent
+`ADC' instruction.
+
+   In the forms with an 8-bit immediate second operand and a longer
+first operand, the second operand is considered to be signed, and is
+sign- extended to the length of the first operand. In these cases, the
+`BYTE' qualifier is necessary to force NASM to generate this form of
+the instruction.
+
+
+File: nasm.info,  Node: Section B.4.4,  Next: Section B.4.5,  Prev: Section B.4.3,  Up: Section B.4
+
+B.4.4. `ADDPD': ADD Packed Double-Precision FP Values
+-----------------------------------------------------
+
+     ADDPD xmm1,xmm2/mem128        ; 66 0F 58 /r     [WILLAMETTE,SSE2]
+
+   `ADDPD' performs addition on each of two packed double-precision FP
+value pairs.
+
+        dst[0-63]   := dst[0-63]   + src[0-63],
+        dst[64-127] := dst[64-127] + src[64-127].
+
+   The destination is an `XMM' register. The source operand can be
+either an `XMM' register or a 128-bit memory location.
+
+
+File: nasm.info,  Node: Section B.4.5,  Next: Section B.4.6,  Prev: Section B.4.4,  Up: Section B.4
+
+B.4.5. `ADDPS': ADD Packed Single-Precision FP Values
+-----------------------------------------------------
+
+     ADDPS xmm1,xmm2/mem128        ; 0F 58 /r        [KATMAI,SSE]
+
+   `ADDPS' performs addition on each of four packed single-precision FP
+value pairs
+
+        dst[0-31]   := dst[0-31]   + src[0-31],
+        dst[32-63]  := dst[32-63]  + src[32-63],
+        dst[64-95]  := dst[64-95]  + src[64-95],
+        dst[96-127] := dst[96-127] + src[96-127].
+
+   The destination is an `XMM' register. The source operand can be
+either an `XMM' register or a 128-bit memory location.
+
+
+File: nasm.info,  Node: Section B.4.6,  Next: Section B.4.7,  Prev: Section B.4.5,  Up: Section B.4
+
+B.4.6. `ADDSD': ADD Scalar Double-Precision FP Values
+-----------------------------------------------------
+
+     ADDSD xmm1,xmm2/mem64         ; F2 0F 58 /r     [KATMAI,SSE]
+
+   `ADDSD' adds the low double-precision FP values from the source and
+destination operands and stores the double-precision FP result in the
+destination operand.
+
+        dst[0-63]   := dst[0-63] + src[0-63],
+        dst[64-127) remains unchanged.
+
+   The destination is an `XMM' register. The source operand can be
+either an `XMM' register or a 64-bit memory location.
+
+
+File: nasm.info,  Node: Section B.4.7,  Next: Section B.4.8,  Prev: Section B.4.6,  Up: Section B.4
+
+B.4.7. `ADDSS': ADD Scalar Single-Precision FP Values
+-----------------------------------------------------
+
+     ADDSS xmm1,xmm2/mem32         ; F3 0F 58 /r     [WILLAMETTE,SSE2]
+
+   `ADDSS' adds the low single-precision FP values from the source and
+destination operands and stores the single-precision FP result in the
+destination operand.
+
+        dst[0-31]   := dst[0-31] + src[0-31],
+        dst[32-127] remains unchanged.
+
+   The destination is an `XMM' register. The source operand can be
+either an `XMM' register or a 32-bit memory location.
+
+
+File: nasm.info,  Node: Section B.4.8,  Next: Section B.4.9,  Prev: Section B.4.7,  Up: Section B.4
+
+B.4.8. `AND': Bitwise AND
+-------------------------
+
+     AND r/m8,reg8                 ; 20 /r                [8086]
+     AND r/m16,reg16               ; o16 21 /r            [8086]
+     AND r/m32,reg32               ; o32 21 /r            [386]
+
+     AND reg8,r/m8                 ; 22 /r                [8086]
+     AND reg16,r/m16               ; o16 23 /r            [8086]
+     AND reg32,r/m32               ; o32 23 /r            [386]
+
+     AND r/m8,imm8                 ; 80 /4 ib             [8086]
+     AND r/m16,imm16               ; o16 81 /4 iw         [8086]
+     AND r/m32,imm32               ; o32 81 /4 id         [386]
+
+     AND r/m16,imm8                ; o16 83 /4 ib         [8086]
+     AND r/m32,imm8                ; o32 83 /4 ib         [386]
+
+     AND AL,imm8                   ; 24 ib                [8086]
+     AND AX,imm16                  ; o16 25 iw            [8086]
+     AND EAX,imm32                 ; o32 25 id            [386]
+
+   `AND' performs a bitwise AND operation between its two operands (i.e.
+each bit of the result is 1 if and only if the corresponding bits of the
+two inputs were both 1), and stores the result in the destination
+(first) operand. The destination operand can be a register or a memory
+location.  The source operand can be a register, a memory location or
+an immediate value.
+
+   In the forms with an 8-bit immediate second operand and a longer
+first operand, the second operand is considered to be signed, and is
+sign- extended to the length of the first operand. In these cases, the
+`BYTE' qualifier is necessary to force NASM to generate this form of
+the instruction.
+
+   The `MMX' instruction `PAND' (see *Note Section B.4.202::) performs
+the same operation on the 64-bit `MMX' registers.
+
+
+File: nasm.info,  Node: Section B.4.9,  Next: Section B.4.10,  Prev: Section B.4.8,  Up: Section B.4
+
+B.4.9. `ANDNPD': Bitwise Logical AND NOT of Packed Double-Precision FP Values
+-----------------------------------------------------------------------------
+
+     ANDNPD xmm1,xmm2/mem128       ; 66 0F 55 /r     [WILLAMETTE,SSE2]
+
+   `ANDNPD' inverts the bits of the two double-precision floating-point
+values in the destination register, and then performs a logical AND
+between the two double-precision floating-point values in the source
+operand and the temporary inverted result, storing the result in the
+destination register.
+
+        dst[0-63]   := src[0-63]   AND NOT dst[0-63],
+        dst[64-127] := src[64-127] AND NOT dst[64-127].
+
+   The destination is an `XMM' register. The source operand can be
+either an `XMM' register or a 128-bit memory location.
+
+
+File: nasm.info,  Node: Section B.4.10,  Next: Section B.4.11,  Prev: Section B.4.9,  Up: Section B.4
+
+B.4.10. `ANDNPS': Bitwise Logical AND NOT of Packed Single-Precision FP Values
+------------------------------------------------------------------------------
+
+     ANDNPS xmm1,xmm2/mem128       ; 0F 55 /r        [KATMAI,SSE]
+
+   `ANDNPS' inverts the bits of the four single-precision floating-point
+values in the destination register, and then performs a logical AND
+between the four single-precision floating-point values in the source
+operand and the temporary inverted result, storing the result in the
+destination register.
+
+        dst[0-31]   := src[0-31]   AND NOT dst[0-31],
+        dst[32-63]  := src[32-63]  AND NOT dst[32-63],
+        dst[64-95]  := src[64-95]  AND NOT dst[64-95],
+        dst[96-127] := src[96-127] AND NOT dst[96-127].
+
+   The destination is an `XMM' register. The source operand can be
+either an `XMM' register or a 128-bit memory location.
+
+
+File: nasm.info,  Node: Section B.4.11,  Next: Section B.4.12,  Prev: Section B.4.10,  Up: Section B.4
+
+B.4.11. `ANDPD': Bitwise Logical AND For Single FP
+--------------------------------------------------
+
+     ANDPD xmm1,xmm2/mem128        ; 66 0F 54 /r     [WILLAMETTE,SSE2]
+
+   `ANDPD' performs a bitwise logical AND of the two double-precision
+floating point values in the source and destination operand, and stores
+the result in the destination register.
+
+        dst[0-63]   := src[0-63]   AND dst[0-63],
+        dst[64-127] := src[64-127] AND dst[64-127].
+
+   The destination is an `XMM' register. The source operand can be
+either an `XMM' register or a 128-bit memory location.
+
+
+File: nasm.info,  Node: Section B.4.12,  Next: Section B.4.13,  Prev: Section B.4.11,  Up: Section B.4
+
+B.4.12. `ANDPS': Bitwise Logical AND For Single FP
+--------------------------------------------------
+
+     ANDPS xmm1,xmm2/mem128        ; 0F 54 /r        [KATMAI,SSE]
+
+   `ANDPS' performs a bitwise logical AND of the four single-precision
+floating point values in the source and destination operand, and stores
+the result in the destination register.
+
+        dst[0-31]   := src[0-31]   AND dst[0-31],
+        dst[32-63]  := src[32-63]  AND dst[32-63],
+        dst[64-95]  := src[64-95]  AND dst[64-95],
+        dst[96-127] := src[96-127] AND dst[96-127].
+
+   The destination is an `XMM' register. The source operand can be
+either an `XMM' register or a 128-bit memory location.
+
+
+File: nasm.info,  Node: Section B.4.13,  Next: Section B.4.14,  Prev: Section B.4.12,  Up: Section B.4
+
+B.4.13. `ARPL': Adjust RPL Field of Selector
+--------------------------------------------
+
+     ARPL r/m16,reg16              ; 63 /r                [286,PRIV]
+
+   `ARPL' expects its two word operands to be segment selectors. It
+adjusts the `RPL' (requested privilege level - stored in the bottom two
+bits of the selector) field of the destination (first) operand to
+ensure that it is no less (i.e. no more privileged than) the `RPL'
+field of the source operand. The zero flag is set if and only if a
+change had to be made.
+

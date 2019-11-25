@@ -1,0 +1,27 @@
+This directory, foxpro25\goodies\lckupdat, contains the files that are
+needed to update 2.0 PLBs for use with FoxPro 2.5.  These files will allow
+you to update PLBs that you have built using the Library Construction Kit.
+If you obtained your PLBs from another source, e.g. a software supplier or
+online service, then you should contact that source for updated libraries
+that will work with FoxPro 2.5.  
+
+To update your FoxPro 2.0 Library Construction Kit, all you have to do is
+replace all the LCK library files and OBJ files with those found in this 
+directory.  Relinking to these new libraries will create PLBs that can be 
+used with FoxPro 2.5 for MS-DOS.  You may wish to copy your old libraries 
+so that you can continue to generate 2.0 PLBs.
+
+For example, if you installed the LCK in its default location, C:\FOXLCK,
+and FoxPro 2.5 in its default location, C:\FOXPRO25, then you you might use 
+the following steps to upgrade:
+
+      mkdir c:\foxlck\20libs
+      copy c:\foxlck\lib286\proapi*.lib c:\foxlck\20libs
+      copy c:\foxlck\lib286\api*.obj c:\foxlck\20libs
+
+      copy c:\foxpro25\goodies\lckupdat\*.lib c:\foxlck\lib286
+      copy c:\foxpro25\goodies\lckupdat\*.obj c:\foxlck\lib286
+
+After you've done this, you can rebuild your PLBs and use them with FoxPro 
+2.5.
+

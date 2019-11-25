@@ -1,0 +1,1 @@
+BCROOT=C:\DOS\BC

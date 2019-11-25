@@ -1,0 +1,18 @@
+set talk off
+x = ""
+x = x + iif(letterbox,"L   ","")
+x = x + iif(xdigital,"D   ","")
+x = x + iif(sdigital,"DS   ","")
+x = x + iif(stereo,"S   ","")
+x = x + iif(surround,"SP   ","")
+x = x + iif(cx,"CX   ","")
+x = x + iif(closecap,"CC   ","")
+x = x + iif(blk_wht,"B&W   ","")
+x = x + iif(cav,"CAV   ","")
+x = x + iif(subtitled,"ST   ","")
+x = x + iif(dubbed,"DU   ","")
+x = x + iif(silent,"si  ","")
+x = x + iif(supplement,"+   ","")
+x = x + iif(commentary,"¶   ","")
+x = x + iif(kids,"©   ","")
+return trim(x)

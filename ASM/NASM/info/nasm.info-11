@@ -1,0 +1,1192 @@
+This is nasm.info, produced by makeinfo version 4.3 from nasmdoc.texi.
+
+INFO-DIR-SECTION Programming
+START-INFO-DIR-ENTRY
+* NASM: (nasm).                The Netwide Assembler for x86.
+END-INFO-DIR-ENTRY
+
+   This file documents NASM, the Netwide Assembler: an assembler
+targetting the Intel x86 series of processors, with portable source.
+
+   Copyright 2003 The NASM Development Team
+
+   All rights reserved. This document is redistributable under the
+licence given in the file "COPYING" distributed in the NASM archive.
+
+
+File: nasm.info,  Node: Section B.4.181,  Next: Section B.4.182,  Prev: Section B.4.180,  Up: Section B.4
+
+B.4.181. `MOVSX', `MOVZX': Move Data with Sign or Zero Extend
+-------------------------------------------------------------
+
+     MOVSX reg16,r/m8              ; o16 0F BE /r         [386]
+     MOVSX reg32,r/m8              ; o32 0F BE /r         [386]
+     MOVSX reg32,r/m16             ; o32 0F BF /r         [386]
+
+     MOVZX reg16,r/m8              ; o16 0F B6 /r         [386]
+     MOVZX reg32,r/m8              ; o32 0F B6 /r         [386]
+     MOVZX reg32,r/m16             ; o32 0F B7 /r         [386]
+
+   `MOVSX' sign-extends its source (second) operand to the length of its
+destination (first) operand, and copies the result into the destination
+operand. `MOVZX' does the same, but zero-extends rather than sign-
+extending.
+
+
+File: nasm.info,  Node: Section B.4.182,  Next: Section B.4.183,  Prev: Section B.4.181,  Up: Section B.4
+
+B.4.182. `MOVUPD': Move Unaligned Packed Double-Precision FP Values
+-------------------------------------------------------------------
+
+     MOVUPD xmm1,xmm2/mem128       ; 66 0F 10 /r     [WILLAMETTE,SSE2]
+     MOVUPD xmm1/mem128,xmm2       ; 66 0F 11 /r     [WILLAMETTE,SSE2]
+
+   `MOVUPD' moves a double quadword containing 2 packed double-precision
+FP values from the source operand to the destination. This instruction
+makes no assumptions about alignment of memory operands.
+
+   To move data in and out of memory locations that are known to be on
+16-byte boundaries, use the `MOVAPD' instruction (*Note Section
+B.4.157::).
+
+
+File: nasm.info,  Node: Section B.4.183,  Next: Section B.4.184,  Prev: Section B.4.182,  Up: Section B.4
+
+B.4.183. `MOVUPS': Move Unaligned Packed Single-Precision FP Values
+-------------------------------------------------------------------
+
+     MOVUPS xmm1,xmm2/mem128       ; 0F 10 /r        [KATMAI,SSE]
+     MOVUPS xmm1/mem128,xmm2       ; 0F 11 /r        [KATMAI,SSE]
+
+   `MOVUPS' moves a double quadword containing 4 packed single-precision
+FP values from the source operand to the destination. This instruction
+makes no assumptions about alignment of memory operands.
+
+   To move data in and out of memory locations that are known to be on
+16-byte boundaries, use the `MOVAPS' instruction (*Note Section
+B.4.158::).
+
+
+File: nasm.info,  Node: Section B.4.184,  Next: Section B.4.185,  Prev: Section B.4.183,  Up: Section B.4
+
+B.4.184. `MUL': Unsigned Integer Multiply
+-----------------------------------------
+
+     MUL r/m8                      ; F6 /4                [8086]
+     MUL r/m16                     ; o16 F7 /4            [8086]
+     MUL r/m32                     ; o32 F7 /4            [386]
+
+   `MUL' performs unsigned integer multiplication. The other operand to
+the multiplication, and the destination operand, are implicit, in the
+following way:
+
+   * For `MUL r/m8', `AL' is multiplied by the given operand; the
+     product is stored in `AX'.
+
+   * For `MUL r/m16', `AX' is multiplied by the given operand; the
+     product is stored in `DX:AX'.
+
+   * For `MUL r/m32', `EAX' is multiplied by the given operand; the
+     product is stored in `EDX:EAX'.
+
+   Signed integer multiplication is performed by the `IMUL' instruction:
+see *Note Section B.4.118::.
+
+
+File: nasm.info,  Node: Section B.4.185,  Next: Section B.4.186,  Prev: Section B.4.184,  Up: Section B.4
+
+B.4.185. `MULPD': Packed Single-FP Multiply
+-------------------------------------------
+
+     MULPD xmm1,xmm2/mem128        ; 66 0F 59 /r     [WILLAMETTE,SSE2]
+
+   `MULPD' performs a SIMD multiply of the packed double-precision FP
+values in both operands, and stores the results in the destination
+register.
+
+
+File: nasm.info,  Node: Section B.4.186,  Next: Section B.4.187,  Prev: Section B.4.185,  Up: Section B.4
+
+B.4.186. `MULPS': Packed Single-FP Multiply
+-------------------------------------------
+
+     MULPS xmm1,xmm2/mem128        ; 0F 59 /r        [KATMAI,SSE]
+
+   `MULPS' performs a SIMD multiply of the packed single-precision FP
+values in both operands, and stores the results in the destination
+register.
+
+
+File: nasm.info,  Node: Section B.4.187,  Next: Section B.4.188,  Prev: Section B.4.186,  Up: Section B.4
+
+B.4.187. `MULSD': Scalar Single-FP Multiply
+-------------------------------------------
+
+     MULSD xmm1,xmm2/mem32         ; F2 0F 59 /r     [WILLAMETTE,SSE2]
+
+   `MULSD' multiplies the lowest double-precision FP values of both
+operands, and stores the result in the low quadword of xmm1.
+
+
+File: nasm.info,  Node: Section B.4.188,  Next: Section B.4.189,  Prev: Section B.4.187,  Up: Section B.4
+
+B.4.188. `MULSS': Scalar Single-FP Multiply
+-------------------------------------------
+
+     MULSS xmm1,xmm2/mem32         ; F3 0F 59 /r     [KATMAI,SSE]
+
+   `MULSS' multiplies the lowest single-precision FP values of both
+operands, and stores the result in the low doubleword of xmm1.
+
+
+File: nasm.info,  Node: Section B.4.189,  Next: Section B.4.190,  Prev: Section B.4.188,  Up: Section B.4
+
+B.4.189. `NEG', `NOT': Two's and One's Complement
+-------------------------------------------------
+
+     NEG r/m8                      ; F6 /3                [8086]
+     NEG r/m16                     ; o16 F7 /3            [8086]
+     NEG r/m32                     ; o32 F7 /3            [386]
+
+     NOT r/m8                      ; F6 /2                [8086]
+     NOT r/m16                     ; o16 F7 /2            [8086]
+     NOT r/m32                     ; o32 F7 /2            [386]
+
+   `NEG' replaces the contents of its operand by the two's complement
+negation (invert all the bits and then add one) of the original value.
+`NOT', similarly, performs one's complement (inverts all the bits).
+
+
+File: nasm.info,  Node: Section B.4.190,  Next: Section B.4.191,  Prev: Section B.4.189,  Up: Section B.4
+
+B.4.190. `NOP': No Operation
+----------------------------
+
+     NOP                           ; 90                   [8086]
+
+   `NOP' performs no operation. Its opcode is the same as that generated
+by `XCHG AX,AX' or `XCHG EAX,EAX' (depending on the processor mode; see
+*Note Section B.4.333::).
+
+
+File: nasm.info,  Node: Section B.4.191,  Next: Section B.4.192,  Prev: Section B.4.190,  Up: Section B.4
+
+B.4.191. `OR': Bitwise OR
+-------------------------
+
+     OR r/m8,reg8                  ; 08 /r                [8086]
+     OR r/m16,reg16                ; o16 09 /r            [8086]
+     OR r/m32,reg32                ; o32 09 /r            [386]
+
+     OR reg8,r/m8                  ; 0A /r                [8086]
+     OR reg16,r/m16                ; o16 0B /r            [8086]
+     OR reg32,r/m32                ; o32 0B /r            [386]
+
+     OR r/m8,imm8                  ; 80 /1 ib             [8086]
+     OR r/m16,imm16                ; o16 81 /1 iw         [8086]
+     OR r/m32,imm32                ; o32 81 /1 id         [386]
+
+     OR r/m16,imm8                 ; o16 83 /1 ib         [8086]
+     OR r/m32,imm8                 ; o32 83 /1 ib         [386]
+
+     OR AL,imm8                    ; 0C ib                [8086]
+     OR AX,imm16                   ; o16 0D iw            [8086]
+     OR EAX,imm32                  ; o32 0D id            [386]
+
+   `OR' performs a bitwise OR operation between its two operands (i.e.
+each bit of the result is 1 if and only if at least one of the
+corresponding bits of the two inputs was 1), and stores the result in
+the destination (first) operand.
+
+   In the forms with an 8-bit immediate second operand and a longer
+first operand, the second operand is considered to be signed, and is
+sign- extended to the length of the first operand. In these cases, the
+`BYTE' qualifier is necessary to force NASM to generate this form of
+the instruction.
+
+   The MMX instruction `POR' (see *Note Section B.4.247::) performs the
+same operation on the 64-bit MMX registers.
+
+
+File: nasm.info,  Node: Section B.4.192,  Next: Section B.4.193,  Prev: Section B.4.191,  Up: Section B.4
+
+B.4.192. `ORPD': Bit-wise Logical OR of Double-Precision FP Data
+----------------------------------------------------------------
+
+     ORPD xmm1,xmm2/m128           ; 66 0F 56 /r     [WILLAMETTE,SSE2]
+
+   `ORPD' return a bit-wise logical OR between xmm1 and xmm2/mem, and
+stores the result in xmm1. If the source operand is a memory location,
+it must be aligned to a 16-byte boundary.
+
+
+File: nasm.info,  Node: Section B.4.193,  Next: Section B.4.194,  Prev: Section B.4.192,  Up: Section B.4
+
+B.4.193. `ORPS': Bit-wise Logical OR of Single-Precision FP Data
+----------------------------------------------------------------
+
+     ORPS xmm1,xmm2/m128           ; 0F 56 /r        [KATMAI,SSE]
+
+   `ORPS' return a bit-wise logical OR between xmm1 and xmm2/mem, and
+stores the result in xmm1. If the source operand is a memory location,
+it must be aligned to a 16-byte boundary.
+
+
+File: nasm.info,  Node: Section B.4.194,  Next: Section B.4.195,  Prev: Section B.4.193,  Up: Section B.4
+
+B.4.194. `OUT': Output Data to I/O Port
+---------------------------------------
+
+     OUT imm8,AL                   ; E6 ib                [8086]
+     OUT imm8,AX                   ; o16 E7 ib            [8086]
+     OUT imm8,EAX                  ; o32 E7 ib            [386]
+     OUT DX,AL                     ; EE                   [8086]
+     OUT DX,AX                     ; o16 EF               [8086]
+     OUT DX,EAX                    ; o32 EF               [386]
+
+   `OUT' writes the contents of the given source register to the
+specified I/O port. The port number may be specified as an immediate
+value if it is between 0 and 255, and otherwise must be stored in `DX'.
+See also `IN' (*Note Section B.4.119::).
+
+
+File: nasm.info,  Node: Section B.4.195,  Next: Section B.4.196,  Prev: Section B.4.194,  Up: Section B.4
+
+B.4.195. `OUTSB', `OUTSW', `OUTSD': Output String to I/O Port
+-------------------------------------------------------------
+
+     OUTSB                         ; 6E                   [186]
+     OUTSW                         ; o16 6F               [186]
+     OUTSD                         ; o32 6F               [386]
+
+   `OUTSB' loads a byte from `[DS:SI]' or `[DS:ESI]' and writes it to
+the I/O port specified in `DX'. It then increments or decrements
+(depending on the direction flag: increments if the flag is clear,
+decrements if it is set) `SI' or `ESI'.
+
+   The register used is `SI' if the address size is 16 bits, and `ESI'
+if it is 32 bits. If you need to use an address size not equal to the
+current `BITS' setting, you can use an explicit `a16' or `a32' prefix.
+
+   The segment register used to load from `[SI]' or `[ESI]' can be
+overridden by using a segment register name as a prefix (for example,
+`es outsb').
+
+   `OUTSW' and `OUTSD' work in the same way, but they output a word or
+a doubleword instead of a byte, and increment or decrement the
+addressing registers by 2 or 4 instead of 1.
+
+   The `REP' prefix may be used to repeat the instruction `CX' (or
+`ECX' - again, the address size chooses which) times.
+
+
+File: nasm.info,  Node: Section B.4.196,  Next: Section B.4.197,  Prev: Section B.4.195,  Up: Section B.4
+
+B.4.196. `PACKSSDW', `PACKSSWB', `PACKUSWB': Pack Data
+------------------------------------------------------
+
+     PACKSSDW mm1,mm2/m64          ; 0F 6B /r             [PENT,MMX]
+     PACKSSWB mm1,mm2/m64          ; 0F 63 /r             [PENT,MMX]
+     PACKUSWB mm1,mm2/m64          ; 0F 67 /r             [PENT,MMX]
+
+     PACKSSDW xmm1,xmm2/m128       ; 66 0F 6B /r     [WILLAMETTE,SSE2]
+     PACKSSWB xmm1,xmm2/m128       ; 66 0F 63 /r     [WILLAMETTE,SSE2]
+     PACKUSWB xmm1,xmm2/m128       ; 66 0F 67 /r     [WILLAMETTE,SSE2]
+
+   All these instructions start by combining the source and destination
+operands, and then splitting the result in smaller sections which it
+then packs into the destination register. The `MMX' versions pack two
+64- bit operands into one 64-bit register, while the `SSE' versions pack
+two 128-bit operands into one 128-bit register.
+
+   * `PACKSSWB' splits the combined value into words, and then reduces
+     the words to bytes, using signed saturation. It then packs the
+     bytes into the destination register in the same order the words
+     were in.
+
+   * `PACKSSDW' performs the same operation as `PACKSSWB', except that
+     it reduces doublewords to words, then packs them into the
+     destination register.
+
+   * `PACKUSWB' performs the same operation as `PACKSSWB', except that
+     it uses unsigned saturation when reducing the size of the elements.
+
+   To perform signed saturation on a number, it is replaced by the
+largest signed number (`7FFFh' or `7Fh') that _will_ fit, and if it is
+too small it is replaced by the smallest signed number (`8000h' or
+`80h') that will fit. To perform unsigned saturation, the input is
+treated as unsigned, and the input is replaced by the largest unsigned
+number that will fit.
+
+
+File: nasm.info,  Node: Section B.4.197,  Next: Section B.4.198,  Prev: Section B.4.196,  Up: Section B.4
+
+B.4.197. `PADDB', `PADDW', `PADDD': Add Packed Integers
+-------------------------------------------------------
+
+     PADDB mm1,mm2/m64             ; 0F FC /r             [PENT,MMX]
+     PADDW mm1,mm2/m64             ; 0F FD /r             [PENT,MMX]
+     PADDD mm1,mm2/m64             ; 0F FE /r             [PENT,MMX]
+
+     PADDB xmm1,xmm2/m128          ; 66 0F FC /r     [WILLAMETTE,SSE2]
+     PADDW xmm1,xmm2/m128          ; 66 0F FD /r     [WILLAMETTE,SSE2]
+     PADDD xmm1,xmm2/m128          ; 66 0F FE /r     [WILLAMETTE,SSE2]
+
+   `PADDx' performs packed addition of the two operands, storing the
+result in the destination (first) operand.
+
+   * `PADDB' treats the operands as packed bytes, and adds each byte
+     individually;
+
+   * `PADDW' treats the operands as packed words;
+
+   * `PADDD' treats its operands as packed doublewords.
+
+   When an individual result is too large to fit in its destination, it
+is wrapped around and the low bits are stored, with the carry bit
+discarded.
+
+
+File: nasm.info,  Node: Section B.4.198,  Next: Section B.4.199,  Prev: Section B.4.197,  Up: Section B.4
+
+B.4.198. `PADDQ': Add Packed Quadword Integers
+----------------------------------------------
+
+     PADDQ mm1,mm2/m64             ; 0F D4 /r             [PENT,MMX]
+
+     PADDQ xmm1,xmm2/m128          ; 66 0F D4 /r     [WILLAMETTE,SSE2]
+
+   `PADDQ' adds the quadwords in the source and destination operands,
+and stores the result in the destination register.
+
+   When an individual result is too large to fit in its destination, it
+is wrapped around and the low bits are stored, with the carry bit
+discarded.
+
+
+File: nasm.info,  Node: Section B.4.199,  Next: Section B.4.200,  Prev: Section B.4.198,  Up: Section B.4
+
+B.4.199. `PADDSB', `PADDSW': Add Packed Signed Integers With Saturation
+-----------------------------------------------------------------------
+
+     PADDSB mm1,mm2/m64            ; 0F EC /r             [PENT,MMX]
+     PADDSW mm1,mm2/m64            ; 0F ED /r             [PENT,MMX]
+
+     PADDSB xmm1,xmm2/m128         ; 66 0F EC /r     [WILLAMETTE,SSE2]
+     PADDSW xmm1,xmm2/m128         ; 66 0F ED /r     [WILLAMETTE,SSE2]
+
+   `PADDSx' performs packed addition of the two operands, storing the
+result in the destination (first) operand. `PADDSB' treats the operands
+as packed bytes, and adds each byte individually; and `PADDSW' treats
+the operands as packed words.
+
+   When an individual result is too large to fit in its destination, a
+saturated value is stored. The resulting value is the value with the
+largest magnitude of the same sign as the result which will fit in the
+available space.
+
+
+File: nasm.info,  Node: Section B.4.200,  Next: Section B.4.201,  Prev: Section B.4.199,  Up: Section B.4
+
+B.4.200. `PADDSIW': MMX Packed Addition to Implicit Destination
+---------------------------------------------------------------
+
+     PADDSIW mmxreg,r/m64          ; 0F 51 /r             [CYRIX,MMX]
+
+   `PADDSIW', specific to the Cyrix extensions to the MMX instruction
+set, performs the same function as `PADDSW', except that the result is
+placed in an implied register.
+
+   To work out the implied register, invert the lowest bit in the
+register number. So `PADDSIW MM0,MM2' would put the result in `MM1', but
+`PADDSIW MM1,MM2' would put the result in `MM0'.
+
+
+File: nasm.info,  Node: Section B.4.201,  Next: Section B.4.202,  Prev: Section B.4.200,  Up: Section B.4
+
+B.4.201. `PADDUSB', `PADDUSW': Add Packed Unsigned Integers With Saturation
+---------------------------------------------------------------------------
+
+     PADDUSB mm1,mm2/m64           ; 0F DC /r             [PENT,MMX]
+     PADDUSW mm1,mm2/m64           ; 0F DD /r             [PENT,MMX]
+
+     PADDUSB xmm1,xmm2/m128         ; 66 0F DC /r    [WILLAMETTE,SSE2]
+     PADDUSW xmm1,xmm2/m128         ; 66 0F DD /r    [WILLAMETTE,SSE2]
+
+   `PADDUSx' performs packed addition of the two operands, storing the
+result in the destination (first) operand. `PADDUSB' treats the
+operands as packed bytes, and adds each byte individually; and
+`PADDUSW' treats the operands as packed words.
+
+   When an individual result is too large to fit in its destination, a
+saturated value is stored. The resulting value is the maximum value that
+will fit in the available space.
+
+
+File: nasm.info,  Node: Section B.4.202,  Next: Section B.4.203,  Prev: Section B.4.201,  Up: Section B.4
+
+B.4.202. `PAND', `PANDN': MMX Bitwise AND and AND-NOT
+-----------------------------------------------------
+
+     PAND mm1,mm2/m64              ; 0F DB /r             [PENT,MMX]
+     PANDN mm1,mm2/m64             ; 0F DF /r             [PENT,MMX]
+
+     PAND xmm1,xmm2/m128           ; 66 0F DB /r     [WILLAMETTE,SSE2]
+     PANDN xmm1,xmm2/m128          ; 66 0F DF /r     [WILLAMETTE,SSE2]
+
+   `PAND' performs a bitwise AND operation between its two operands
+(i.e.  each bit of the result is 1 if and only if the corresponding
+bits of the two inputs were both 1), and stores the result in the
+destination (first) operand.
+
+   `PANDN' performs the same operation, but performs a one's complement
+operation on the destination (first) operand first.
+
+
+File: nasm.info,  Node: Section B.4.203,  Next: Section B.4.204,  Prev: Section B.4.202,  Up: Section B.4
+
+B.4.203. `PAUSE': Spin Loop Hint
+--------------------------------
+
+     PAUSE                         ; F3 90           [WILLAMETTE,SSE2]
+
+   `PAUSE' provides a hint to the processor that the following code is a
+spin loop. This improves processor performance by bypassing possible
+memory order violations. On older processors, this instruction operates
+as a `NOP'.
+
+
+File: nasm.info,  Node: Section B.4.204,  Next: Section B.4.205,  Prev: Section B.4.203,  Up: Section B.4
+
+B.4.204. `PAVEB': MMX Packed Average
+------------------------------------
+
+     PAVEB mmxreg,r/m64            ; 0F 50 /r             [CYRIX,MMX]
+
+   `PAVEB', specific to the Cyrix MMX extensions, treats its two
+operands as vectors of eight unsigned bytes, and calculates the average
+of the corresponding bytes in the operands. The resulting vector of
+eight averages is stored in the first operand.
+
+   This opcode maps to `MOVMSKPS r32, xmm' on processors that support
+the SSE instruction set.
+
+
+File: nasm.info,  Node: Section B.4.205,  Next: Section B.4.206,  Prev: Section B.4.204,  Up: Section B.4
+
+B.4.205. `PAVGB' `PAVGW': Average Packed Integers
+-------------------------------------------------
+
+     PAVGB mm1,mm2/m64             ; 0F E0 /r        [KATMAI,MMX]
+     PAVGW mm1,mm2/m64             ; 0F E3 /r        [KATMAI,MMX,SM]
+
+     PAVGB xmm1,xmm2/m128          ; 66 0F E0 /r     [WILLAMETTE,SSE2]
+     PAVGW xmm1,xmm2/m128          ; 66 0F E3 /r     [WILLAMETTE,SSE2]
+
+   `PAVGB' and `PAVGW' add the unsigned data elements of the source
+operand to the unsigned data elements of the destination register, then
+adds 1 to the temporary results. The results of the add are then each
+independently right-shifted by one bit position. The high order bits of
+each element are filled with the carry bits of the corresponding sum.
+
+   * `PAVGB' operates on packed unsigned bytes, and
+
+   * `PAVGW' operates on packed unsigned words.
+
+
+File: nasm.info,  Node: Section B.4.206,  Next: Section B.4.207,  Prev: Section B.4.205,  Up: Section B.4
+
+B.4.206. `PAVGUSB': Average of unsigned packed 8-bit values
+-----------------------------------------------------------
+
+     PAVGUSB mm1,mm2/m64           ; 0F 0F /r BF          [PENT,3DNOW]
+
+   `PAVGUSB' adds the unsigned data elements of the source operand to
+the unsigned data elements of the destination register, then adds 1 to
+the temporary results. The results of the add are then each
+independently right-shifted by one bit position. The high order bits of
+each element are filled with the carry bits of the corresponding sum.
+
+   This instruction performs exactly the same operations as the `PAVGB'
+`MMX' instruction (*Note Section B.4.205::).
+
+
+File: nasm.info,  Node: Section B.4.207,  Next: Section B.4.208,  Prev: Section B.4.206,  Up: Section B.4
+
+B.4.207. `PCMPxx': Compare Packed Integers.
+-------------------------------------------
+
+     PCMPEQB mm1,mm2/m64           ; 0F 74 /r             [PENT,MMX]
+     PCMPEQW mm1,mm2/m64           ; 0F 75 /r             [PENT,MMX]
+     PCMPEQD mm1,mm2/m64           ; 0F 76 /r             [PENT,MMX]
+
+     PCMPGTB mm1,mm2/m64           ; 0F 64 /r             [PENT,MMX]
+     PCMPGTW mm1,mm2/m64           ; 0F 65 /r             [PENT,MMX]
+     PCMPGTD mm1,mm2/m64           ; 0F 66 /r             [PENT,MMX]
+
+     PCMPEQB xmm1,xmm2/m128        ; 66 0F 74 /r     [WILLAMETTE,SSE2]
+     PCMPEQW xmm1,xmm2/m128        ; 66 0F 75 /r     [WILLAMETTE,SSE2]
+     PCMPEQD xmm1,xmm2/m128        ; 66 0F 76 /r     [WILLAMETTE,SSE2]
+
+     PCMPGTB xmm1,xmm2/m128        ; 66 0F 64 /r     [WILLAMETTE,SSE2]
+     PCMPGTW xmm1,xmm2/m128        ; 66 0F 65 /r     [WILLAMETTE,SSE2]
+     PCMPGTD xmm1,xmm2/m128        ; 66 0F 66 /r     [WILLAMETTE,SSE2]
+
+   The `PCMPxx' instructions all treat their operands as vectors of
+bytes, words, or doublewords; corresponding elements of the source and
+destination are compared, and the corresponding element of the
+destination (first) operand is set to all zeros or all ones depending
+on the result of the comparison.
+
+   * `PCMPxxB' treats the operands as vectors of bytes;
+
+   * `PCMPxxW' treats the operands as vectors of words;
+
+   * `PCMPxxD' treats the operands as vectors of doublewords;
+
+   * `PCMPEQx' sets the corresponding element of the destination
+     operand to all ones if the two elements compared are equal;
+
+   * `PCMPGTx' sets the destination element to all ones if the element
+     of the first (destination) operand is greater (treated as a signed
+     integer) than that of the second (source) operand.
+
+
+File: nasm.info,  Node: Section B.4.208,  Next: Section B.4.209,  Prev: Section B.4.207,  Up: Section B.4
+
+B.4.208. `PDISTIB': MMX Packed Distance and Accumulate with Implied Register
+----------------------------------------------------------------------------
+
+     PDISTIB mm,m64                ; 0F 54 /r             [CYRIX,MMX]
+
+   `PDISTIB', specific to the Cyrix MMX extensions, treats its two input
+operands as vectors of eight unsigned bytes. For each byte position, it
+finds the absolute difference between the bytes in that position in the
+two input operands, and adds that value to the byte in the same
+position in the implied output register. The addition is saturated to
+an unsigned byte in the same way as `PADDUSB'.
+
+   To work out the implied register, invert the lowest bit in the
+register number. So `PDISTIB MM0,M64' would put the result in `MM1', but
+`PDISTIB MM1,M64' would put the result in `MM0'.
+
+   Note that `PDISTIB' cannot take a register as its second source
+operand.
+
+   Operation:
+
+        dstI[0-7]     := dstI[0-7]   + ABS(src0[0-7] - src1[0-7]),
+        dstI[8-15]    := dstI[8-15]  + ABS(src0[8-15] - src1[8-15]),
+        .......
+        .......
+        dstI[56-63]   := dstI[56-63] + ABS(src0[56-63] - src1[56-63]).
+
+
+File: nasm.info,  Node: Section B.4.209,  Next: Section B.4.210,  Prev: Section B.4.208,  Up: Section B.4
+
+B.4.209. `PEXTRW': Extract Word
+-------------------------------
+
+     PEXTRW reg32,mm,imm8          ; 0F C5 /r ib     [KATMAI,MMX]
+     PEXTRW reg32,xmm,imm8         ; 66 0F C5 /r ib  [WILLAMETTE,SSE2]
+
+   `PEXTRW' moves the word in the source register (second operand) that
+is pointed to by the count operand (third operand), into the lower half
+of a 32-bit general purpose register. The upper half of the register is
+cleared to all 0s.
+
+   When the source operand is an `MMX' register, the two least
+significant bits of the count specify the source word. When it is an
+`SSE' register, the three least significant bits specify the word
+location.
+
+
+File: nasm.info,  Node: Section B.4.210,  Next: Section B.4.211,  Prev: Section B.4.209,  Up: Section B.4
+
+B.4.210. `PF2ID': Packed Single-Precision FP to Integer Convert
+---------------------------------------------------------------
+
+     PF2ID mm1,mm2/m64             ; 0F 0F /r 1D          [PENT,3DNOW]
+
+   `PF2ID' converts two single-precision FP values in the source operand
+to signed 32-bit integers, using truncation, and stores them in the
+destination operand. Source values that are outside the range supported
+by the destination are saturated to the largest absolute value of the
+same sign.
+
+
+File: nasm.info,  Node: Section B.4.211,  Next: Section B.4.212,  Prev: Section B.4.210,  Up: Section B.4
+
+B.4.211. `PF2IW': Packed Single-Precision FP to Integer Word Convert
+--------------------------------------------------------------------
+
+     PF2IW mm1,mm2/m64             ; 0F 0F /r 1C          [PENT,3DNOW]
+
+   `PF2IW' converts two single-precision FP values in the source operand
+to signed 16-bit integers, using truncation, and stores them in the
+destination operand. Source values that are outside the range supported
+by the destination are saturated to the largest absolute value of the
+same sign.
+
+   * In the K6-2 and K6-III, the 16-bit value is zero-extended to
+     32-bits before storing.
+
+   * In the K6-2+, K6-III+ and Athlon processors, the value is
+     sign-extended to 32-bits before storing.
+
+
+File: nasm.info,  Node: Section B.4.212,  Next: Section B.4.213,  Prev: Section B.4.211,  Up: Section B.4
+
+B.4.212. `PFACC': Packed Single-Precision FP Accumulate
+-------------------------------------------------------
+
+     PFACC mm1,mm2/m64             ; 0F 0F /r AE          [PENT,3DNOW]
+
+   `PFACC' adds the two single-precision FP values from the destination
+operand together, then adds the two single-precision FP values from the
+source operand, and places the results in the low and high doublewords
+of the destination operand.
+
+   The operation is:
+
+        dst[0-31]   := dst[0-31] + dst[32-63],
+        dst[32-63]  := src[0-31] + src[32-63].
+
+
+File: nasm.info,  Node: Section B.4.213,  Next: Section B.4.214,  Prev: Section B.4.212,  Up: Section B.4
+
+B.4.213. `PFADD': Packed Single-Precision FP Addition
+-----------------------------------------------------
+
+     PFADD mm1,mm2/m64             ; 0F 0F /r 9E          [PENT,3DNOW]
+
+   `PFADD' performs addition on each of two packed single-precision FP
+value pairs.
+
+        dst[0-31]   := dst[0-31]  + src[0-31],
+        dst[32-63]  := dst[32-63] + src[32-63].
+
+
+File: nasm.info,  Node: Section B.4.214,  Next: Section B.4.215,  Prev: Section B.4.213,  Up: Section B.4
+
+B.4.214. `PFCMPxx': Packed Single-Precision FP Compare
+------------------------------------------------------
+
+     PFCMPEQ mm1,mm2/m64           ; 0F 0F /r B0          [PENT,3DNOW]
+     PFCMPGE mm1,mm2/m64           ; 0F 0F /r 90          [PENT,3DNOW]
+     PFCMPGT mm1,mm2/m64           ; 0F 0F /r A0          [PENT,3DNOW]
+
+   The `PFCMPxx' instructions compare the packed single-point FP values
+in the source and destination operands, and set the destination
+according to the result. If the condition is true, the destination is
+set to all 1s, otherwise it's set to all 0s.
+
+   * `PFCMPEQ' tests whether dst == src;
+
+   * `PFCMPGE' tests whether dst >= src;
+
+   * `PFCMPGT' tests whether dst > src.
+
+
+File: nasm.info,  Node: Section B.4.215,  Next: Section B.4.216,  Prev: Section B.4.214,  Up: Section B.4
+
+B.4.215. `PFMAX': Packed Single-Precision FP Maximum
+----------------------------------------------------
+
+     PFMAX mm1,mm2/m64             ; 0F 0F /r A4          [PENT,3DNOW]
+
+   `PFMAX' returns the higher of each pair of single-precision FP
+values.  If the higher value is zero, it is returned as positive zero.
+
+
+File: nasm.info,  Node: Section B.4.216,  Next: Section B.4.217,  Prev: Section B.4.215,  Up: Section B.4
+
+B.4.216. `PFMIN': Packed Single-Precision FP Minimum
+----------------------------------------------------
+
+     PFMIN mm1,mm2/m64             ; 0F 0F /r 94          [PENT,3DNOW]
+
+   `PFMIN' returns the lower of each pair of single-precision FP values.
+If the lower value is zero, it is returned as positive zero.
+
+
+File: nasm.info,  Node: Section B.4.217,  Next: Section B.4.218,  Prev: Section B.4.216,  Up: Section B.4
+
+B.4.217. `PFMUL': Packed Single-Precision FP Multiply
+-----------------------------------------------------
+
+     PFMUL mm1,mm2/m64             ; 0F 0F /r B4          [PENT,3DNOW]
+
+   `PFMUL' returns the product of each pair of single-precision FP
+values.
+
+        dst[0-31]  := dst[0-31]  * src[0-31],
+        dst[32-63] := dst[32-63] * src[32-63].
+
+
+File: nasm.info,  Node: Section B.4.218,  Next: Section B.4.219,  Prev: Section B.4.217,  Up: Section B.4
+
+B.4.218. `PFNACC': Packed Single-Precision FP Negative Accumulate
+-----------------------------------------------------------------
+
+     PFNACC mm1,mm2/m64            ; 0F 0F /r 8A          [PENT,3DNOW]
+
+   `PFNACC' performs a negative accumulate of the two single-precision
+FP values in the source and destination registers. The result of the
+accumulate from the destination register is stored in the low
+doubleword of the destination, and the result of the source accumulate
+is stored in the high doubleword of the destination register.
+
+   The operation is:
+
+        dst[0-31]  := dst[0-31] - dst[32-63],
+        dst[32-63] := src[0-31] - src[32-63].
+
+
+File: nasm.info,  Node: Section B.4.219,  Next: Section B.4.220,  Prev: Section B.4.218,  Up: Section B.4
+
+B.4.219. `PFPNACC': Packed Single-Precision FP Mixed Accumulate
+---------------------------------------------------------------
+
+     PFPNACC mm1,mm2/m64           ; 0F 0F /r 8E          [PENT,3DNOW]
+
+   `PFPNACC' performs a positive accumulate of the two single-precision
+FP values in the source register and a negative accumulate of the
+destination register. The result of the accumulate from the destination
+register is stored in the low doubleword of the destination, and the
+result of the source accumulate is stored in the high doubleword of the
+destination register.
+
+   The operation is:
+
+        dst[0-31]  := dst[0-31] - dst[32-63],
+        dst[32-63] := src[0-31] + src[32-63].
+
+
+File: nasm.info,  Node: Section B.4.220,  Next: Section B.4.221,  Prev: Section B.4.219,  Up: Section B.4
+
+B.4.220. `PFRCP': Packed Single-Precision FP Reciprocal Approximation
+---------------------------------------------------------------------
+
+     PFRCP mm1,mm2/m64             ; 0F 0F /r 96          [PENT,3DNOW]
+
+   `PFRCP' performs a low precision estimate of the reciprocal of the
+low-order single-precision FP value in the source operand, storing the
+result in both halves of the destination register. The result is
+accurate to 14 bits.
+
+   For higher precision reciprocals, this instruction should be
+followed by two more instructions: `PFRCPIT1' (*Note Section B.4.221::)
+and `PFRCPIT2' (*Note Section B.4.221::). This will result in a 24-bit
+accuracy. For more details, see the AMD 3DNow! technology manual.
+
+
+File: nasm.info,  Node: Section B.4.221,  Next: Section B.4.222,  Prev: Section B.4.220,  Up: Section B.4
+
+B.4.221. `PFRCPIT1': Packed Single-Precision FP Reciprocal, First Iteration Step
+--------------------------------------------------------------------------------
+
+     PFRCPIT1 mm1,mm2/m64          ; 0F 0F /r A6          [PENT,3DNOW]
+
+   `PFRCPIT1' performs the first intermediate step in the calculation of
+the reciprocal of a single-precision FP value. The first source value
+(`mm1' is the original value, and the second source value (`mm2/m64' is
+the result of a `PFRCP' instruction.
+
+   For the final step in a reciprocal, returning the full 24-bit
+accuracy of a single-precision FP value, see `PFRCPIT2' (*Note Section
+B.4.222::). For more details, see the AMD 3DNow! technology manual.
+
+
+File: nasm.info,  Node: Section B.4.222,  Next: Section B.4.223,  Prev: Section B.4.221,  Up: Section B.4
+
+B.4.222. `PFRCPIT2': Packed Single-Precision FP Reciprocal/ Reciprocal Square Root, Second Iteration Step
+---------------------------------------------------------------------------------------------------------
+
+     PFRCPIT2 mm1,mm2/m64          ; 0F 0F /r B6          [PENT,3DNOW]
+
+   `PFRCPIT2' performs the second and final intermediate step in the
+calculation of a reciprocal or reciprocal square root, refining the
+values returned by the `PFRCP' and `PFRSQRT' instructions, respectively.
+
+   The first source value (`mm1') is the output of either a `PFRCPIT1'
+or a `PFRSQIT1' instruction, and the second source is the output of
+either the `PFRCP' or the `PFRSQRT' instruction.  For more details, see
+the AMD 3DNow! technology manual.
+
+
+File: nasm.info,  Node: Section B.4.223,  Next: Section B.4.224,  Prev: Section B.4.222,  Up: Section B.4
+
+B.4.223. `PFRSQIT1': Packed Single-Precision FP Reciprocal Square Root, First Iteration Step
+--------------------------------------------------------------------------------------------
+
+     PFRSQIT1 mm1,mm2/m64          ; 0F 0F /r A7          [PENT,3DNOW]
+
+   `PFRSQIT1' performs the first intermediate step in the calculation of
+the reciprocal square root of a single-precision FP value. The first
+source value (`mm1' is the square of the result of a `PFRSQRT'
+instruction, and the second source value (`mm2/m64' is the original
+value.
+
+   For the final step in a calculation, returning the full 24-bit
+accuracy of a single-precision FP value, see `PFRCPIT2' (*Note Section
+B.4.222::).  For more details, see the AMD 3DNow! technology manual.
+
+
+File: nasm.info,  Node: Section B.4.224,  Next: Section B.4.225,  Prev: Section B.4.223,  Up: Section B.4
+
+B.4.224. `PFRSQRT': Packed Single-Precision FP Reciprocal Square Root Approximation
+-----------------------------------------------------------------------------------
+
+     PFRSQRT mm1,mm2/m64           ; 0F 0F /r 97          [PENT,3DNOW]
+
+   `PFRSQRT' performs a low precision estimate of the reciprocal square
+root of the low-order single-precision FP value in the source operand,
+storing the result in both halves of the destination register. The
+result is accurate to 15 bits.
+
+   For higher precision reciprocals, this instruction should be
+followed by two more instructions: `PFRSQIT1' (*Note Section B.4.223::)
+and `PFRCPIT2' (*Note Section B.4.221::). This will result in a 24-bit
+accuracy. For more details, see the AMD 3DNow! technology manual.
+
+
+File: nasm.info,  Node: Section B.4.225,  Next: Section B.4.226,  Prev: Section B.4.224,  Up: Section B.4
+
+B.4.225. `PFSUB': Packed Single-Precision FP Subtract
+-----------------------------------------------------
+
+     PFSUB mm1,mm2/m64             ; 0F 0F /r 9A          [PENT,3DNOW]
+
+   `PFSUB' subtracts the single-precision FP values in the source from
+those in the destination, and stores the result in the destination
+operand.
+
+        dst[0-31]  := dst[0-31]  - src[0-31],
+        dst[32-63] := dst[32-63] - src[32-63].
+
+
+File: nasm.info,  Node: Section B.4.226,  Next: Section B.4.227,  Prev: Section B.4.225,  Up: Section B.4
+
+B.4.226. `PFSUBR': Packed Single-Precision FP Reverse Subtract
+--------------------------------------------------------------
+
+     PFSUBR mm1,mm2/m64            ; 0F 0F /r AA          [PENT,3DNOW]
+
+   `PFSUBR' subtracts the single-precision FP values in the destination
+from those in the source, and stores the result in the destination
+operand.
+
+        dst[0-31]  := src[0-31]  - dst[0-31],
+        dst[32-63] := src[32-63] - dst[32-63].
+
+
+File: nasm.info,  Node: Section B.4.227,  Next: Section B.4.228,  Prev: Section B.4.226,  Up: Section B.4
+
+B.4.227. `PI2FD': Packed Doubleword Integer to Single-Precision FP Convert
+--------------------------------------------------------------------------
+
+     PI2FD mm1,mm2/m64             ; 0F 0F /r 0D          [PENT,3DNOW]
+
+   `PF2ID' converts two signed 32-bit integers in the source operand to
+single-precision FP values, using truncation of significant digits, and
+stores them in the destination operand.
+
+
+File: nasm.info,  Node: Section B.4.228,  Next: Section B.4.229,  Prev: Section B.4.227,  Up: Section B.4
+
+B.4.228. `PF2IW': Packed Word Integer to Single-Precision FP Convert
+--------------------------------------------------------------------
+
+     PI2FW mm1,mm2/m64             ; 0F 0F /r 0C          [PENT,3DNOW]
+
+   `PF2IW' converts two signed 16-bit integers in the source operand to
+single-precision FP values, and stores them in the destination operand.
+The input values are in the low word of each doubleword.
+
+
+File: nasm.info,  Node: Section B.4.229,  Next: Section B.4.230,  Prev: Section B.4.228,  Up: Section B.4
+
+B.4.229. `PINSRW': Insert Word
+------------------------------
+
+     PINSRW mm,r16/r32/m16,imm8    ;0F C4 /r ib      [KATMAI,MMX]
+     PINSRW xmm,r16/r32/m16,imm8   ;66 0F C4 /r ib   [WILLAMETTE,SSE2]
+
+   `PINSRW' loads a word from a 16-bit register (or the low half of a
+32- bit register), or from memory, and loads it to the word position in
+the destination register, pointed at by the count operand (third
+operand). If the destination is an `MMX' register, the low two bits of
+the count byte are used, if it is an `XMM' register the low 3 bits are
+used. The insertion is done in such a way that the other words from the
+destination register are left untouched.
+
+
+File: nasm.info,  Node: Section B.4.230,  Next: Section B.4.231,  Prev: Section B.4.229,  Up: Section B.4
+
+B.4.230. `PMACHRIW': Packed Multiply and Accumulate with Rounding
+-----------------------------------------------------------------
+
+     PMACHRIW mm,m64               ; 0F 5E /r             [CYRIX,MMX]
+
+   `PMACHRIW' takes two packed 16-bit integer inputs, multiplies the
+values in the inputs, rounds on bit 15 of each result, then adds bits
+15-30 of each result to the corresponding position of the _implied_
+destination register.
+
+   The operation of this instruction is:
+
+        dstI[0-15]  := dstI[0-15]  + (mm[0-15] *m64[0-15]
+                                               + 0x00004000)[15-30],
+        dstI[16-31] := dstI[16-31] + (mm[16-31]*m64[16-31]
+                                               + 0x00004000)[15-30],
+        dstI[32-47] := dstI[32-47] + (mm[32-47]*m64[32-47]
+                                               + 0x00004000)[15-30],
+        dstI[48-63] := dstI[48-63] + (mm[48-63]*m64[48-63]
+                                               + 0x00004000)[15-30].
+
+   Note that `PMACHRIW' cannot take a register as its second source
+operand.
+
+
+File: nasm.info,  Node: Section B.4.231,  Next: Section B.4.232,  Prev: Section B.4.230,  Up: Section B.4
+
+B.4.231. `PMADDWD': MMX Packed Multiply and Add
+-----------------------------------------------
+
+     PMADDWD mm1,mm2/m64           ; 0F F5 /r             [PENT,MMX]
+     PMADDWD xmm1,xmm2/m128        ; 66 0F F5 /r     [WILLAMETTE,SSE2]
+
+   `PMADDWD' treats its two inputs as vectors of signed words. It
+multiplies corresponding elements of the two operands, giving doubleword
+results. These are then added together in pairs and stored in the
+destination operand.
+
+   The operation of this instruction is:
+
+        dst[0-31]   := (dst[0-15] * src[0-15])
+                                    + (dst[16-31] * src[16-31]);
+        dst[32-63]  := (dst[32-47] * src[32-47])
+                                    + (dst[48-63] * src[48-63]);
+
+   The following apply to the `SSE' version of the instruction:
+
+        dst[64-95]  := (dst[64-79] * src[64-79])
+                                    + (dst[80-95] * src[80-95]);
+        dst[96-127] := (dst[96-111] * src[96-111])
+                                    + (dst[112-127] * src[112-127]).
+
+
+File: nasm.info,  Node: Section B.4.232,  Next: Section B.4.233,  Prev: Section B.4.231,  Up: Section B.4
+
+B.4.232. `PMAGW': MMX Packed Magnitude
+--------------------------------------
+
+     PMAGW mm1,mm2/m64             ; 0F 52 /r             [CYRIX,MMX]
+
+   `PMAGW', specific to the Cyrix MMX extensions, treats both its
+operands as vectors of four signed words. It compares the absolute
+values of the words in corresponding positions, and sets each word of
+the destination (first) operand to whichever of the two words in that
+position had the larger absolute value.
+
+
+File: nasm.info,  Node: Section B.4.233,  Next: Section B.4.234,  Prev: Section B.4.232,  Up: Section B.4
+
+B.4.233. `PMAXSW': Packed Signed Integer Word Maximum
+-----------------------------------------------------
+
+     PMAXSW mm1,mm2/m64            ; 0F EE /r        [KATMAI,MMX]
+     PMAXSW xmm1,xmm2/m128         ; 66 0F EE /r     [WILLAMETTE,SSE2]
+
+   `PMAXSW' compares each pair of words in the two source operands, and
+for each pair it stores the maximum value in the destination register.
+
+
+File: nasm.info,  Node: Section B.4.234,  Next: Section B.4.235,  Prev: Section B.4.233,  Up: Section B.4
+
+B.4.234. `PMAXUB': Packed Unsigned Integer Byte Maximum
+-------------------------------------------------------
+
+     PMAXUB mm1,mm2/m64            ; 0F DE /r        [KATMAI,MMX]
+     PMAXUB xmm1,xmm2/m128         ; 66 0F DE /r     [WILLAMETTE,SSE2]
+
+   `PMAXUB' compares each pair of bytes in the two source operands, and
+for each pair it stores the maximum value in the destination register.
+
+
+File: nasm.info,  Node: Section B.4.235,  Next: Section B.4.236,  Prev: Section B.4.234,  Up: Section B.4
+
+B.4.235. `PMINSW': Packed Signed Integer Word Minimum
+-----------------------------------------------------
+
+     PMINSW mm1,mm2/m64            ; 0F EA /r        [KATMAI,MMX]
+     PMINSW xmm1,xmm2/m128         ; 66 0F EA /r     [WILLAMETTE,SSE2]
+
+   `PMINSW' compares each pair of words in the two source operands, and
+for each pair it stores the minimum value in the destination register.
+
+
+File: nasm.info,  Node: Section B.4.236,  Next: Section B.4.237,  Prev: Section B.4.235,  Up: Section B.4
+
+B.4.236. `PMINUB': Packed Unsigned Integer Byte Minimum
+-------------------------------------------------------
+
+     PMINUB mm1,mm2/m64            ; 0F DA /r        [KATMAI,MMX]
+     PMINUB xmm1,xmm2/m128         ; 66 0F DA /r     [WILLAMETTE,SSE2]
+
+   `PMINUB' compares each pair of bytes in the two source operands, and
+for each pair it stores the minimum value in the destination register.
+
+
+File: nasm.info,  Node: Section B.4.237,  Next: Section B.4.238,  Prev: Section B.4.236,  Up: Section B.4
+
+B.4.237. `PMOVMSKB': Move Byte Mask To Integer
+----------------------------------------------
+
+     PMOVMSKB reg32,mm             ; 0F D7 /r        [KATMAI,MMX]
+     PMOVMSKB reg32,xmm            ; 66 0F D7 /r     [WILLAMETTE,SSE2]
+
+   `PMOVMSKB' returns an 8-bit or 16-bit mask formed of the most
+significant bits of each byte of source operand (8-bits for an `MMX'
+register, 16-bits for an `XMM' register).
+
+
+File: nasm.info,  Node: Section B.4.238,  Next: Section B.4.239,  Prev: Section B.4.237,  Up: Section B.4
+
+B.4.238. `PMULHRWC', `PMULHRIW': Multiply Packed 16-bit Integers With Rounding, and Store High Word
+---------------------------------------------------------------------------------------------------
+
+     PMULHRWC mm1,mm2/m64         ; 0F 59 /r              [CYRIX,MMX]
+     PMULHRIW mm1,mm2/m64         ; 0F 5D /r              [CYRIX,MMX]
+
+   These instructions take two packed 16-bit integer inputs, multiply
+the values in the inputs, round on bit 15 of each result, then store
+bits 15-30 of each result to the corresponding position of the
+destination register.
+
+   * For `PMULHRWC', the destination is the first source operand.
+
+   * For `PMULHRIW', the destination is an implied register (worked out
+     as described for `PADDSIW' (*Note Section B.4.200::)).
+
+   The operation of this instruction is:
+
+        dst[0-15]  := (src1[0-15] *src2[0-15]  + 0x00004000)[15-30]
+        dst[16-31] := (src1[16-31]*src2[16-31] + 0x00004000)[15-30]
+        dst[32-47] := (src1[32-47]*src2[32-47] + 0x00004000)[15-30]
+        dst[48-63] := (src1[48-63]*src2[48-63] + 0x00004000)[15-30]
+
+   See also `PMULHRWA' (*Note Section B.4.239::) for a 3DNow! version of
+this instruction.
+
+
+File: nasm.info,  Node: Section B.4.239,  Next: Section B.4.240,  Prev: Section B.4.238,  Up: Section B.4
+
+B.4.239. `PMULHRWA': Multiply Packed 16-bit Integers With Rounding, and Store High Word
+---------------------------------------------------------------------------------------
+
+     PMULHRWA mm1,mm2/m64          ; 0F 0F /r B7     [PENT,3DNOW]
+
+   `PMULHRWA' takes two packed 16-bit integer inputs, multiplies the
+values in the inputs, rounds on bit 16 of each result, then stores bits
+16- 31 of each result to the corresponding position of the destination
+register.
+
+   The operation of this instruction is:
+
+        dst[0-15]  := (src1[0-15] *src2[0-15]  + 0x00008000)[16-31];
+        dst[16-31] := (src1[16-31]*src2[16-31] + 0x00008000)[16-31];
+        dst[32-47] := (src1[32-47]*src2[32-47] + 0x00008000)[16-31];
+        dst[48-63] := (src1[48-63]*src2[48-63] + 0x00008000)[16-31].
+
+   See also `PMULHRWC' (*Note Section B.4.238::) for a Cyrix version of
+this instruction.
+
+
+File: nasm.info,  Node: Section B.4.240,  Next: Section B.4.241,  Prev: Section B.4.239,  Up: Section B.4
+
+B.4.240. `PMULHUW': Multiply Packed 16-bit Integers, and Store High Word
+------------------------------------------------------------------------
+
+     PMULHUW mm1,mm2/m64           ; 0F E4 /r        [KATMAI,MMX]
+     PMULHUW xmm1,xmm2/m128        ; 66 0F E4 /r     [WILLAMETTE,SSE2]
+
+   `PMULHUW' takes two packed unsigned 16-bit integer inputs, multiplies
+the values in the inputs, then stores bits 16-31 of each result to the
+corresponding position of the destination register.
+
+
+File: nasm.info,  Node: Section B.4.241,  Next: Section B.4.242,  Prev: Section B.4.240,  Up: Section B.4
+
+B.4.241. `PMULHW', `PMULLW': Multiply Packed 16-bit Integers, and Store
+-----------------------------------------------------------------------
+
+     PMULHW mm1,mm2/m64            ; 0F E5 /r             [PENT,MMX]
+     PMULLW mm1,mm2/m64            ; 0F D5 /r             [PENT,MMX]
+
+     PMULHW xmm1,xmm2/m128         ; 66 0F E5 /r     [WILLAMETTE,SSE2]
+     PMULLW xmm1,xmm2/m128         ; 66 0F D5 /r     [WILLAMETTE,SSE2]
+
+   `PMULxW' takes two packed unsigned 16-bit integer inputs, and
+multiplies the values in the inputs, forming doubleword results.
+
+   * `PMULHW' then stores the top 16 bits of each doubleword in the
+     destination (first) operand;
+
+   * `PMULLW' stores the bottom 16 bits of each doubleword in the
+     destination operand.
+
+
+File: nasm.info,  Node: Section B.4.242,  Next: Section B.4.243,  Prev: Section B.4.241,  Up: Section B.4
+
+B.4.242. `PMULUDQ': Multiply Packed Unsigned 32-bit Integers, and Store.
+------------------------------------------------------------------------
+
+     PMULUDQ mm1,mm2/m64           ; 0F F4 /r        [WILLAMETTE,SSE2]
+     PMULUDQ xmm1,xmm2/m128        ; 66 0F F4 /r     [WILLAMETTE,SSE2]
+
+   `PMULUDQ' takes two packed unsigned 32-bit integer inputs, and
+multiplies the values in the inputs, forming quadword results. The
+source is either an unsigned doubleword in the low doubleword of a
+64-bit operand, or it's two unsigned doublewords in the first and third
+doublewords of a 128-bit operand. This produces either one or two
+64-bit results, which are stored in the respective quadword locations
+of the destination register.
+
+   The operation is:
+
+        dst[0-63]   := dst[0-31]  * src[0-31];
+        dst[64-127] := dst[64-95] * src[64-95].
+
+
+File: nasm.info,  Node: Section B.4.243,  Next: Section B.4.244,  Prev: Section B.4.242,  Up: Section B.4
+
+B.4.243. `PMVccZB': MMX Packed Conditional Move
+-----------------------------------------------
+
+     PMVZB mmxreg,mem64            ; 0F 58 /r             [CYRIX,MMX]
+     PMVNZB mmxreg,mem64           ; 0F 5A /r             [CYRIX,MMX]
+     PMVLZB mmxreg,mem64           ; 0F 5B /r             [CYRIX,MMX]
+     PMVGEZB mmxreg,mem64          ; 0F 5C /r             [CYRIX,MMX]
+
+   These instructions, specific to the Cyrix MMX extensions, perform
+parallel conditional moves. The two input operands are treated as
+vectors of eight bytes. Each byte of the destination (first) operand is
+either written from the corresponding byte of the source (second)
+operand, or left alone, depending on the value of the byte in the
+_implied_ operand (specified in the same way as `PADDSIW', in *Note
+Section B.4.200::).
+
+   * `PMVZB' performs each move if the corresponding byte in the implied
+     operand is zero;
+
+   * `PMVNZB' moves if the byte is non-zero;
+
+   * `PMVLZB' moves if the byte is less than zero;
+
+   * `PMVGEZB' moves if the byte is greater than or equal to zero.
+
+   Note that these instructions cannot take a register as their second
+source operand.
+

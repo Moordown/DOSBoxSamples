@@ -1,0 +1,901 @@
+Turbo Assembler	 Version 4.1	    11/25/19 14:17:33	    Page 1
+regex.ASM
+
+
+
+      1					 include macro.asm
+1     2					 load macro args
+1     3					     irp d,<args>
+1     4						 push d
+1     5					     endm
+1     6					 endm
+1     7
+1     8					 restore macro args
+1     9					     irp d,<args>
+1    10						 pop d
+1    11					     endm
+1    12					 endm
+1    13
+1    14					 exit macro
+1    15					     mov ah, 00h
+1    16					     int 21h
+1    17					 endm
+1    18
+1    19					 print macro buf
+1    20						 mov ah, 09h
+1    21						 mov dx, buf
+1    22						 int 21h
+1    23					 endm
+1    24
+1    25					 get_offset macro state
+1    26					     xor dx, dx
+1    27					     xor ax, ax
+1    28					     mov al, state
+1    29					     shl ax, 8
+1    30					 endm get_offset
+1    31
+1    32					 to_non_space macro addr
+1    33					     local l1, l2
+1    34					     mov si, addr
+1    35					 l1:
+1    36					     mov byte ptr al, [si]
+1    37					     cmp al, 20h
+1    38					     je	l2
+1    39					     cmp al, 0
+1    40					     je	l2
+1    41					     inc si
+1    42					     jmp l1
+1    43					 l2:
+1    44					     inc si
+1    45					     mov ax, si
+1    46					 endm
+1    47
+1    48					 set_transition	macro buf, from, to, char
+1    49					     load<bx, dx>
+1    50					     get_offset	from
+1    51
+1    52					     add ax, offset buf
+1    53					     add ax, char
+1    54
+1    55					     mov bx, ax
+1    56					     mov byte ptr [bx],	to
+1    57					     restore<dx, bx>
+Turbo Assembler	 Version 4.1	    11/25/19 14:17:33	    Page 2
+regex.ASM
+
+
+
+1    58					 endm
+1    59
+1    60					 set_transition_length_from_start macro	buf, from, to, start, iterations
+1    61					     local l1, end
+1    62					     mov bx, start
+1    63					     mov cx, iterations
+1    64					 l1:
+1    65					     cmp cx, 0
+1    66					     je	end
+1    67
+1    68					     load <bx,cx>
+1    69					     set_transition buf	from to	bx
+1    70					     restore <cx,bx>
+1    71
+1    72					     inc bx
+1    73					     dec cx
+1    74					     jmp l1
+1    75					 end:
+1    76					 endm
+1    77
+1    78					 print_range macro args
+1    79					     irp d,<args>
+1    80						 print <offset d>
+1    81					     endm
+1    82					 endm
+1    83
+1    84					 set_transition_for_all	macro buf, from, to
+1    85					     set_transition_length_from_start buf, from, to, 0,	255
+1    86					 endm
+1    87
+1    88					 set_transition_for_digits macro buf, from, to
+1    89					     set_transition_length_from_start buf, from, to, 30, 10
+1    90					 endm
+1    91
+1    92					 set_transition_for_letters macro buf, from, to
+1    93					     set_transition_length_from_start buf, from, to, 97, 26
+1    94					     set_transition_length_from_start buf, from, to, 65, 26
+1    95					 endm
+1    96
+1    97					 get_transition	macro buf, from, char
+1    98					     load <dx>
+1    99					     get_offset	from
+1   100					     restore <dx>
+1   101
+1   102					     add ax, offset buf
+1   103					     add ax, char
+1   104
+1   105					     mov bx, ax
+1   106					     xor ax, ax
+1   107					     mov al, byte ptr [bx]
+1   108					 endm
+1   109
+1   110					 put macro from, to, position
+1   111					     xor dx, dx
+1   112					     xor bx, bx
+1   113
+1   114					     mov dx, offset to
+Turbo Assembler	 Version 4.1	    11/25/19 14:17:33	    Page 3
+regex.ASM
+
+
+
+1   115					     mov bl, byte ptr [position]
+1   116					     add dx, bx
+1   117
+1   118					     inc [position]
+1   119					     mov bl, byte ptr [from]
+1   120					     mov byte ptr [edx], bl
+1   121					 endm
+    122
+    123	    0000			 model tiny
+    124					 .386
+    125	    0000			 .code
+    126					 org 100h
+    127	    0100			 start:
+    128	    0100  E8 0196		     call create_D_table
+    129	    0103  E8 01BE		     call create_C_table
+    130	    0106  E8 01ED		     call create_B_table
+    131	    0109  E8 02B1		     call create_A_table
+    132					     to_non_space 80h
+1   133	    010C  BE 0080		     mov si, 80h
+1   134	    010F			 ??0000:
+1   135	    010F  8A 04			     mov byte ptr al, [si]
+1   136	    0111  3C 20			     cmp al, 20h
+1   137	    0113  74 07			     je	??0001
+1   138	    0115  3C 00			     cmp al, 0
+1   139	    0117  74 03			     je	??0001
+1   140	    0119  46			     inc si
+1   141	    011A  EB F3			     jmp ??0000
+1   142	    011C			 ??0001:
+1   143	    011C  46			     inc si
+1   144	    011D  8B C6			     mov ax, si
+    145	    011F  8B F0			     mov si, ax
+    146	    0121			 parse_loop:
+    147					     load <si>
+2   148	    0121  56				 push si
+    149	    0122  33 D2			     xor dx, dx
+    150	    0124  33 DB			     xor bx, bx
+    151	    0126  33 C0			     xor ax, ax
+    152	    0128  8A 14			     mov dl, byte ptr [si]
+    153	    012A  80 FA	0D		     cmp dl, 0Dh
+    154	    012D  0F 84	0135		     je	l8
+    155	    0131  8A 1E	0496r		     mov bl, byte ptr [state]
+    156					     get_transition buf, bl, dx
+1   157					     load <dx>
+3   158	    0135  52				 push dx
+1   159					     get_offset	bl
+2   160	    0136  33 D2			     xor dx, dx
+2   161	    0138  33 C0			     xor ax, ax
+2   162	    013A  8A C3			     mov al, bl
+2   163	    013C  C1 E0	08		     shl ax, 8
+1   164					     restore <dx>
+3   165	    013F  5A				 pop dx
+1   166	    0140  05 06DCr		     add ax, offset buf
+1   167	    0143  03 C2			     add ax, dx
+1   168	    0145  8B D8			     mov bx, ax
+1   169	    0147  33 C0			     xor ax, ax
+1   170	    0149  8A 07			     mov al, byte ptr [bx]
+    171					     restore <si>
+Turbo Assembler	 Version 4.1	    11/25/19 14:17:33	    Page 4
+regex.ASM
+
+
+
+2   172	    014B  5E				 pop si
+    173
+    174	    014C  A2 0496r		     mov byte ptr [state], al
+    175	    014F  3C 00			     cmp al, 0
+    176	    0151  0F 84	012C		     je	l9
+    177	    0155  3A 06	0497r		     cmp al, byte ptr [termA]
+    178	    0159  7E 19			     jle l1
+    179	    015B  3A 06	0498r		     cmp al, byte ptr [termB]
+    180	    015F  7E 51			     jle l3
+    181	    0161  3A 06	0499r		     cmp al, byte ptr [termC]
+    182	    0165  0F 8E	0087		     jle l5
+    183	    0169  3A 06	049Ar		     cmp al, byte ptr [termD]
+    184	    016D  0F 8E	00D2		     jle l7
+    185	    0171  E9 0121		     jmp eall
+    186	    0174			 l1:
+    187					     put si, pr, prad
+1   188	    0174  33 D2			     xor dx, dx
+1   189	    0176  33 DB			     xor bx, bx
+1   190	    0178  BA 049Br		     mov dx, offset pr
+1   191	    017B  8A 1E	06D8r		     mov bl, byte ptr [prad]
+1   192	    017F  03 D3			     add dx, bx
+1   193	    0181  FE 06	06D8r		     inc [prad]
+1   194	    0185  8A 1C			     mov bl, byte ptr [si]
+1   195	    0187  67| 88 1A		     mov byte ptr [edx], bl
+    196	    018A  A0 0496r		     mov al, byte ptr [state]
+    197	    018D  3A 06	0497r		     cmp al, byte ptr [termA]
+    198	    0191  74 03			     je	l2
+    199	    0193  E9 00FB		     jmp eloop
+    200	    0196			 l2:
+    201					     print_range <prmes, pr, newline>
+2   202						 print <offset prmes>
+3   203	    0196  B4 09				 mov ah, 09h
+3   204	    0198  BA 069Br			 mov dx, offset	prmes
+3   205	    019B  CD 21				 int 21h
+2   206						 print <offset pr>
+3   207	    019D  B4 09				 mov ah, 09h
+3   208	    019F  BA 049Br			 mov dx, offset	pr
+3   209	    01A2  CD 21				 int 21h
+2   210						 print <offset newline>
+3   211	    01A4  B4 09				 mov ah, 09h
+3   212	    01A6  BA 06D6r			 mov dx, offset	newline
+3   213	    01A9  CD 21				 int 21h
+    214	    01AB  FE 06	0496r		     inc [state]
+    215	    01AF  E9 00DF		     jmp eloop
+    216	    01B2			 l3:
+    217					     put si, dom, domad
+1   218	    01B2  33 D2			     xor dx, dx
+1   219	    01B4  33 DB			     xor bx, bx
+1   220	    01B6  BA 051Br		     mov dx, offset dom
+1   221	    01B9  8A 1E	06D9r		     mov bl, byte ptr [domad]
+1   222	    01BD  03 D3			     add dx, bx
+1   223	    01BF  FE 06	06D9r		     inc [domad]
+1   224	    01C3  8A 1C			     mov bl, byte ptr [si]
+1   225	    01C5  67| 88 1A		     mov byte ptr [edx], bl
+    226	    01C8  A0 0496r		     mov al, byte ptr [state]
+    227	    01CB  3A 06	0498r		     cmp al, byte ptr [termB]
+    228	    01CF  74 03			     je	l4
+Turbo Assembler	 Version 4.1	    11/25/19 14:17:33	    Page 5
+regex.ASM
+
+
+
+    229	    01D1  E9 00BD		     jmp eloop
+    230	    01D4			 l4:
+    231					     print_range <dommes, dom, newline>
+2   232						 print <offset dommes>
+3   233	    01D4  B4 09				 mov ah, 09h
+3   234	    01D6  BA 06A6r			 mov dx, offset	dommes
+3   235	    01D9  CD 21				 int 21h
+2   236						 print <offset dom>
+3   237	    01DB  B4 09				 mov ah, 09h
+3   238	    01DD  BA 051Br			 mov dx, offset	dom
+3   239	    01E0  CD 21				 int 21h
+2   240						 print <offset newline>
+3   241	    01E2  B4 09				 mov ah, 09h
+3   242	    01E4  BA 06D6r			 mov dx, offset	newline
+3   243	    01E7  CD 21				 int 21h
+    244	    01E9  FE 06	0496r		     inc [state]
+    245	    01ED  E9 00A1		     jmp eloop
+    246	    01F0			 l5:
+    247	    01F0  A0 0496r		     mov al, byte ptr [state]
+    248	    01F3  3A 06	0499r		     cmp al, byte ptr [termC]
+    249	    01F7  74 19			     je	l6
+    250					     put si, pat, patad
+1   251	    01F9  33 D2			     xor dx, dx
+1   252	    01FB  33 DB			     xor bx, bx
+1   253	    01FD  BA 059Br		     mov dx, offset pat
+1   254	    0200  8A 1E	06DAr		     mov bl, byte ptr [patad]
+1   255	    0204  03 D3			     add dx, bx
+1   256	    0206  FE 06	06DAr		     inc [patad]
+1   257	    020A  8A 1C			     mov bl, byte ptr [si]
+1   258	    020C  67| 88 1A		     mov byte ptr [edx], bl
+    259	    020F  E9 007F		     jmp eloop
+    260	    0212			 l6:
+    261					     print_range <pathmes, pat,	newline>
+2   262						 print <offset pathmes>
+3   263	    0212  B4 09				 mov ah, 09h
+3   264	    0214  BA 06AFr			 mov dx, offset	pathmes
+3   265	    0217  CD 21				 int 21h
+2   266						 print <offset pat>
+3   267	    0219  B4 09				 mov ah, 09h
+3   268	    021B  BA 059Br			 mov dx, offset	pat
+3   269	    021E  CD 21				 int 21h
+2   270						 print <offset newline>
+3   271	    0220  B4 09				 mov ah, 09h
+3   272	    0222  BA 06D6r			 mov dx, offset	newline
+3   273	    0225  CD 21				 int 21h
+    274					     put si, que, quead
+1   275	    0227  33 D2			     xor dx, dx
+1   276	    0229  33 DB			     xor bx, bx
+1   277	    022B  BA 061Br		     mov dx, offset que
+1   278	    022E  8A 1E	06DBr		     mov bl, byte ptr [quead]
+1   279	    0232  03 D3			     add dx, bx
+1   280	    0234  FE 06	06DBr		     inc [quead]
+1   281	    0238  8A 1C			     mov bl, byte ptr [si]
+1   282	    023A  67| 88 1A		     mov byte ptr [edx], bl
+    283	    023D  FE 06	0496r		     inc [state]
+    284	    0241  EB 4E			     jmp eloop
+    285	    0243			 l7:
+Turbo Assembler	 Version 4.1	    11/25/19 14:17:33	    Page 6
+regex.ASM
+
+
+
+    286					     put si, que, quead
+1   287	    0243  33 D2			     xor dx, dx
+1   288	    0245  33 DB			     xor bx, bx
+1   289	    0247  BA 061Br		     mov dx, offset que
+1   290	    024A  8A 1E	06DBr		     mov bl, byte ptr [quead]
+1   291	    024E  03 D3			     add dx, bx
+1   292	    0250  FE 06	06DBr		     inc [quead]
+1   293	    0254  8A 1C			     mov bl, byte ptr [si]
+1   294	    0256  67| 88 1A		     mov byte ptr [edx], bl
+    295	    0259  A0 0496r		     mov al, byte ptr [state]
+    296	    025C  3A 06	049Ar		     cmp al, byte ptr [termD]
+    297	    0260  0F 84	FF70		     je	l4
+    298	    0264  EB 2B			     jmp eloop
+    299	    0266			 l8:
+    300					     print_range <querymes, que, newline>
+2   301						 print <offset querymes>
+3   302	    0266  B4 09				 mov ah, 09h
+3   303	    0268  BA 06B6r			 mov dx, offset	querymes
+3   304	    026B  CD 21				 int 21h
+2   305						 print <offset que>
+3   306	    026D  B4 09				 mov ah, 09h
+3   307	    026F  BA 061Br			 mov dx, offset	que
+3   308	    0272  CD 21				 int 21h
+2   309						 print <offset newline>
+3   310	    0274  B4 09				 mov ah, 09h
+3   311	    0276  BA 06D6r			 mov dx, offset	newline
+3   312	    0279  CD 21				 int 21h
+    313	    027B  FE 06	0496r		     inc [state]
+    314	    027F  EB 14			     jmp eall
+    315	    0281			 l9:
+    316					     print_range <errormes, newline>
+2   317						 print <offset errormes>
+3   318	    0281  B4 09				 mov ah, 09h
+3   319	    0283  BA 06BEr			 mov dx, offset	errormes
+3   320	    0286  CD 21				 int 21h
+2   321						 print <offset newline>
+3   322	    0288  B4 09				 mov ah, 09h
+3   323	    028A  BA 06D6r			 mov dx, offset	newline
+3   324	    028D  CD 21				 int 21h
+    325	    028F  EB 04			     jmp eall
+    326	    0291			 eloop:
+    327	    0291  46			     inc si
+    328	    0292  E9 FE8C		     jmp parse_loop
+    329	    0295			 eall:
+    330					     exit
+1   331	    0295  B4 00			     mov ah, 00h
+1   332	    0297  CD 21			     int 21h
+    333	    0299			 create_D_table:
+    334					     set_transition_for_all buf	11 11
+1   335					     set_transition_length_from_start buf, 11, 11, 0, 255
+2   336	    0299  BB 0000		     mov bx, 0
+2   337	    029C  B9 00FF		     mov cx, 255
+2   338	    029F			 ??0002:
+2   339	    029F  83 F9	00		     cmp cx, 0
+2   340	    02A2  74 1F			     je	??0003
+2   341					     load <bx,cx>
+4   342	    02A4  53				 push bx
+Turbo Assembler	 Version 4.1	    11/25/19 14:17:33	    Page 7
+regex.ASM
+
+
+
+4   343	    02A5  51				 push cx
+2   344					     set_transition buf	11 11 bx
+3   345					     load<bx, dx>
+5   346	    02A6  53				 push bx
+5   347	    02A7  52				 push dx
+3   348					     get_offset	11
+4   349	    02A8  33 D2			     xor dx, dx
+4   350	    02AA  33 C0			     xor ax, ax
+4   351	    02AC  B0 0B			     mov al, 11
+4   352	    02AE  C1 E0	08		     shl ax, 8
+3   353	    02B1  05 06DCr		     add ax, offset buf
+3   354	    02B4  03 C3			     add ax, bx
+3   355	    02B6  8B D8			     mov bx, ax
+3   356	    02B8  C6 07	0B		     mov byte ptr [bx],	11
+3   357					     restore<dx, bx>
+5   358	    02BB  5A				 pop dx
+5   359	    02BC  5B				 pop bx
+2   360					     restore <cx,bx>
+4   361	    02BD  59				 pop cx
+4   362	    02BE  5B				 pop bx
+2   363	    02BF  43			     inc bx
+2   364	    02C0  49			     dec cx
+2   365	    02C1  EB DC			     jmp ??0002
+2   366	    02C3			 ??0003:
+    367	    02C3  C3			     ret
+    368	    02C4			 create_C_table:
+    369					     set_transition buf_all buf	10 10
+1   370					     load<bx, dx>
+3   371	    02C4  53				 push bx
+3   372	    02C5  52				 push dx
+1   373					     get_offset	buf
+2   374	    02C6  33 D2			     xor dx, dx
+2   375	    02C8  33 C0			     xor ax, ax
+2   376	    02CA  A0 06DCr		     mov al, buf
+2   377	    02CD  C1 E0	08		     shl ax, 8
+1   378	    02D0  05 0000		     add ax, offset buf_all
+**Error** regex.ASM(91)	SET_TRANSITION(4) Undefined symbol: BUF_ALL
+1   379	    02D3  05 000A		     add ax, 10
+1   380	    02D6  8B D8			     mov bx, ax
+1   381	    02D8  C6 07	0A		     mov byte ptr [bx],	10
+1   382					     restore<dx, bx>
+3   383	    02DB  5A				 pop dx
+3   384	    02DC  5B				 pop bx
+    385					     set_transition buf	10 11 '?'
+1   386					     load<bx, dx>
+3   387	    02DD  53				 push bx
+3   388	    02DE  52				 push dx
+1   389					     get_offset	10
+2   390	    02DF  33 D2			     xor dx, dx
+2   391	    02E1  33 C0			     xor ax, ax
+2   392	    02E3  B0 0A			     mov al, 10
+2   393	    02E5  C1 E0	08		     shl ax, 8
+1   394	    02E8  05 06DCr		     add ax, offset buf
+1   395	    02EB  05 003F		     add ax, '?'
+1   396	    02EE  8B D8			     mov bx, ax
+1   397	    02F0  C6 07	0B		     mov byte ptr [bx],	11
+1   398					     restore<dx, bx>
+Turbo Assembler	 Version 4.1	    11/25/19 14:17:33	    Page 8
+regex.ASM
+
+
+
+3   399	    02F3  5A				 pop dx
+3   400	    02F4  5B				 pop bx
+    401	    02F5  C3			     ret
+    402	    02F6			 create_B_table:
+    403					     set_transition_for_digits buf 9 9
+1   404					     set_transition_length_from_start buf, 9, 9, 30, 10
+2   405	    02F6  BB 001E		     mov bx, 30
+2   406	    02F9  B9 000A		     mov cx, 10
+2   407	    02FC			 ??0004:
+2   408	    02FC  83 F9	00		     cmp cx, 0
+2   409	    02FF  74 1F			     je	??0005
+2   410					     load <bx,cx>
+4   411	    0301  53				 push bx
+4   412	    0302  51				 push cx
+2   413					     set_transition buf	9 9 bx
+3   414					     load<bx, dx>
+5   415	    0303  53				 push bx
+5   416	    0304  52				 push dx
+3   417					     get_offset	9
+4   418	    0305  33 D2			     xor dx, dx
+4   419	    0307  33 C0			     xor ax, ax
+4   420	    0309  B0 09			     mov al, 9
+4   421	    030B  C1 E0	08		     shl ax, 8
+3   422	    030E  05 06DCr		     add ax, offset buf
+3   423	    0311  03 C3			     add ax, bx
+3   424	    0313  8B D8			     mov bx, ax
+3   425	    0315  C6 07	09		     mov byte ptr [bx],	9
+3   426					     restore<dx, bx>
+5   427	    0318  5A				 pop dx
+5   428	    0319  5B				 pop bx
+2   429					     restore <cx,bx>
+4   430	    031A  59				 pop cx
+4   431	    031B  5B				 pop bx
+2   432	    031C  43			     inc bx
+2   433	    031D  49			     dec cx
+2   434	    031E  EB DC			     jmp ??0004
+2   435	    0320			 ??0005:
+    436					     set_transition_for_letters	buf 9 9
+1   437					     set_transition_length_from_start buf, 9, 9, 97, 26
+2   438	    0320  BB 0061		     mov bx, 97
+2   439	    0323  B9 001A		     mov cx, 26
+2   440	    0326			 ??0006:
+2   441	    0326  83 F9	00		     cmp cx, 0
+2   442	    0329  74 1F			     je	??0007
+2   443					     load <bx,cx>
+4   444	    032B  53				 push bx
+4   445	    032C  51				 push cx
+2   446					     set_transition buf	9 9 bx
+3   447					     load<bx, dx>
+5   448	    032D  53				 push bx
+5   449	    032E  52				 push dx
+3   450					     get_offset	9
+4   451	    032F  33 D2			     xor dx, dx
+4   452	    0331  33 C0			     xor ax, ax
+4   453	    0333  B0 09			     mov al, 9
+4   454	    0335  C1 E0	08		     shl ax, 8
+3   455	    0338  05 06DCr		     add ax, offset buf
+Turbo Assembler	 Version 4.1	    11/25/19 14:17:33	    Page 9
+regex.ASM
+
+
+
+3   456	    033B  03 C3			     add ax, bx
+3   457	    033D  8B D8			     mov bx, ax
+3   458	    033F  C6 07	09		     mov byte ptr [bx],	9
+3   459					     restore<dx, bx>
+5   460	    0342  5A				 pop dx
+5   461	    0343  5B				 pop bx
+2   462					     restore <cx,bx>
+4   463	    0344  59				 pop cx
+4   464	    0345  5B				 pop bx
+2   465	    0346  43			     inc bx
+2   466	    0347  49			     dec cx
+2   467	    0348  EB DC			     jmp ??0006
+2   468	    034A			 ??0007:
+1   469					     set_transition_length_from_start buf, 9, 9, 65, 26
+2   470	    034A  BB 0041		     mov bx, 65
+2   471	    034D  B9 001A		     mov cx, 26
+2   472	    0350			 ??0008:
+2   473	    0350  83 F9	00		     cmp cx, 0
+2   474	    0353  74 1F			     je	??0009
+2   475					     load <bx,cx>
+4   476	    0355  53				 push bx
+4   477	    0356  51				 push cx
+2   478					     set_transition buf	9 9 bx
+3   479					     load<bx, dx>
+5   480	    0357  53				 push bx
+5   481	    0358  52				 push dx
+3   482					     get_offset	9
+4   483	    0359  33 D2			     xor dx, dx
+4   484	    035B  33 C0			     xor ax, ax
+4   485	    035D  B0 09			     mov al, 9
+4   486	    035F  C1 E0	08		     shl ax, 8
+3   487	    0362  05 06DCr		     add ax, offset buf
+3   488	    0365  03 C3			     add ax, bx
+3   489	    0367  8B D8			     mov bx, ax
+3   490	    0369  C6 07	09		     mov byte ptr [bx],	9
+3   491					     restore<dx, bx>
+5   492	    036C  5A				 pop dx
+5   493	    036D  5B				 pop bx
+2   494					     restore <cx,bx>
+4   495	    036E  59				 pop cx
+4   496	    036F  5B				 pop bx
+2   497	    0370  43			     inc bx
+2   498	    0371  49			     dec cx
+2   499	    0372  EB DC			     jmp ??0008
+2   500	    0374			 ??0009:
+    501					     set_transition buf	9 9 '.'
+1   502					     load<bx, dx>
+3   503	    0374  53				 push bx
+3   504	    0375  52				 push dx
+1   505					     get_offset	9
+2   506	    0376  33 D2			     xor dx, dx
+2   507	    0378  33 C0			     xor ax, ax
+2   508	    037A  B0 09			     mov al, 9
+2   509	    037C  C1 E0	08		     shl ax, 8
+1   510	    037F  05 06DCr		     add ax, offset buf
+1   511	    0382  05 002E		     add ax, '.'
+1   512	    0385  8B D8			     mov bx, ax
+Turbo Assembler	 Version 4.1	    11/25/19 14:17:33	    Page 10
+regex.ASM
+
+
+
+1   513	    0387  C6 07	09		     mov byte ptr [bx],	9
+1   514					     restore<dx, bx>
+3   515	    038A  5A				 pop dx
+3   516	    038B  5B				 pop bx
+    517					     set_transition buf	9 10 '/'
+1   518					     load<bx, dx>
+3   519	    038C  53				 push bx
+3   520	    038D  52				 push dx
+1   521					     get_offset	9
+2   522	    038E  33 D2			     xor dx, dx
+2   523	    0390  33 C0			     xor ax, ax
+2   524	    0392  B0 09			     mov al, 9
+2   525	    0394  C1 E0	08		     shl ax, 8
+1   526	    0397  05 06DCr		     add ax, offset buf
+1   527	    039A  05 002F		     add ax, '/'
+1   528	    039D  8B D8			     mov bx, ax
+1   529	    039F  C6 07	0A		     mov byte ptr [bx],	10
+1   530					     restore<dx, bx>
+3   531	    03A2  5A				 pop dx
+3   532	    03A3  5B				 pop bx
+    533					     set_transition buf	9 11 '/'
+1   534					     load<bx, dx>
+3   535	    03A4  53				 push bx
+3   536	    03A5  52				 push dx
+1   537					     get_offset	9
+2   538	    03A6  33 D2			     xor dx, dx
+2   539	    03A8  33 C0			     xor ax, ax
+2   540	    03AA  B0 09			     mov al, 9
+2   541	    03AC  C1 E0	08		     shl ax, 8
+1   542	    03AF  05 06DCr		     add ax, offset buf
+1   543	    03B2  05 002F		     add ax, '/'
+1   544	    03B5  8B D8			     mov bx, ax
+1   545	    03B7  C6 07	0B		     mov byte ptr [bx],	11
+1   546					     restore<dx, bx>
+3   547	    03BA  5A				 pop dx
+3   548	    03BB  5B				 pop bx
+    549	    03BC  C3			     ret
+    550	    03BD			 create_A_table:
+    551					     set_transition buf	0 1 'h'
+1   552					     load<bx, dx>
+3   553	    03BD  53				 push bx
+3   554	    03BE  52				 push dx
+1   555					     get_offset	0
+2   556	    03BF  33 D2			     xor dx, dx
+2   557	    03C1  33 C0			     xor ax, ax
+2   558	    03C3  B0 00			     mov al, 0
+2   559	    03C5  C1 E0	08		     shl ax, 8
+1   560	    03C8  05 06DCr		     add ax, offset buf
+1   561	    03CB  05 0068		     add ax, 'h'
+1   562	    03CE  8B D8			     mov bx, ax
+1   563	    03D0  C6 07	01		     mov byte ptr [bx],	1
+1   564					     restore<dx, bx>
+3   565	    03D3  5A				 pop dx
+3   566	    03D4  5B				 pop bx
+    567					     set_transition buf	1 2 't'
+1   568					     load<bx, dx>
+3   569	    03D5  53				 push bx
+Turbo Assembler	 Version 4.1	    11/25/19 14:17:33	    Page 11
+regex.ASM
+
+
+
+3   570	    03D6  52				 push dx
+1   571					     get_offset	1
+2   572	    03D7  33 D2			     xor dx, dx
+2   573	    03D9  33 C0			     xor ax, ax
+2   574	    03DB  B0 01			     mov al, 1
+2   575	    03DD  C1 E0	08		     shl ax, 8
+1   576	    03E0  05 06DCr		     add ax, offset buf
+1   577	    03E3  05 0074		     add ax, 't'
+1   578	    03E6  8B D8			     mov bx, ax
+1   579	    03E8  C6 07	02		     mov byte ptr [bx],	2
+1   580					     restore<dx, bx>
+3   581	    03EB  5A				 pop dx
+3   582	    03EC  5B				 pop bx
+    583					     set_transition buf	2 3 't'
+1   584					     load<bx, dx>
+3   585	    03ED  53				 push bx
+3   586	    03EE  52				 push dx
+1   587					     get_offset	2
+2   588	    03EF  33 D2			     xor dx, dx
+2   589	    03F1  33 C0			     xor ax, ax
+2   590	    03F3  B0 02			     mov al, 2
+2   591	    03F5  C1 E0	08		     shl ax, 8
+1   592	    03F8  05 06DCr		     add ax, offset buf
+1   593	    03FB  05 0074		     add ax, 't'
+1   594	    03FE  8B D8			     mov bx, ax
+1   595	    0400  C6 07	03		     mov byte ptr [bx],	3
+1   596					     restore<dx, bx>
+3   597	    0403  5A				 pop dx
+3   598	    0404  5B				 pop bx
+    599					     set_transition buf	3 4 'p'
+1   600					     load<bx, dx>
+3   601	    0405  53				 push bx
+3   602	    0406  52				 push dx
+1   603					     get_offset	3
+2   604	    0407  33 D2			     xor dx, dx
+2   605	    0409  33 C0			     xor ax, ax
+2   606	    040B  B0 03			     mov al, 3
+2   607	    040D  C1 E0	08		     shl ax, 8
+1   608	    0410  05 06DCr		     add ax, offset buf
+1   609	    0413  05 0070		     add ax, 'p'
+1   610	    0416  8B D8			     mov bx, ax
+1   611	    0418  C6 07	04		     mov byte ptr [bx],	4
+1   612					     restore<dx, bx>
+3   613	    041B  5A				 pop dx
+3   614	    041C  5B				 pop bx
+    615					     set_transition buf	4 5 's'
+1   616					     load<bx, dx>
+3   617	    041D  53				 push bx
+3   618	    041E  52				 push dx
+1   619					     get_offset	4
+2   620	    041F  33 D2			     xor dx, dx
+2   621	    0421  33 C0			     xor ax, ax
+2   622	    0423  B0 04			     mov al, 4
+2   623	    0425  C1 E0	08		     shl ax, 8
+1   624	    0428  05 06DCr		     add ax, offset buf
+1   625	    042B  05 0073		     add ax, 's'
+1   626	    042E  8B D8			     mov bx, ax
+Turbo Assembler	 Version 4.1	    11/25/19 14:17:33	    Page 12
+regex.ASM
+
+
+
+1   627	    0430  C6 07	05		     mov byte ptr [bx],	5
+1   628					     restore<dx, bx>
+3   629	    0433  5A				 pop dx
+3   630	    0434  5B				 pop bx
+    631					     set_transition buf	4 6 ':'
+1   632					     load<bx, dx>
+3   633	    0435  53				 push bx
+3   634	    0436  52				 push dx
+1   635					     get_offset	4
+2   636	    0437  33 D2			     xor dx, dx
+2   637	    0439  33 C0			     xor ax, ax
+2   638	    043B  B0 04			     mov al, 4
+2   639	    043D  C1 E0	08		     shl ax, 8
+1   640	    0440  05 06DCr		     add ax, offset buf
+1   641	    0443  05 003A		     add ax, ':'
+1   642	    0446  8B D8			     mov bx, ax
+1   643	    0448  C6 07	06		     mov byte ptr [bx],	6
+1   644					     restore<dx, bx>
+3   645	    044B  5A				 pop dx
+3   646	    044C  5B				 pop bx
+    647					     set_transition buf	5 6 ':'
+1   648					     load<bx, dx>
+3   649	    044D  53				 push bx
+3   650	    044E  52				 push dx
+1   651					     get_offset	5
+2   652	    044F  33 D2			     xor dx, dx
+2   653	    0451  33 C0			     xor ax, ax
+2   654	    0453  B0 05			     mov al, 5
+2   655	    0455  C1 E0	08		     shl ax, 8
+1   656	    0458  05 06DCr		     add ax, offset buf
+1   657	    045B  05 003A		     add ax, ':'
+1   658	    045E  8B D8			     mov bx, ax
+1   659	    0460  C6 07	06		     mov byte ptr [bx],	6
+1   660					     restore<dx, bx>
+3   661	    0463  5A				 pop dx
+3   662	    0464  5B				 pop bx
+    663					     set_transition buf	6 7 '/'
+1   664					     load<bx, dx>
+3   665	    0465  53				 push bx
+3   666	    0466  52				 push dx
+1   667					     get_offset	6
+2   668	    0467  33 D2			     xor dx, dx
+2   669	    0469  33 C0			     xor ax, ax
+2   670	    046B  B0 06			     mov al, 6
+2   671	    046D  C1 E0	08		     shl ax, 8
+1   672	    0470  05 06DCr		     add ax, offset buf
+1   673	    0473  05 002F		     add ax, '/'
+1   674	    0476  8B D8			     mov bx, ax
+1   675	    0478  C6 07	07		     mov byte ptr [bx],	7
+1   676					     restore<dx, bx>
+3   677	    047B  5A				 pop dx
+3   678	    047C  5B				 pop bx
+    679					     set_transition buf	7 8 '/'
+1   680					     load<bx, dx>
+3   681	    047D  53				 push bx
+3   682	    047E  52				 push dx
+1   683					     get_offset	7
+Turbo Assembler	 Version 4.1	    11/25/19 14:17:33	    Page 13
+regex.ASM
+
+
+
+2   684	    047F  33 D2			     xor dx, dx
+2   685	    0481  33 C0			     xor ax, ax
+2   686	    0483  B0 07			     mov al, 7
+2   687	    0485  C1 E0	08		     shl ax, 8
+1   688	    0488  05 06DCr		     add ax, offset buf
+1   689	    048B  05 002F		     add ax, '/'
+1   690	    048E  8B D8			     mov bx, ax
+1   691	    0490  C6 07	08		     mov byte ptr [bx],	8
+1   692					     restore<dx, bx>
+3   693	    0493  5A				 pop dx
+3   694	    0494  5B				 pop bx
+    695	    0495  C3			     ret
+    696	    0496  00			 state db 0
+    697
+    698	    0497  08			 termA db 8
+    699	    0498  0A			 termB db 10
+    700	    0499  0B			 termC db 11
+    701	    049A  0C			 termD db 12
+    702
+    703	    049B  80*(24)		 pr db 128 dup('$')
+    704	    051B  80*(24)		 dom db	128 dup('$')
+    705	    059B  80*(24)		 pat db	128 dup('$')
+    706	    061B  80*(24)		 que db	128 dup('$')
+    707
+    708	    069B  50 72	6F 74 6F 63 6F+	 prmes db 'Protocol: $'
+    709		  6C 3A	20 24
+    710	    06A6  44 6F	6D 61 69 6E 3A+	 dommes	db 'Domain: $'
+    711		  20 24
+    712	    06AF  50 61	74 68 3A 20 24	 pathmes db 'Path: $'
+    713	    06B6  51 75	65 72 79 3A 20+	 querymes db 'Query: $'
+    714		  24
+    715
+    716	    06BE  45 72	72 6F 72 3A 20+	 errormes db 'Error: incorrect format$'
+    717		  69 6E	63 6F 72 72 65+
+    718		  63 74	20 66 6F 72 6D+
+    719		  61 74	24
+    720
+    721	    06D6  0A 24			 newline db 0Ah, '$'
+    722
+    723	    06D8  00			 prad db 0
+    724	    06D9  00			 domad db 0
+    725	    06DA  00			 patad db 0
+    726	    06DB  00			 quead db 0
+    727
+    728	    06DC  0E10*(00)		 buf db	3600 dup(0) ; memory for table
+    729					 end start
+Turbo Assembler	 Version 4.1	    11/25/19 14:17:33	    Page 14
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??0000				  Near	 DGROUP:010F
+??0001				  Near	 DGROUP:011C
+??0002				  Near	 DGROUP:029F
+??0003				  Near	 DGROUP:02C3
+??0004				  Near	 DGROUP:02FC
+??0005				  Near	 DGROUP:0320
+??0006				  Near	 DGROUP:0326
+??0007				  Near	 DGROUP:034A
+??0008				  Near	 DGROUP:0350
+??0009				  Near	 DGROUP:0374
+??DATE				  Text	 "11/25/19"
+??FILENAME			  Text	 "regex	  "
+??TIME				  Text	 "14:17:32"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0F0FH
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 REGEX
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+BUF				  Byte	 DGROUP:06DC
+CREATE_A_TABLE			  Near	 DGROUP:03BD
+CREATE_B_TABLE			  Near	 DGROUP:02F6
+CREATE_C_TABLE			  Near	 DGROUP:02C4
+CREATE_D_TABLE			  Near	 DGROUP:0299
+DOM				  Byte	 DGROUP:051B
+DOMAD				  Byte	 DGROUP:06D9
+DOMMES				  Byte	 DGROUP:06A6
+EALL				  Near	 DGROUP:0295
+ELOOP				  Near	 DGROUP:0291
+ERRORMES			  Byte	 DGROUP:06BE
+L1				  Near	 DGROUP:0174
+L2				  Near	 DGROUP:0196
+L3				  Near	 DGROUP:01B2
+L4				  Near	 DGROUP:01D4
+L5				  Near	 DGROUP:01F0
+L6				  Near	 DGROUP:0212
+L7				  Near	 DGROUP:0243
+L8				  Near	 DGROUP:0266
+L9				  Near	 DGROUP:0281
+NEWLINE				  Byte	 DGROUP:06D6
+PARSE_LOOP			  Near	 DGROUP:0121
+PAT				  Byte	 DGROUP:059B
+PATAD				  Byte	 DGROUP:06DA
+PATHMES				  Byte	 DGROUP:06AF
+PR				  Byte	 DGROUP:049B
+PRAD				  Byte	 DGROUP:06D8
+PRMES				  Byte	 DGROUP:069B
+Turbo Assembler	 Version 4.1	    11/25/19 14:17:33	    Page 15
+Symbol Table
+
+
+
+QUE				  Byte	 DGROUP:061B
+QUEAD				  Byte	 DGROUP:06DB
+QUERYMES			  Byte	 DGROUP:06B6
+START				  Near	 DGROUP:0100
+STATE				  Byte	 DGROUP:0496
+TERMA				  Byte	 DGROUP:0497
+TERMB				  Byte	 DGROUP:0498
+TERMC				  Byte	 DGROUP:0499
+TERMD				  Byte	 DGROUP:049A
+
+Macro Name
+
+EXIT
+GET_OFFSET
+GET_TRANSITION
+LOAD
+PRINT
+PRINT_RANGE
+PUT
+RESTORE
+SET_TRANSITION
+SET_TRANSITION_FOR_ALL
+SET_TRANSITION_FOR_DIGITS
+SET_TRANSITION_FOR_LETTERS
+SET_TRANSITION_LENGTH_FROM_START
+TO_NON_SPACE
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  14EC Word	  Public  CODE
+Turbo Assembler	 Version 4.1	    11/25/19 14:17:33	    Page 16
+Error Summary
+
+
+
+**Error** regex.ASM(91)	SET_TRANSITION(4) Undefined symbol: BUF_ALL
+

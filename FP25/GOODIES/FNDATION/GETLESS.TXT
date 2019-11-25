@@ -1,0 +1,327 @@
+
+
+                ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+                Coordinating Windows, Menus, and READ
+                ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+
+
+This note explains our thinking on new MODAL and associated window
+concepts.  It also introduces some minor improvements in FoxPro which
+are available starting with Beta 4b.
+
+
+Event Loop Programming
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+In order to produce applications with event-driven interfaces like
+FoxPro's own interface, some sophisticated developers have resorted to
+event loop programming similar to that utilized inside FoxPro itself
+and in environments like the Macintosh and Windows.
+
+We feel that coding a real event loop in the FoxPro language has very
+limited practicality for three reasons.  First, the speed of the
+resulting application will be sub-optimal.  Second, such an
+application is always in hard execution and, therefore, a CPU hog and
+unfriendly in multiprogramming environments like DesqView, Windows, or
+the Mac Multifinder.  Finally, such event loop programming is VERY
+complex conceptually, probably too complex for all but the most
+skilled developers and certainly inaccessible to beginners.
+
+That event loop programming was ever needed is, in fact, evidence of
+inadequate documentation and an incomplete original design.  That
+event loop programming ever worked at all is testimony to the
+ingenuity and skill of you developers.
+
+Improvements have been made in FoxPro 2.0 so that event loop
+programming should almost never be required.
+
+
+Single READ Interactions (With Multiple Windows)
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+With FoxPro 2.0 it is very easy to incorporate many windows into a
+single READ.  FoxPro handles virtually all aspects of coordinating
+windows containing GETs with other windows -- notably BROWSE and text
+editing windows -- more or less automaticaly.
+
+Our general recomendation is that a single READ should correspond to a
+single interactive session, dedicated to a particular objective,
+regardless of the number of windows involved.  For instance, a single
+READ might be used for customer file maintenance, entering invoices
+and associated detail lines, entering hours worked into a payroll
+application, etc.  If desired, such single READ interactions can
+include access to desk accessories, BROWSE windows, etc.  Moreover,
+it's possible to restrict access to other windows as desired by use of
+the MODAL clause in conjunction with the WITH clause.
+
+The overall application structure which is most obvious and easiest to
+implement is to use traditional hierarchical menus, buttons, or other
+controls to invoke a series of single READ interactions which
+accomplish the application's objectives.  This approach is generally
+recommended and produces applications which may have many lovely,
+object oriented, multi-window, event driven features, but which are
+traditional in overall architecture.
+
+
+Programming Single READ Interactions
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+The basic idea is to encompass in a single READ all the windows that
+you intend to interact with at a particular READ level.  READ MODAL
+simply means that the user is prevented from interacting with windows
+not included in READ's cooperating set of windows.  (From á4b onward,
+you will not be able to close, zoom, minimize, or move windows not
+involved in a READ MODAL.  Also, if BEEP is SET ON, it'll beep when
+you click on a forbidden window.)
+
+You can now control actions taken when windows are brought forward
+solely by use of the READ's ACTIVATE and DEACTIVATE clauses.  The
+basic change was in DEACTIVATE.
+
+Formerly, DEACTIVATE would attempt to prevent windows from coming
+forward if the DEACTIVATE expression returned .F.   Also, bringing a
+window forward which was not one of the READ windows would terminate
+the READ.
+
+This behavior (a) didn't generally work, (b) created unsurmountable
+bugs, and (c) made it very difficult to coordinate BROWSE and other
+windows with READ in a controlled manner.  (Upon reflection, you'll
+note that forcing termination of a READ when a non-READ window was
+brought forward is what actually forced you to write your own event
+loops in the first place.)
+
+In addition, this odd behavior could not be emulated under Windows or
+on the Mac.  Here's what READ does now:
+
+READ MODAL:     Windows which aren't specified as part of the READ or
+                as an associated window can't be brought forward or
+                interacted with in any way.  Noting this difference,
+                the following applies...
+
+READ            When a window containing GETs is active and you click
+                on a new window or select one with the keyboard:
+
+                   a.   the new window is brought forward, and then
+
+                   b.   the DEACTIVATE function is evaluated.
+
+                At the time the DEACTIVATE function is evaluated,
+                WONTOP() returns the new top window's name and WLAST()
+                returns the name of the window formerly on top.  Note,
+                if you don't want to permit the new window to come on
+                top just
+
+                        ACTIVATE WINDOW (WLAST())
+
+                in your DEACTIVATE function.  (Note the name
+                expression.)
+
+                The value returned by the DEACTIVATE function answers
+                the question "Shall the READ be terminated":  .T.
+                terminates it and .F. doesn't.  You could, of course,
+                always return .T. and emulate the old behavior.
+
+                Finally, if a new window remains on top after the
+                DEACTIVATE clause is executed, and if it's a window
+                containing GETs, its ACTIVATE function is evaluated.
+
+Note that in this deceptively simple change, lies the key to easily
+coordinating BROWSE and other windows within a READ.  The 'Clients'
+part of the sample 'Organize' application illustrates the use of these
+new constructs.
+
+We'll upload a project named INV (to Library 2) which utilizes the
+tutorial databases to demonstrate how two BROWSE windows can be
+coordinated with a READ.  Please index DETAIL.DBF on INO and PARTS.DBF
+on PNO before trying to run it.
+
+By the way, none of the above is incompatible with your FoxPro 1.02
+applications.  If a READ contains no new 2.0 clauses and it's a
+single-window READ, it's terminated when another window is brought
+forward.  Of course, the Screen Builder generates READ CYCLE by
+default, which triggers the new behavior.
+
+
+Coordinating Multiple READs
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+Now let's discuss how to coordinate multiple (possibly multi-window)
+READs in an application.  It is actually possible to create
+applications which are as modeless and fluid as FoxPro's own
+interface.  None of you have used these techniques to date: the
+adjustments which make them possible weren't in FoxPro 2.0 prior to
+á4b.
+
+From the interface point of view, it is entirely possible to write
+completely event-driven applications, applications where you can
+switch from one interactive session to another simply by clicking on
+the desired window.  However, the constraints of your application will
+almost certainly dictate some limitations.  For instance, you can't
+permit updates to your general ledger in the midst of printing your
+balance sheet, you can't permit checks to be printed in the midst of
+calculating your payroll, etc.
+
+Also even though we've tried to make it as simple as possible,
+completely event driven programming remains conceptually complex.  You
+will want to approach this area with care, starting with modest
+objectives.
+
+For instance, a good approach might be to start by permitting, say,
+customers to be added, zip codes to be looked up, etc. in the midst of
+posting orders just by pointing at the appropriate window and
+clicking.  In other words, pick a few of your single-READ interactions
+and permit them to interoperate just like FoxPro's own interface does.
+See the examples provided for illustrations of how to accomplish this.
+
+Eventually, the sophisticated developers among you will doubtless
+develop templates to automate or semi-automate this process.
+
+
+Improvements in FoxPro
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+a.      A READ with no GETs may now have a VALID clause.  Such a READ
+        will be called either a "GET-less" or "Foundation" READ.  The
+        rationale for the term "Foundation" should become clear below.
+        Such a VALID clause is triggered by any event which would
+        otherwise terminate the READ.  If the VALID returns .T. the
+        READ terminates, if it returns .F. the READ continues.
+
+b.      When a GET-less READ having a VALID clause is executing, menus
+        now remain accessable.
+
+c.      GET-less READs, are now terminated in two ways:
+
+            1.  mouse clicks or keystrokes NOT associated with menu
+                selection or activating an OKL.
+
+                Note that selecting items from a menu or executing an
+                OKL routine, specifically DOES NOT automatically
+                terminate a GET-less READ.  Also, if a menu is
+                activated but no selection is made, the READ is not
+                terminated.
+
+            2.  In addition, GET-less READs are terminated whenever an
+                immediate child READ terminates (not a grandchild
+                READ).
+
+                More precisely, if a READ  at RDLEVEL() terminates,
+                and if the READ at RDLEVEL()-1 is GET-less, the
+                Foundation READ is terminated after the child READ has
+                been shut down.
+
+        This is *almost* what used to happen.  The difference is that,
+        formerly, ANY keystroke or mouse click terminated a GET-less
+        READ.
+
+d.      When a window containing GETs which is involved in the current
+        READ is closed, either via the Window menu or the mouse, the
+        window is deactivated and hidden, but not released.  This
+        permits triggering of both the VALID and DEACTIVATE clauses,
+        first VALID then DEACTIVATE.  Within these clauses it is as if
+        Ctrl-W had been pressed.  Formerly, closing any window
+        involved in the current READ would immediately and
+        unconditionally terminate the READ.
+
+e.      GENSCRN now emits code which does NOT redefine windows if they
+        already exist.  A new generator directive, #REDEFINE, has been
+        added which causes GENSCRN to emit old-style code, i.e. so
+        windows are always redefined whether or not they already
+        exist.
+
+f.      GENSCRN has also been modified so, if a required DBF is
+        already open when the SPR is executed, its current file
+        position is left unchanged.  If you always want to start at
+        the top of the file, code 'GO TOP' in your setup code.
+
+g.      WONTOP(), WLAST(), WOUTPUT() and similar functions which are
+        used to check window attributes, have been modified so they
+        now return .F. if they are called with an argument naming a
+        non-existent window.  Formerly, they generated an error and
+        this necessitated circumlocutions like:
+
+                IF WEXIST("fred") and WONTOP("fred")
+
+h.      A new function WREAD([<window>]) has been provided.  This
+        function returns .T. if the named window is included in the
+        currently executing READ and .F. otherwise.  If no argument is
+        coded, WONTOP() is assumed.  That is 'WREAD()' is the same as
+        'WREAD(WONTOP())'.
+
+i.      READKEY() now accepts an optional argument of 1 which causes
+        it to return more specific information about why a READ has
+        been terminated.  The specific termination codes returned by
+        READKEY(1) are:
+
+                1       None of the following causes
+                2       CLEAR READ caused termination
+                3       A terminating control (like a pushbutton) was
+                        selected
+                4       A READ window was closed
+                5       The DEACTIVATE clause returned .T.
+                6       The READ timed out
+
+j.      The maximum number of nested READs has been increased to 5.
+
+
+EX1: Event-Driven Example #1
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+The first example is called 'EX1'.  It demonstrates coordination of
+four different READ interactions, each of which use the 'control3'
+control panel.  You can switch from one to the other just by clicking
+on the application window.
+
+Applications are launched by use of the 'Application' menu.  Execution
+of the entire system can be terminated by use of the 'Exit' option in
+the 'Application' menu.
+
+This example has been designed so you can utilize any available desk
+accessories or windows in conjunction with the application windows:
+Help, Filer, Calculator, Calendar/Diary, ASCII Chart, Special
+Characters, and Puzzle, editor windows, the project window, etc.
+
+Before you attempt to write your own multi-READ event driven code, we
+recommend you carefully study EX1 and be certain you can answer the
+following questions about its operation:
+
+    1.  What would happen if the menu handling routine always
+        immediately launched the requested application, regardless of
+        RDLEVEL()?
+
+    2.  Why is it necessary to specify the 'IN EX1.MPR' clause in the
+        menu command in the 'Application' menu?
+
+    3.  Where is the code that handles the situation where an
+        application window is closed manually either by clicking in
+        its close box, or by selecting 'Close' from the 'File' menu?
+
+    4.  What's the largest number of READs which are ever active at
+        any one time while EX1.APP is executing?
+
+    5.  What insures that the control panel vanishes when the last
+        remaining application window is closed?
+
+    6.  If you bring, say, the Calculator up on top of an application
+        window, is the application READ still active?  The Foundation
+        READ?
+
+    7.  When you're executing EX1.APP and neither an application
+        window nor the control panel is visible, and you're using,
+        say, the Filer, is there any READ active?
+
+    8.  When you're running in an application window and you click in
+        another, how is control transferred from the first application
+        to the new one?  What event triggers the transfer?
+
+
+If you can answer all the above questions, you're ready to proceed to
+the next example.  (We'll post the answers later.)
+
+
+EX2: Event-Driven Example #2
+ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+This example is rather similar to EX1, but replaces the single invoice
+editing screen with the 'INV' application that, besides editing the
+invoice file, includes a different control panel 'control2' and two
+(2) BROWSE windows coordinated as part of the READ.
+
+Study EX2 carefully and you'll see that the changes required to handle
+this rather more complex situation were rather simple.  If you can
+answer the 8 questions above about EX1, you should have no difficulty
+with EX2.  And by now, you should have a general idea how to proceed
+in your own applications.

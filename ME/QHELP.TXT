@@ -1,0 +1,26 @@
+ษอออออออัอออออออออออ # - SHIFT   @ - ALT  ^ - CTRL อหอออออออัออออออออออออออออออป
+บF1     ณQuickHelp      บ^F1    ณInsertDate         บ@x     ณGExit             บ
+บF2,@e  ณSaveFile       บ^F2    ณInsertTime         บ@v     ณToggleTabsExpand  บ
+บF3     ณEditFile       บ^F3    ณHorizontalWindow   บ@t     ณPQuit             บ
+บF4     ณDupLine        บ^F4    ณClose_Window       บ^p     ณLiteral           บ
+บF5     ณMakeTopOfScreenบ^F5    ณNextWindow         บ@n     ณNextFile          บ
+บF6     ณDelToEol       บ^F6    ณPrevWindow         บ@p     ณPrevFile          บ
+บF7,^u  ณUnKill         บ^F7    ณZoomWindow         บ@d,^y  ณDelLine           บ
+บF8,^q_lณUndoCursorline บ^F8    ณShrinkWindow       บ@r     ณReadBlock         บ
+บF9,@o  ณChangeFileName บ^F9    ณGrowWindow         บ@w     ณWriteBlock        บ
+บF10    ณMainMenu       บ^F10   ณDos                บ@z     ณCopyOverBlock     บ
+บ#F1    ณToggleBoxDraw  บ@F1    ณToggleBoxType      บ@u     ณUnmarkBlock       บ
+บ#F2    ณGotoBlockBeg   บ@F2,@g ณDeliteBlock        บ@4     ณToggleEGA43       บ
+บ#F3    ณGotoBlockEnd   บ@F3,@m ณMoveBlock          บ@=     ณFindAsContext     บ
+บ#F4,@k ณMarkColumn     บ@F4,@c ณCopyBlock          บ@5,^q_aณFindReplace       บ
+บ#F5    ณMakeCtrOfScreenบ@F5    ณShowEntryScreen    บ@-,^q_fณFind              บ
+บ#F6,@a ณDropAnchor     บ@F6    ณPaste              บ@6,^l  ณRepeatFind        บ
+บ#F7    ณMarkBlockBegin บ@F7    ณCopy               บ^-     ณGetPrevString     บ
+บ#F8    ณMarkBlockEnd   บ@F8    ณCut                บ@y     ณGSave             บ
+บ#F9,@l ณMarkLine       บ@F9    ณPasteOver          บ@1     ณUpper             บ
+บ#F10   ณMarkWord       บ@F10   ณShell              บ@2     ณLower             บ
+ฬอออออออุอออออออออออออออฮอออออออุอออออออออออออออออออน@3     ณFlip              บ
+บ^b_s   ณStoreScrBuff   บ^b_a   ณAppendScrBuff      บ^b_l   ณGetScrBuff        บ
+บ^j     ณGotoLine       บ^k_z   ณKillFile           บ^q_p   ณPrevPosition      บ
+ศอออออออฯอออออออออออออออสอออออออฯอออออออออออออออออออสอออออออฯออออออออออออออออออผ
+

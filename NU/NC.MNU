@@ -1,0 +1,23 @@
+f1:	Windows
+	win
+	fstkey
+
+f2:	йцукен
+	scr9 c:\util\std.tab
+	rr 23
+
+f3:	яверты
+	scr9 c:\util\alt.tab
+	rr 13
+
+a:	Scan A:
+	aidstest a:/s/g/a39
+	scan a: /nomem
+
+b:	Scan B:
+	aidstest b:/g/s/a39
+	scan b: /nomem
+
+c:	Scan Hards
+	aidstest */g/s/a39
+	scan c: d: e: f: g: h: i: /nomem

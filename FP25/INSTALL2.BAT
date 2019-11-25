@@ -1,0 +1,1 @@
+FOX -ek install.app D:\USERS\MIN\FP25\

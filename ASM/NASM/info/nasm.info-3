@@ -1,0 +1,1290 @@
+This is nasm.info, produced by makeinfo version 4.3 from nasmdoc.texi.
+
+INFO-DIR-SECTION Programming
+START-INFO-DIR-ENTRY
+* NASM: (nasm).                The Netwide Assembler for x86.
+END-INFO-DIR-ENTRY
+
+   This file documents NASM, the Netwide Assembler: an assembler
+targetting the Intel x86 series of processors, with portable source.
+
+   Copyright 2003 The NASM Development Team
+
+   All rights reserved. This document is redistributable under the
+licence given in the file "COPYING" distributed in the NASM archive.
+
+
+File: nasm.info,  Node: Section 4.3.8,  Next: Section 4.3.9,  Prev: Section 4.3.7,  Up: Section 4.3
+
+4.3.8. Condition Codes as Macro Parameters
+------------------------------------------
+
+   NASM can give special treatment to a macro parameter which contains a
+condition code. For a start, you can refer to the macro parameter `%1'
+by means of the alternative syntax `%+1', which informs NASM that this
+macro parameter is supposed to contain a condition code, and will cause
+the preprocessor to report an error message if the macro is called with
+a parameter which is _not_ a valid condition code.
+
+   Far more usefully, though, you can refer to the macro parameter by
+means of `%-1', which NASM will expand as the _inverse_ condition code.
+So the `retz' macro defined in *Note Section 4.3.2:: can be replaced by
+a general conditional-return macro like this:
+
+     %macro  retc 1
+     
+             j%-1    %%skip
+             ret
+       %%skip:
+     
+     %endmacro
+
+   This macro can now be invoked using calls like `retc ne', which will
+cause the conditional-jump instruction in the macro expansion to come
+out as `JE', or `retc po' which will make the jump a `JPE'.
+
+   The `%+1' macro-parameter reference is quite happy to interpret the
+arguments `CXZ' and `ECXZ' as valid condition codes; however, `%-1'
+will report an error if passed either of these, because no inverse
+condition code exists.
+
+
+File: nasm.info,  Node: Section 4.3.9,  Next: Section 4.4,  Prev: Section 4.3.8,  Up: Section 4.3
+
+4.3.9. Disabling Listing Expansion
+----------------------------------
+
+   When NASM is generating a listing file from your program, it will
+generally expand multi-line macros by means of writing the macro call
+and then listing each line of the expansion. This allows you to see
+which instructions in the macro expansion are generating what code;
+however, for some macros this clutters the listing up unnecessarily.
+
+   NASM therefore provides the `.nolist' qualifier, which you can
+include in a macro definition to inhibit the expansion of the macro in
+the listing file. The `.nolist' qualifier comes directly after the
+number of parameters, like this:
+
+     %macro foo 1.nolist
+
+   Or like this:
+
+     %macro bar 1-5+.nolist a,b,c,d,e,f,g,h
+
+
+File: nasm.info,  Node: Section 4.4,  Next: Section 4.4.1,  Prev: Section 4.3.9,  Up: Chapter 4
+
+4.4. Conditional Assembly
+=========================
+
+   Similarly to the C preprocessor, NASM allows sections of a source
+file to be assembled only if certain conditions are met. The general
+syntax of this feature looks like this:
+
+     %if<condition>
+         ; some code which only appears if <condition> is met
+     %elif<condition2>
+         ; only appears if <condition> is not met but <condition2> is
+     %else
+         ; this appears if neither <condition> nor <condition2> was met
+     %endif
+
+   The `%else' clause is optional, as is the `%elif' clause. You can
+have more than one `%elif' clause as well.
+
+* Menu:
+
+* Section 4.4.1:: `%ifdef': Testing Single-Line Macro Existence
+* Section 4.4.2:: `ifmacro': Testing Multi-Line Macro Existence
+* Section 4.4.3:: `%ifctx': Testing the Context Stack
+* Section 4.4.4:: `%if': Testing Arbitrary Numeric Expressions
+* Section 4.4.5:: `%ifidn' and `%ifidni': Testing Exact Text Identity
+* Section 4.4.6:: `%ifid', `%ifnum', `%ifstr': Testing Token Types
+* Section 4.4.7:: `%error': Reporting User-Defined Errors
+
+
+File: nasm.info,  Node: Section 4.4.1,  Next: Section 4.4.2,  Prev: Section 4.4,  Up: Section 4.4
+
+4.4.1. `%ifdef': Testing Single-Line Macro Existence
+----------------------------------------------------
+
+   Beginning a conditional-assembly block with the line `%ifdef MACRO'
+will assemble the subsequent code if, and only if, a single-line macro
+called `MACRO' is defined. If not, then the `%elif' and `%else' blocks
+(if any) will be processed instead.
+
+   For example, when debugging a program, you might want to write code
+such as
+
+               ; perform some function
+     %ifdef DEBUG
+               writefile 2,"Function performed successfully",13,10
+     %endif
+               ; go and do something else
+
+   Then you could use the command-line option `-dDEBUG' to create a
+version of the program which produced debugging messages, and remove the
+option to generate the final release version of the program.
+
+   You can test for a macro _not_ being defined by using `%ifndef'
+instead of `%ifdef'. You can also test for macro definitions in `%elif'
+blocks by using `%elifdef' and `%elifndef'.
+
+
+File: nasm.info,  Node: Section 4.4.2,  Next: Section 4.4.3,  Prev: Section 4.4.1,  Up: Section 4.4
+
+4.4.2. `ifmacro': Testing Multi-Line Macro Existence
+----------------------------------------------------
+
+   The `%ifmacro' directive operates in the same way as the `%ifdef'
+directive, except that it checks for the existence of a multi-line
+macro.
+
+   For example, you may be working with a large project and not have
+control over the macros in a library. You may want to create a macro
+with one name if it doesn't already exist, and another name if one with
+that name does exist.
+
+   The `%ifmacro' is considered true if defining a macro with the given
+name and number of arguments would cause a definitions conflict. For
+example:
+
+     %ifmacro MyMacro 1-3
+     
+          %error "MyMacro 1-3" causes a conflict with an existing macro.
+     
+     %else
+     
+          %macro MyMacro 1-3
+     
+                  ; insert code to define the macro
+     
+          %endmacro
+     
+     %endif
+
+   This will create the macro "MyMacro 1-3" if no macro already exists
+which would conflict with it, and emits a warning if there would be a
+definition conflict.
+
+   You can test for the macro not existing by using the `%ifnmacro'
+instead of `%ifmacro'. Additional tests can be performed in `%elif'
+blocks by using `%elifmacro' and `%elifnmacro'.
+
+
+File: nasm.info,  Node: Section 4.4.3,  Next: Section 4.4.4,  Prev: Section 4.4.2,  Up: Section 4.4
+
+4.4.3. `%ifctx': Testing the Context Stack
+------------------------------------------
+
+   The conditional-assembly construct `%ifctx ctxname' will cause the
+subsequent code to be assembled if and only if the top context on the
+preprocessor's context stack has the name `ctxname'. As with `%ifdef',
+the inverse and `%elif' forms `%ifnctx', `%elifctx' and `%elifnctx' are
+also supported.
+
+   For more details of the context stack, see *Note Section 4.7::. For
+a sample use of `%ifctx', see *Note Section 4.7.5::.
+
+
+File: nasm.info,  Node: Section 4.4.4,  Next: Section 4.4.5,  Prev: Section 4.4.3,  Up: Section 4.4
+
+4.4.4. `%if': Testing Arbitrary Numeric Expressions
+---------------------------------------------------
+
+   The conditional-assembly construct `%if expr' will cause the
+subsequent code to be assembled if and only if the value of the numeric
+expression `expr' is non-zero. An example of the use of this feature is
+in deciding when to break out of a `%rep' preprocessor loop: see *Note
+Section 4.5:: for a detailed example.
+
+   The expression given to `%if', and its counterpart `%elif', is a
+critical expression (see *Note Section 3.8::).
+
+   `%if' extends the normal NASM expression syntax, by providing a set
+of relational operators which are not normally available in
+expressions. The operators `=', `<', `>', `<=', `>=' and `<>' test
+equality, less-than, greater-than, less-or-equal, greater-or-equal and
+not-equal respectively. The C-like forms `==' and `!=' are supported as
+alternative forms of `=' and `<>'. In addition, low- priority logical
+operators `&&', `^^' and `||' are provided, supplying logical AND,
+logical XOR and logical OR. These work like the C logical operators
+(although C has no logical XOR), in that they always return either 0 or
+1, and treat any non-zero input as 1 (so that `^^', for example,
+returns 1 if exactly one of its inputs is zero, and 0 otherwise). The
+relational operators also return 1 for true and 0 for false.
+
+
+File: nasm.info,  Node: Section 4.4.5,  Next: Section 4.4.6,  Prev: Section 4.4.4,  Up: Section 4.4
+
+4.4.5. `%ifidn' and `%ifidni': Testing Exact Text Identity
+----------------------------------------------------------
+
+   The construct `%ifidn text1,text2' will cause the subsequent code to
+be assembled if and only if `text1' and `text2', after expanding
+single-line macros, are identical pieces of text. Differences in white
+space are not counted.
+
+   `%ifidni' is similar to `%ifidn', but is case-insensitive.
+
+   For example, the following macro pushes a register or number on the
+stack, and allows you to treat `IP' as a real register:
+
+     %macro  pushparam 1
+     
+       %ifidni %1,ip
+             call    %%label
+       %%label:
+       %else
+             push    %1
+       %endif
+     
+     %endmacro
+
+   Like most other `%if' constructs, `%ifidn' has a counterpart
+`%elifidn', and negative forms `%ifnidn' and `%elifnidn'.  Similarly,
+`%ifidni' has counterparts `%elifidni', `%ifnidni' and `%elifnidni'.
+
+
+File: nasm.info,  Node: Section 4.4.6,  Next: Section 4.4.7,  Prev: Section 4.4.5,  Up: Section 4.4
+
+4.4.6. `%ifid', `%ifnum', `%ifstr': Testing Token Types
+-------------------------------------------------------
+
+   Some macros will want to perform different tasks depending on
+whether they are passed a number, a string, or an identifier. For
+example, a string output macro might want to be able to cope with being
+passed either a string constant or a pointer to an existing string.
+
+   The conditional assembly construct `%ifid', taking one parameter
+(which may be blank), assembles the subsequent code if and only if the
+first token in the parameter exists and is an identifier. `%ifnum'
+works similarly, but tests for the token being a numeric constant;
+`%ifstr' tests for it being a string.
+
+   For example, the `writefile' macro defined in *Note Section 4.3.3::
+can be extended to take advantage of `%ifstr' in the following fashion:
+
+     %macro writefile 2-3+
+     
+       %ifstr %2
+             jmp     %%endstr
+         %if %0 = 3
+           %%str:    db      %2,%3
+         %else
+           %%str:    db      %2
+         %endif
+           %%endstr: mov     dx,%%str
+                     mov     cx,%%endstr-%%str
+       %else
+                     mov     dx,%2
+                     mov     cx,%3
+       %endif
+                     mov     bx,%1
+                     mov     ah,0x40
+                     int     0x21
+     
+     %endmacro
+
+   Then the `writefile' macro can cope with being called in either of
+the following two ways:
+
+             writefile [file], strpointer, length
+             writefile [file], "hello", 13, 10
+
+   In the first, `strpointer' is used as the address of an already-
+declared string, and `length' is used as its length; in the second, a
+string is given to the macro, which therefore declares it itself and
+works out the address and length for itself.
+
+   Note the use of `%if' inside the `%ifstr': this is to detect whether
+the macro was passed two arguments (so the string would be a single
+string constant, and `db %2' would be adequate) or more (in which case,
+all but the first two would be lumped together into `%3', and `db
+%2,%3' would be required).
+
+   The usual `%elifXXX', `%ifnXXX' and `%elifnXXX' versions exist for
+each of `%ifid', `%ifnum' and `%ifstr'.
+
+
+File: nasm.info,  Node: Section 4.4.7,  Next: Section 4.5,  Prev: Section 4.4.6,  Up: Section 4.4
+
+4.4.7. `%error': Reporting User-Defined Errors
+----------------------------------------------
+
+   The preprocessor directive `%error' will cause NASM to report an
+error if it occurs in assembled code. So if other users are going to
+try to assemble your source files, you can ensure that they define the
+right macros by means of code like this:
+
+     %ifdef SOME_MACRO
+         ; do some setup
+     %elifdef SOME_OTHER_MACRO
+         ; do some different setup
+     %else
+         %error Neither SOME_MACRO nor SOME_OTHER_MACRO was defined.
+     %endif
+
+   Then any user who fails to understand the way your code is supposed
+to be assembled will be quickly warned of their mistake, rather than
+having to wait until the program crashes on being run and then not
+knowing what went wrong.
+
+
+File: nasm.info,  Node: Section 4.5,  Next: Section 4.6,  Prev: Section 4.4.7,  Up: Chapter 4
+
+4.5. Preprocessor Loops: `%rep'
+===============================
+
+   NASM's `TIMES' prefix, though useful, cannot be used to invoke a
+multi-line macro multiple times, because it is processed by NASM after
+macros have already been expanded. Therefore NASM provides another form
+of loop, this time at the preprocessor level: `%rep'.
+
+   The directives `%rep' and `%endrep' (`%rep' takes a numeric
+argument, which can be an expression; `%endrep' takes no arguments) can
+be used to enclose a chunk of code, which is then replicated as many
+times as specified by the preprocessor:
+
+     %assign i 0
+     %rep    64
+             inc     word [table+2*i]
+     %assign i i+1
+     %endrep
+
+   This will generate a sequence of 64 `INC' instructions, incrementing
+every word of memory from `[table]' to `[table+126]'.
+
+   For more complex termination conditions, or to break out of a repeat
+loop part way along, you can use the `%exitrep' directive to terminate
+the loop, like this:
+
+     fibonacci:
+     %assign i 0
+     %assign j 1
+     %rep 100
+     %if j > 65535
+         %exitrep
+     %endif
+             dw j
+     %assign k j+i
+     %assign i j
+     %assign j k
+     %endrep
+     
+     fib_number equ ($-fibonacci)/2
+
+   This produces a list of all the Fibonacci numbers that will fit in
+16 bits.  Note that a maximum repeat count must still be given to
+`%rep'. This is to prevent the possibility of NASM getting into an
+infinite loop in the preprocessor, which (on multitasking or multi-user
+systems) would typically cause all the system memory to be gradually
+used up and other applications to start crashing.
+
+
+File: nasm.info,  Node: Section 4.6,  Next: Section 4.7,  Prev: Section 4.5,  Up: Chapter 4
+
+4.6. Including Other Files
+==========================
+
+   Using, once again, a very similar syntax to the C preprocessor,
+NASM's preprocessor lets you include other source files into your code.
+This is done by the use of the `%include' directive:
+
+     %include "macros.mac"
+
+   will include the contents of the file `macros.mac' into the source
+file containing the `%include' directive.
+
+   Include files are searched for in the current directory (the
+directory you're in when you run NASM, as opposed to the location of
+the NASM executable or the location of the source file), plus any
+directories specified on the NASM command line using the `-i' option.
+
+   The standard C idiom for preventing a file being included more than
+once is just as applicable in NASM: if the file `macros.mac' has the
+form
+
+     %ifndef MACROS_MAC
+         %define MACROS_MAC
+         ; now define some macros
+     %endif
+
+   then including the file more than once will not cause errors,
+because the second time the file is included nothing will happen
+because the macro `MACROS_MAC' will already be defined.
+
+   You can force a file to be included even if there is no `%include'
+directive that explicitly includes it, by using the `-p' option on the
+NASM command line (see *Note Section 2.1.11::).
+
+
+File: nasm.info,  Node: Section 4.7,  Next: Section 4.7.1,  Prev: Section 4.6,  Up: Chapter 4
+
+4.7. The Context Stack
+======================
+
+   Having labels that are local to a macro definition is sometimes not
+quite powerful enough: sometimes you want to be able to share labels
+between several macro calls. An example might be a `REPEAT' ... `UNTIL'
+loop, in which the expansion of the `REPEAT' macro would need to be
+able to refer to a label which the `UNTIL' macro had defined. However,
+for such a macro you would also want to be able to nest these loops.
+
+   NASM provides this level of power by means of a _context stack_. The
+preprocessor maintains a stack of _contexts_, each of which is
+characterised by a name. You add a new context to the stack using the
+`%push' directive, and remove one using `%pop'. You can define labels
+that are local to a particular context on the stack.
+
+* Menu:
+
+* Section 4.7.1:: `%push' and `%pop': Creating and Removing Contexts
+* Section 4.7.2:: Context-Local Labels
+* Section 4.7.3:: Context-Local Single-Line Macros
+* Section 4.7.4:: `%repl': Renaming a Context
+* Section 4.7.5:: Example Use of the Context Stack: Block IFs
+
+
+File: nasm.info,  Node: Section 4.7.1,  Next: Section 4.7.2,  Prev: Section 4.7,  Up: Section 4.7
+
+4.7.1. `%push' and `%pop': Creating and Removing Contexts
+---------------------------------------------------------
+
+   The `%push' directive is used to create a new context and place it on
+the top of the context stack. `%push' requires one argument, which is
+the name of the context. For example:
+
+     %push    foobar
+
+   This pushes a new context called `foobar' on the stack. You can have
+several contexts on the stack with the same name: they can still be
+distinguished.
+
+   The directive `%pop', requiring no arguments, removes the top context
+from the context stack and destroys it, along with any labels associated
+with it.
+
+
+File: nasm.info,  Node: Section 4.7.2,  Next: Section 4.7.3,  Prev: Section 4.7.1,  Up: Section 4.7
+
+4.7.2. Context-Local Labels
+---------------------------
+
+   Just as the usage `%%foo' defines a label which is local to the
+particular macro call in which it is used, the usage `%$foo' is used to
+define a label which is local to the context on the top of the context
+stack. So the `REPEAT' and `UNTIL' example given above could be
+implemented by means of:
+
+     %macro repeat 0
+     
+         %push   repeat
+         %$begin:
+     
+     %endmacro
+     
+     %macro until 1
+     
+             j%-1    %$begin
+         %pop
+     
+     %endmacro
+
+   and invoked by means of, for example,
+
+             mov     cx,string
+             repeat
+             add     cx,3
+             scasb
+             until   e
+
+   which would scan every fourth byte of a string in search of the byte
+in `AL'.
+
+   If you need to define, or access, labels local to the context _below_
+the top one on the stack, you can use `%$$foo', or `%$$$foo' for the
+context below that, and so on.
+
+
+File: nasm.info,  Node: Section 4.7.3,  Next: Section 4.7.4,  Prev: Section 4.7.2,  Up: Section 4.7
+
+4.7.3. Context-Local Single-Line Macros
+---------------------------------------
+
+   NASM also allows you to define single-line macros which are local to
+a particular context, in just the same way:
+
+     %define %$localmac 3
+
+   will define the single-line macro `%$localmac' to be local to the top
+context on the stack. Of course, after a subsequent `%push', it can
+then still be accessed by the name `%$$localmac'.
+
+
+File: nasm.info,  Node: Section 4.7.4,  Next: Section 4.7.5,  Prev: Section 4.7.3,  Up: Section 4.7
+
+4.7.4. `%repl': Renaming a Context
+----------------------------------
+
+   If you need to change the name of the top context on the stack (in
+order, for example, to have it respond differently to `%ifctx'), you can
+execute a `%pop' followed by a `%push'; but this will have the side
+effect of destroying all context-local labels and macros associated
+with the context that was just popped.
+
+   NASM provides the directive `%repl', which _replaces_ a context with
+a different name, without touching the associated macros and labels.
+So you could replace the destructive code
+
+     %pop
+     %push   newname
+
+   with the non-destructive version `%repl newname'.
+
+
+File: nasm.info,  Node: Section 4.7.5,  Next: Section 4.8,  Prev: Section 4.7.4,  Up: Section 4.7
+
+4.7.5. Example Use of the Context Stack: Block IFs
+--------------------------------------------------
+
+   This example makes use of almost all the context-stack features,
+including the conditional-assembly construct `%ifctx', to implement a
+block IF statement as a set of macros.
+
+     %macro if 1
+     
+         %push if
+         j%-1  %$ifnot
+     
+     %endmacro
+     
+     %macro else 0
+     
+       %ifctx if
+             %repl   else
+             jmp     %$ifend
+             %$ifnot:
+       %else
+             %error  "expected `if' before `else'"
+       %endif
+     
+     %endmacro
+     
+     %macro endif 0
+     
+       %ifctx if
+             %$ifnot:
+             %pop
+       %elifctx      else
+             %$ifend:
+             %pop
+       %else
+             %error  "expected `if' or `else' before `endif'"
+       %endif
+     
+     %endmacro
+
+   This code is more robust than the `REPEAT' and `UNTIL' macros given
+in *Note Section 4.7.2::, because it uses conditional assembly to check
+that the macros are issued in the right order (for example, not calling
+`endif' before `if') and issues a `%error' if they're not.
+
+   In addition, the `endif' macro has to be able to cope with the two
+distinct cases of either directly following an `if', or following an
+`else'. It achieves this, again, by using conditional assembly to do
+different things depending on whether the context on top of the stack is
+`if' or `else'.
+
+   The `else' macro has to preserve the context on the stack, in order
+to have the `%$ifnot' referred to by the `if' macro be the same as the
+one defined by the `endif' macro, but has to change the context's name
+so that `endif' will know there was an intervening `else'.  It does
+this by the use of `%repl'.
+
+   A sample usage of these macros might look like:
+
+             cmp     ax,bx
+     
+             if ae
+                    cmp     bx,cx
+     
+                    if ae
+                            mov     ax,cx
+                    else
+                            mov     ax,bx
+                    endif
+     
+             else
+                    cmp     ax,cx
+     
+                    if ae
+                            mov     ax,cx
+                    endif
+     
+             endif
+
+   The block-`IF' macros handle nesting quite happily, by means of
+pushing another context, describing the inner `if', on top of the one
+describing the outer `if'; thus `else' and `endif' always refer to the
+last unmatched `if' or `else'.
+
+
+File: nasm.info,  Node: Section 4.8,  Next: Section 4.8.1,  Prev: Section 4.7.5,  Up: Chapter 4
+
+4.8. Standard Macros
+====================
+
+   NASM defines a set of standard macros, which are already defined
+when it starts to process any source file. If you really need a program
+to be assembled with no pre-defined macros, you can use the `%clear'
+directive to empty the preprocessor of everything.
+
+   Most user-level assembler directives (see *Note Chapter 5::) are
+implemented as macros which invoke primitive directives; these are
+described in *Note Chapter 5::. The rest of the standard macro set is
+described here.
+
+* Menu:
+
+* Section 4.8.1:: `__NASM_MAJOR__', `__NASM_MINOR__', `__NASM_SUBMINOR__' and `___NASM_PATCHLEVEL__': NASM Version
+* Section 4.8.2:: `__NASM_VERSION_ID__': NASM Version ID
+* Section 4.8.3:: `__NASM_VER__': NASM Version string
+* Section 4.8.4:: `__FILE__' and `__LINE__': File Name and Line Number
+* Section 4.8.5:: `STRUC' and `ENDSTRUC': Declaring Structure Data Types
+* Section 4.8.6:: `ISTRUC', `AT' and `IEND': Declaring Instances of Structures
+* Section 4.8.7:: `ALIGN' and `ALIGNB': Data Alignment
+
+
+File: nasm.info,  Node: Section 4.8.1,  Next: Section 4.8.2,  Prev: Section 4.8,  Up: Section 4.8
+
+4.8.1. `__NASM_MAJOR__', `__NASM_MINOR__', `__NASM_SUBMINOR__' and `___NASM_PATCHLEVEL__': NASM Version
+-------------------------------------------------------------------------------------------------------
+
+   The single-line macros `__NASM_MAJOR__', `__NASM_MINOR__',
+`__NASM_SUBMINOR__' and `___NASM_PATCHLEVEL__' expand to the major,
+minor, subminor and patch level parts of the version number of NASM
+being used. So, under NASM 0.98.32p1 for example, `__NASM_MAJOR__'
+would be defined to be 0, `__NASM_MINOR__' would be defined as 98,
+`__NASM_SUBMINOR__' would be defined to 32, and `___NASM_PATCHLEVEL__'
+would be defined as 1.
+
+
+File: nasm.info,  Node: Section 4.8.2,  Next: Section 4.8.3,  Prev: Section 4.8.1,  Up: Section 4.8
+
+4.8.2. `__NASM_VERSION_ID__': NASM Version ID
+---------------------------------------------
+
+   The single-line macro `__NASM_VERSION_ID__' expands to a dword
+integer representing the full version number of the version of nasm
+being used. The value is the equivalent to `__NASM_MAJOR__',
+`__NASM_MINOR__', `__NASM_SUBMINOR__' and `___NASM_PATCHLEVEL__'
+concatenated to produce a single doubleword. Hence, for 0.98.32p1, the
+returned number would be equivalent to:
+
+             dd      0x00622001
+
+   or
+
+             db      1,32,98,0
+
+   Note that the above lines are generate exactly the same code, the
+second line is used just to give an indication of the order that the
+separate values will be present in memory.
+
+
+File: nasm.info,  Node: Section 4.8.3,  Next: Section 4.8.4,  Prev: Section 4.8.2,  Up: Section 4.8
+
+4.8.3. `__NASM_VER__': NASM Version string
+------------------------------------------
+
+   The single-line macro `__NASM_VER__' expands to a string which
+defines the version number of nasm being used. So, under NASM 0.98.32
+for example,
+
+             db      __NASM_VER__
+
+   would expand to
+
+             db      "0.98.32"
+
+
+File: nasm.info,  Node: Section 4.8.4,  Next: Section 4.8.5,  Prev: Section 4.8.3,  Up: Section 4.8
+
+4.8.4. `__FILE__' and `__LINE__': File Name and Line Number
+-----------------------------------------------------------
+
+   Like the C preprocessor, NASM allows the user to find out the file
+name and line number containing the current instruction. The macro
+`__FILE__' expands to a string constant giving the name of the current
+input file (which may change through the course of assembly if
+`%include' directives are used), and `__LINE__' expands to a numeric
+constant giving the current line number in the input file.
+
+   These macros could be used, for example, to communicate debugging
+information to a macro, since invoking `__LINE__' inside a macro
+definition (either single-line or multi-line) will return the line
+number of the macro _call_, rather than _definition_. So to determine
+where in a piece of code a crash is occurring, for example, one could
+write a routine `stillhere', which is passed a line number in `EAX' and
+outputs something like `line 155: still here'. You could then write a
+macro
+
+     %macro  notdeadyet 0
+     
+             push    eax
+             mov     eax,__LINE__
+             call    stillhere
+             pop     eax
+     
+     %endmacro
+
+   and then pepper your code with calls to `notdeadyet' until you find
+the crash point.
+
+
+File: nasm.info,  Node: Section 4.8.5,  Next: Section 4.8.6,  Prev: Section 4.8.4,  Up: Section 4.8
+
+4.8.5. `STRUC' and `ENDSTRUC': Declaring Structure Data Types
+-------------------------------------------------------------
+
+   The core of NASM contains no intrinsic means of defining data
+structures; instead, the preprocessor is sufficiently powerful that
+data structures can be implemented as a set of macros. The macros
+`STRUC' and `ENDSTRUC' are used to define a structure data type.
+
+   `STRUC' takes one parameter, which is the name of the data type. This
+name is defined as a symbol with the value zero, and also has the suffix
+`_size' appended to it and is then defined as an `EQU' giving the size
+of the structure. Once `STRUC' has been issued, you are defining the
+structure, and should define fields using the `RESB' family of
+pseudo-instructions, and then invoke `ENDSTRUC' to finish the
+definition.
+
+   For example, to define a structure called `mytype' containing a
+longword, a word, a byte and a string of bytes, you might code
+
+     struc   mytype
+     
+       mt_long:      resd    1
+       mt_word:      resw    1
+       mt_byte:      resb    1
+       mt_str:       resb    32
+     
+     endstruc
+
+   The above code defines six symbols: `mt_long' as 0 (the offset from
+the beginning of a `mytype' structure to the longword field), `mt_word'
+as 4, `mt_byte' as 6, `mt_str' as 7, `mytype_size' as 39, and `mytype'
+itself as zero.
+
+   The reason why the structure type name is defined at zero is a side
+effect of allowing structures to work with the local label mechanism:
+if your structure members tend to have the same names in more than one
+structure, you can define the above structure like this:
+
+     struc mytype
+     
+       .long:        resd    1
+       .word:        resw    1
+       .byte:        resb    1
+       .str:         resb    32
+     
+     endstruc
+
+   This defines the offsets to the structure fields as `mytype.long',
+`mytype.word', `mytype.byte' and `mytype.str'.
+
+   NASM, since it has no _intrinsic_ structure support, does not support
+any form of period notation to refer to the elements of a structure once
+you have one (except the above local-label notation), so code such as
+`mov ax,[mystruc.mt_word]' is not valid. `mt_word' is a constant just
+like any other constant, so the correct syntax is `mov
+ax,[mystruc+mt_word]' or `mov ax,[mystruc+mytype.word]'.
+
+
+File: nasm.info,  Node: Section 4.8.6,  Next: Section 4.8.7,  Prev: Section 4.8.5,  Up: Section 4.8
+
+4.8.6. `ISTRUC', `AT' and `IEND': Declaring Instances of Structures
+-------------------------------------------------------------------
+
+   Having defined a structure type, the next thing you typically want
+to do is to declare instances of that structure in your data segment.
+NASM provides an easy way to do this in the `ISTRUC' mechanism. To
+declare a structure of type `mytype' in a program, you code something
+like this:
+
+     mystruc:
+         istruc mytype
+     
+             at mt_long, dd      123456
+             at mt_word, dw      1024
+             at mt_byte, db      'x'
+             at mt_str,  db      'hello, world', 13, 10, 0
+     
+         iend
+
+   The function of the `AT' macro is to make use of the `TIMES' prefix
+to advance the assembly position to the correct point for the specified
+structure field, and then to declare the specified data.  Therefore the
+structure fields must be declared in the same order as they were
+specified in the structure definition.
+
+   If the data to go in a structure field requires more than one source
+line to specify, the remaining source lines can easily come after the
+`AT' line. For example:
+
+             at mt_str,  db      123,134,145,156,167,178,189
+                         db      190,100,0
+
+   Depending on personal taste, you can also omit the code part of the
+`AT' line completely, and start the structure field on the next line:
+
+             at mt_str
+                     db      'hello, world'
+                     db      13,10,0
+
+
+File: nasm.info,  Node: Section 4.8.7,  Next: Section 4.9,  Prev: Section 4.8.6,  Up: Section 4.8
+
+4.8.7. `ALIGN' and `ALIGNB': Data Alignment
+-------------------------------------------
+
+   The `ALIGN' and `ALIGNB' macros provides a convenient way to align
+code or data on a word, longword, paragraph or other boundary. (Some
+assemblers call this directive `EVEN'.) The syntax of the `ALIGN' and
+`ALIGNB' macros is
+
+             align   4               ; align on 4-byte boundary
+             align   16              ; align on 16-byte boundary
+             align   8,db 0          ; pad with 0s rather than NOPs
+             align   4,resb 1        ; align to 4 in the BSS
+             alignb  4               ; equivalent to previous line
+
+   Both macros require their first argument to be a power of two; they
+both compute the number of additional bytes required to bring the
+length of the current section up to a multiple of that power of two,
+and then apply the `TIMES' prefix to their second argument to perform
+the alignment.
+
+   If the second argument is not specified, the default for `ALIGN' is
+`NOP', and the default for `ALIGNB' is `RESB 1'. So if the second
+argument is specified, the two macros are equivalent. Normally, you can
+just use `ALIGN' in code and data sections and `ALIGNB' in BSS
+sections, and never need the second argument except for special
+purposes.
+
+   `ALIGN' and `ALIGNB', being simple macros, perform no error
+checking: they cannot warn you if their first argument fails to be a
+power of two, or if their second argument generates more than one byte
+of code.  In each of these cases they will silently do the wrong thing.
+
+   `ALIGNB' (or `ALIGN' with a second argument of `RESB 1') can be used
+within structure definitions:
+
+     struc mytype2
+     
+       mt_byte:
+             resb 1
+             alignb 2
+       mt_word:
+             resw 1
+             alignb 4
+       mt_long:
+             resd 1
+       mt_str:
+             resb 32
+     
+     endstruc
+
+   This will ensure that the structure members are sensibly aligned
+relative to the base of the structure.
+
+   A final caveat: `ALIGN' and `ALIGNB' work relative to the beginning
+of the _section_, not the beginning of the address space in the final
+executable. Aligning to a 16-byte boundary when the section you're in
+is only guaranteed to be aligned to a 4-byte boundary, for example, is
+a waste of effort. Again, NASM does not check that the section's
+alignment characteristics are sensible for the use of `ALIGN' or
+`ALIGNB'.
+
+
+File: nasm.info,  Node: Section 4.9,  Next: Section 4.9.1,  Prev: Section 4.8.7,  Up: Chapter 4
+
+4.9. TASM Compatible Preprocessor Directives
+============================================
+
+   The following preprocessor directives may only be used when TASM
+compatibility is turned on using the `-t' command line switch (This
+switch is described in *Note Section 2.1.17::.)
+
+   * `%arg' (see *Note Section 4.9.1::)
+
+   * `%stacksize' (see *Note Section 4.9.2::)
+
+   * `%local' (see *Note Section 4.9.3::)
+
+* Menu:
+
+* Section 4.9.1:: `%arg' Directive
+* Section 4.9.2:: `%stacksize' Directive
+* Section 4.9.3:: `%local' Directive
+
+
+File: nasm.info,  Node: Section 4.9.1,  Next: Section 4.9.2,  Prev: Section 4.9,  Up: Section 4.9
+
+4.9.1. `%arg' Directive
+-----------------------
+
+   The `%arg' directive is used to simplify the handling of parameters
+passed on the stack. Stack based parameter passing is used by many high
+level languages, including C, C++ and Pascal.
+
+   While NASM comes with macros which attempt to duplicate this
+functionality (see *Note Section 7.4.5::), the syntax is not
+particularly convenient to use and is not TASM compatible. Here is an
+example which shows the use of `%arg' without any external macros:
+
+     some_function:
+     
+         %push     mycontext        ; save the current context
+         %stacksize large           ; tell NASM to use bp
+         %arg      i:word, j_ptr:word
+     
+             mov     ax,[i]
+             mov     bx,[j_ptr]
+             add     ax,[bx]
+             ret
+     
+         %pop                       ; restore original context
+
+   This is similar to the procedure defined in *Note Section 7.4.5::
+and adds the value in i to the value pointed to by j_ptr and returns
+the sum in the ax register. See *Note Section 4.7.1:: for an
+explanation of `push' and `pop' and the use of context stacks.
+
+
+File: nasm.info,  Node: Section 4.9.2,  Next: Section 4.9.3,  Prev: Section 4.9.1,  Up: Section 4.9
+
+4.9.2. `%stacksize' Directive
+-----------------------------
+
+   The `%stacksize' directive is used in conjunction with the `%arg'
+(see *Note Section 4.9.1::) and the `%local' (see *Note Section 4.9.3::)
+directives. It tells NASM the default size to use for subsequent `%arg'
+and `%local' directives. The `%stacksize' directive takes one required
+argument which is one of `flat', `large' or `small'.
+
+     %stacksize flat
+
+   This form causes NASM to use stack-based parameter addressing
+relative to `ebp' and it assumes that a near form of call was used to
+get to this label (i.e. that `eip' is on the stack).
+
+     %stacksize large
+
+   This form uses `bp' to do stack-based parameter addressing and
+assumes that a far form of call was used to get to this address (i.e.
+that `ip' and `cs' are on the stack).
+
+     %stacksize small
+
+   This form also uses `bp' to address stack parameters, but it is
+different from `large' because it also assumes that the old value of bp
+is pushed onto the stack (i.e. it expects an `ENTER' instruction).  In
+other words, it expects that `bp', `ip' and `cs' are on the top of the
+stack, underneath any local space which may have been allocated by
+`ENTER'. This form is probably most useful when used in combination
+with the `%local' directive (see *Note Section 4.9.3::).
+
+
+File: nasm.info,  Node: Section 4.9.3,  Next: Section 4.10,  Prev: Section 4.9.2,  Up: Section 4.9
+
+4.9.3. `%local' Directive
+-------------------------
+
+   The `%local' directive is used to simplify the use of local temporary
+stack variables allocated in a stack frame. Automatic local variables
+in C are an example of this kind of variable. The `%local' directive is
+most useful when used with the `%stacksize' (see *Note Section 4.9.2::
+and is also compatible with the `%arg' directive (see *Note Section
+4.9.1::). It allows simplified reference to variables on the stack which
+have been allocated typically by using the `ENTER' instruction (see
+*Note Section B.4.65:: for a description of that instruction). An
+example of its use is the following:
+
+     silly_swap:
+     
+         %push mycontext             ; save the current context
+         %stacksize small            ; tell NASM to use bp
+         %assign %$localsize 0       ; see text for explanation
+         %local old_ax:word, old_dx:word
+     
+             enter   %$localsize,0   ; see text for explanation
+             mov     [old_ax],ax     ; swap ax & bx
+             mov     [old_dx],dx     ; and swap dx & cx
+             mov     ax,bx
+             mov     dx,cx
+             mov     bx,[old_ax]
+             mov     cx,[old_dx]
+             leave                   ; restore old bp
+             ret                     ;
+     
+         %pop                        ; restore original context
+
+   The `%$localsize' variable is used internally by the `%local'
+directive and _must_ be defined within the current context before the
+`%local' directive may be used. Failure to do so will result in one
+expression syntax error for each `%local' variable declared. It then
+may be used in the construction of an appropriately sized ENTER
+instruction as shown in the example.
+
+
+File: nasm.info,  Node: Section 4.10,  Next: Section 4.10.1,  Prev: Section 4.9.3,  Up: Chapter 4
+
+4.10. Other Preprocessor Directives
+===================================
+
+   NASM also has preprocessor directives which allow access to
+information from external sources. Currently they include:
+
+   The following preprocessor directive is supported to allow NASM to
+correctly handle output of the cpp C language preprocessor.
+
+   * `%line' enables NAsM to correctly handle the output of the cpp C
+     language preprocessor (see *Note Section 4.10.1::).
+
+   * `%!' enables NASM to read in the value of an environment variable,
+     which can then be used in your program (see *Note Section
+     4.10.2::).
+
+* Menu:
+
+* Section 4.10.1:: `%line' Directive
+* Section 4.10.2:: `%!'`<env>': Read an environment variable.
+
+
+File: nasm.info,  Node: Section 4.10.1,  Next: Section 4.10.2,  Prev: Section 4.10,  Up: Section 4.10
+
+4.10.1. `%line' Directive
+-------------------------
+
+   The `%line' directive is used to notify NASM that the input line
+corresponds to a specific line number in another file. Typically this
+other file would be an original source file, with the current NASM
+input being the output of a pre-processor. The `%line' directive allows
+NASM to output messages which indicate the line number of the original
+source file, instead of the file that is being read by NASM.
+
+   This preprocessor directive is not generally of use to programmers,
+by may be of interest to preprocessor authors. The usage of the `%line'
+preprocessor directive is as follows:
+
+     %line nnn[+mmm] [filename]
+
+   In this directive, `nnn' indentifies the line of the original source
+file which this line corresponds to. `mmm' is an optional parameter
+which specifies a line increment value; each line of the input file
+read in is considered to correspond to `mmm' lines of the original
+source file. Finally, `filename' is an optional parameter which
+specifies the file name of the original source file.
+
+   After reading a `%line' preprocessor directive, NASM will report all
+file name and line numbers relative to the values specified therein.
+
+
+File: nasm.info,  Node: Section 4.10.2,  Next: Chapter 5,  Prev: Section 4.10.1,  Up: Section 4.10
+
+4.10.2. `%!'`<env>': Read an environment variable.
+--------------------------------------------------
+
+   The `%!<env>' directive makes it possible to read the value of an
+environment variable at assembly time. This could, for example, be used
+to store the contents of an environment variable into a string, which
+could be used at some other point in your code.
+
+   For example, suppose that you have an environment variable `FOO', and
+you want the contents of `FOO' to be embedded in your program. You
+could do that as follows:
+
+     %define FOO    %!FOO
+     %define quote   '
+     
+     tmpstr  db      quote FOO quote
+
+   At the time of writing, this will generate an "unterminated string"
+warning at the time of defining "quote", and it will add a space before
+and after the string that is read in. I was unable to find a simple
+workaround (although a workaround can be created using a multi-line
+macro), so I believe that you will need to either learn how to create
+more complex macros, or allow for the extra spaces if you make use of
+this feature in that way.
+
+
+File: nasm.info,  Node: Chapter 5,  Next: Section 5.1,  Prev: Section 4.10.2,  Up: Top
+
+Chapter 5: Assembler Directives
+*******************************
+
+   NASM, though it attempts to avoid the bureaucracy of assemblers like
+MASM and TASM, is nevertheless forced to support a _few_ directives.
+These are described in this chapter.
+
+   NASM's directives come in two types: _user-level_ directives and
+_primitive_ directives. Typically, each directive has a user-level form
+and a primitive form. In almost all cases, we recommend that users use
+the user-level forms of the directives, which are implemented as macros
+which call the primitive forms.
+
+   Primitive directives are enclosed in square brackets; user-level
+directives are not.
+
+   In addition to the universal directives described in this chapter,
+each object file format can optionally supply extra directives in order
+to control particular features of that file format. These
+_format-specific_ directives are documented along with the formats that
+implement them, in *Note Chapter 6::.
+
+* Menu:
+
+* Section 5.1:: `BITS': Specifying Target Processor Mode
+* Section 5.2:: `SECTION' or `SEGMENT': Changing and Defining Sections
+* Section 5.3:: `ABSOLUTE': Defining Absolute Labels
+* Section 5.4:: `EXTERN': Importing Symbols from Other Modules
+* Section 5.5:: `GLOBAL': Exporting Symbols to Other Modules
+* Section 5.6:: `COMMON': Defining Common Data Areas
+* Section 5.7:: `CPU': Defining CPU Dependencies
+
+
+File: nasm.info,  Node: Section 5.1,  Next: Section 5.1.1,  Prev: Chapter 5,  Up: Chapter 5
+
+5.1. `BITS': Specifying Target Processor Mode
+=============================================
+
+   The `BITS' directive specifies whether NASM should generate code
+designed to run on a processor operating in 16-bit mode, or code
+designed to run on a processor operating in 32-bit mode. The syntax is
+`BITS 16' or `BITS 32'.
+
+   In most cases, you should not need to use `BITS' explicitly. The
+`aout', `coff', `elf' and `win32' object formats, which are designed
+for use in 32-bit operating systems, all cause NASM to select 32-bit
+mode by default. The `obj' object format allows you to specify each
+segment you define as either `USE16' or `USE32', and NASM will set its
+operating mode accordingly, so the use of the `BITS' directive is once
+again unnecessary.
+
+   The most likely reason for using the `BITS' directive is to write 32-
+bit code in a flat binary file; this is because the `bin' output format
+defaults to 16-bit mode in anticipation of it being used most
+frequently to write DOS `.COM' programs, DOS `.SYS' device drivers and
+boot loader software.
+
+   You do _not_ need to specify `BITS 32' merely in order to use 32-
+bit instructions in a 16-bit DOS program; if you do, the assembler will
+generate incorrect code because it will be writing code targeted at a
+32- bit platform, to be run on a 16-bit one.
+
+   When NASM is in `BITS 16' state, instructions which use 32-bit data
+are prefixed with an 0x66 byte, and those referring to 32-bit addresses
+have an 0x67 prefix. In `BITS 32' state, the reverse is true: 32-bit
+instructions require no prefixes, whereas instructions using 16-bit data
+need an 0x66 and those working on 16-bit addresses need an 0x67.
+
+   The `BITS' directive has an exactly equivalent primitive form,
+`[BITS 16]' and `[BITS 32]'. The user-level form is a macro which has
+no function other than to call the primitive form.
+
+   Note that the space is neccessary, `BITS32' will _not_ work!
+
+* Menu:
+
+* Section 5.1.1:: `USE16' & `USE32': Aliases for BITS
+
+
+File: nasm.info,  Node: Section 5.1.1,  Next: Section 5.2,  Prev: Section 5.1,  Up: Section 5.1
+
+5.1.1. `USE16' & `USE32': Aliases for BITS
+------------------------------------------
+
+   The ``USE16'' and ``USE32'' directives can be used in place of
+``BITS 16'' and ``BITS 32'', for compatibility with other assemblers.
+
+
+File: nasm.info,  Node: Section 5.2,  Next: Section 5.2.1,  Prev: Section 5.1.1,  Up: Chapter 5
+
+5.2. `SECTION' or `SEGMENT': Changing and Defining Sections
+===========================================================
+
+   The `SECTION' directive (`SEGMENT' is an exactly equivalent synonym)
+changes which section of the output file the code you write will be
+assembled into. In some object file formats, the number and names of
+sections are fixed; in others, the user may make up as many as they
+wish.  Hence `SECTION' may sometimes give an error message, or may
+define a new section, if you try to switch to a section that does not
+(yet) exist.
+
+   The Unix object formats, and the `bin' object format (but see *Note
+Section 6.1.3::, all support the standardised section names `.text',
+`.data' and `.bss' for the code, data and uninitialised-data sections.
+The `obj' format, by contrast, does not recognise these section names
+as being special, and indeed will strip off the leading period of any
+section name that has one.
+
+* Menu:
+
+* Section 5.2.1:: The `__SECT__' Macro
+
+
+File: nasm.info,  Node: Section 5.2.1,  Next: Section 5.3,  Prev: Section 5.2,  Up: Section 5.2
+
+5.2.1. The `__SECT__' Macro
+---------------------------
+
+   The `SECTION' directive is unusual in that its user-level form
+functions differently from its primitive form. The primitive form,
+`[SECTION xyz]', simply switches the current target section to the one
+given. The user-level form, `SECTION xyz', however, first defines the
+single-line macro `__SECT__' to be the primitive `[SECTION]' directive
+which it is about to issue, and then issues it. So the user-level
+directive
+
+             SECTION .text
+
+   expands to the two lines
+
+     %define __SECT__        [SECTION .text]
+             [SECTION .text]
+
+   Users may find it useful to make use of this in their own macros. For
+example, the `writefile' macro defined in *Note Section 4.3.3:: can be
+usefully rewritten in the following more sophisticated form:
+
+     %macro  writefile 2+
+     
+             [section .data]
+     
+       %%str:        db      %2
+       %%endstr:
+     
+             __SECT__
+     
+             mov     dx,%%str
+             mov     cx,%%endstr-%%str
+             mov     bx,%1
+             mov     ah,0x40
+             int     0x21
+     
+     %endmacro
+
+   This form of the macro, once passed a string to output, first
+switches temporarily to the data section of the file, using the
+primitive form of the `SECTION' directive so as not to modify
+`__SECT__'. It then declares its string in the data section, and then
+invokes `__SECT__' to switch back to _whichever_ section the user was
+previously working in. It thus avoids the need, in the previous version
+of the macro, to include a `JMP' instruction to jump over the data, and
+also does not fail if, in a complicated `OBJ' format module, the user
+could potentially be assembling the code in any of several separate code
+sections.
+

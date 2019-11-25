@@ -1,0 +1,577 @@
+
+                Welcome to the Norton Utilities Version 5.0!
+              ------------------------------------------------
+
+       This file contains information which doesn't appear in the manual.
+
+                If you would like to print this file, type:
+
+                            COPY READ.ME PRN:
+
+                at the DOS prompt.
+
+
+**************************  General Information  ****************************
+
+Many of the programs in Norton Utilities Version 4.5 and have been combined in
+the Norton Utilities Version 5.0.  Most of the previous program names have also
+been changed.  These utility changes are noted in the following list:
+
+    Utility Name          4.5 Filename     5.0 Filename
+
+  Batch Enhancer                BE ---------- BE
+  Directory Sort                DS ---------- Speedisk
+  Disk Information              DI ---------- Sysinfo
+  Disk Test                     DT ---------- NDD
+  File Attributes               FA ---------- Filefind
+  File Date/Time                FD ---------- Filefind
+  File Find                     FF ---------- Filefind
+  File Information              FI ---------- Filefind
+  Format Recover                FR ---------- Unformat
+  File Size                     FS ---------- Filefind
+  List Directory                LD ---------- Filefind
+  Line Print                    LP ---------- Does Not Exist
+  Norton Control Center         NCC --------- NCC
+  Norton Change Directory       NCD --------- NCD
+  Norton Disk Doctor            NDD --------- NDD, DiskTool
+  Norton Integrator             NI ---------- Norton
+  Norton Utilities              NU ---------- DiskEdit, UnErase, DiskTool
+  Quick UnErase                 QU ---------- UnErase
+  Speed Disk                    SD ---------- Speedisk
+  Safe Format                   SF ---------- SFormat
+  System Information            SI ---------- Sysinfo
+  Time Mark                     TM ---------- NCC
+  Text Search                   TS ---------- FileFind
+  UnRemove Directory            UD ---------- UnErase
+  Volume Label                  VL ---------- NCD
+  Wipe File                     Wipefile ---- WipeInfo
+  Wipe Disk                     Wipedisk ---- WipeInfo
+
+If the INSTALL program determines that Norton Utilities version 4.5 is already
+installed on the user's hard disk, it offers the option of overwriting the old
+version or saving the files in a backup directory.  Regardless of the option
+chosen, the following 4.5 programs are always retained in the main NORTON
+directory:
+
+Directory Sort (DS.EXE)
+File Attributes (FA.EXE)
+File Date/Time (FD.EXE)
+File Find (FF.EXE renamed to FL.EXE)
+File Size (FS.EXE)
+Line Print (LP.EXE)
+
+These programs are preserved because command line users may find it easier to
+continue using them rather than their replacements in the 5.0 package.  Users
+may also have batch files that rely on these 4.5 commands.  The old FF.EXE is
+renamed to FL.EXE so it doesn't conflict with the new FileFind.
+
+Regardless of whether the old Utilities are installed, the user has the option
+of renaming certain programs to two character names:
+
+DISKEDIT.EXE can be renamed DE.EXE
+SYSINFO.EXE can be renamed SI.EXE
+SFORMAT.EXE can be renamed SF.EXE
+SPEEDISK.EXE can be renamed SD.EXE
+FILEFIND.EXE can be renamed FF.EXE
+
+This will primarily benefit long-time Norton users who like abbreviations.
+
+
+
+*********************  Additional Program Information  *********************
+
+
+*****************
+*** CALIBRATE ***
+*****************
+
+The following switches are not mentioned in the manual:
+
+    /BLANK    Turns the screen blanker ON while performing Pattern Testing
+    /NOCOPY   Don't make a duplicate copy of the track currently being tested
+
+
+****************
+*** DISKREET ***
+****************
+
+DISKREET Switches
+
+Switches are available to turn DISKREET "OFF" and "ON".  The /OFF switch
+may be used from a batch file prior to executing a program that generates
+unwanted NDisk accesses (requests for a password).
+
+     For example, MAP is a command which is used on NOVELL networks to locate
+     network drives.  Unfortunately it also results in requests for DISKREET
+     disk passwords.  To disable password prompting, create a batch file
+     similar to the following:
+
+          C:\NORTON\DISKREET /OFF
+          MAP
+          C:\NORTON\DISKREET /ON
+
+
+XMS 2.0 SUPPORT
+
+     DISKREET fully complies with the Lotus, Intel, Microsoft, AST Extended
+     Memory Specification (LIM XMS 2.0).
+
+     Some systems have available RAM in the address range above 640K and below
+     the High Memory Area (HMA).  This memory is referred to as Upper Memory
+     Blocks (UMB).  If the installed system supports this feature, DISKREET
+     will take advantage of it.  If DISKREET uses an UMB, under 1K of LOW
+     memory will be used by DISKREET.
+
+     If you use a memory manager (e.g. QEMM or 386-MAX) to load programs into
+     high DOS memory, you may wish to force DISKREET to avoid using UMB's by
+     adding the /SKIPUMB switch.  For example:
+
+          DEVICE = C:\NORTON\DISKREET.SYS /SKIPUMB
+
+
+Use of the XMS High Memory Area
+
+     When DISKREET uses the HMA, only 12K bytes of LOW memory are used.
+     DISKREET will automatically use the HMA if it is available during
+     initialization.  To make this memory area available, you must include
+     an XMS driver in the CONFIG.SYS file BEFORE the DISKREET.SYS line.
+     The file HIMEM.SYS (available free from Microsoft) can be used.
+
+     If you intend to use Microsoft WINDOWS, DISKREET must not use the HMA.
+     Add the /NOHMA switch to the DISKREET.SYS line.  For example:
+
+                DEVICE = C:\NORTON\DISKREET.SYS /NOHMA
+
+     DISKREET will then leave the HMA free for Windows use.  This switch can
+     also be used to make more memory available for Desqview (using XDV).
+
+     To force DISKREET to always load into low memory, use both the /NOHMA and
+     /SKIPUMB switches and don't load the PCSHADOW.SYS driver.  Example:
+
+                DEVICE = C:\NORTON\DISKREET.SYS /NOHMA /SKIPUMB
+
+     If you are have network problems or are experiencing loss of characters
+     during serial communications while using the HMA, you should add the
+     /A20ON switch to the DISKREET.SYS line in the CONFIG.SYS file.
+
+     For example:  DEVICE =  C:\NORTON\DISKREET.SYS /A20ON
+
+     This switch will eliminate the overhead incurred from enabling/disabling
+     the A20 line.  Note that this may cause other problems on some computers.
+
+
+Support for COMPAQ 386 reserved memory.
+
+     If you install DISKREET on a COMPAQ 386, DISKREET will use less than 900
+     bytes of LOW memory.  A file PCSHADOW.SYS has been included on the
+     distribution disks which reserves this memory for DISKREET.  If you use
+     the installation program, CONFIG.SYS will be automatically updated.  To
+     enable use of this memory by DISKREET the FIRST line in your CONFIG.SYS
+     should reference this new file.  For example:
+
+              DEVICE = C:\NORTON\PCSHADOW.SYS
+
+     REMEMBER:  It must be the first line in your CONFIG.SYS file.
+
+     NOTE:  If you are using COMPAQ's CEMM driver, the memory you save in
+            DISKREET may be offset by the additional low memory used by the
+            CEMM driver.
+
+
+RAM Drives
+
+     NDisks can be created on RAM drives providing that the sector size is set
+     to 512 bytes (the default is usually 256 bytes)
+
+
+DISKREET's Use of Sounds
+
+     When using the audible prompt method to open an NDisk, you will hear
+     different tunes.  Because DISKREET cannot display its audit screen, a
+     special tune has been selected which indicates that a prior access was
+     made and failed.  The tune sounds familiar to a European police car siren.
+     If you hear this sound, you should open NDisk Manually (using
+     DISKREET.EXE) in order to examine the audit information which contains a
+     total count of failed accesses.
+
+
+***************
+*** INSTALL ***
+***************
+
+During the install, the program will prompt the user as to whether or not the
+install program should rename DOS's FORMAT.COM to XXFORMAT.COM.  If this step
+is completed and the user has DOS 4.xx, this will cause problems with the
+execution of DOS 4.xx BACKUP.COM (DOS 4.xx looks for the presence of the file
+FORMAT.COM during its execution).  If this problem occurs, simply rename
+XXFORMAT.COM back to FORMAT.COM when using DOS 4.xx BACKUP.COM.
+
+
+The Install program will prompt you as to whether or not you wish to install
+PCSHADOW.  PCSHADOW is a reserved memory block manager for use will COMPAQ 386
+class machines ONLY.  If you have a COMPAQ 386 class machine and are using
+a memory manager (CEMM, QEMM or 386-MAX) you should NOT install PCSHADOW.
+
+
+Custom Tailoring of Statements in AUTOEXEC.BAT and CONFIG.SYS Files:
+
+The Install program can place several of the Utilities programs into your
+AUTOEXEC.BAT and/or CONFIG.SYS files if you wish.  Many of the defaults for
+these programs may not be exactly what you want.  If you want to fine tune the
+statements that the Install program has added to your Autoexec.bat or
+Config.sys, YOU WILL NEED TO MANUALLY EDIT the file yourself.  You can use a
+text editor to do this.  Please consult the documentation for the command line
+parameters you can use to tailor these programs.
+
+
+Optimizing the Scan at Install Startup:
+
+You can quicken the time that it takes for the Install program to scan for
+previously installed files by making sure that:
+
+     o  You put all your Norton Utilities files into one directory
+
+     o  The "NU" environment variable is set.  The Install program can do this
+        for you.  You'll need to set the NU variable to the directory that
+        contains your Norton Utilities files.
+
+
+Passwords:
+
+Please be aware that only ONE UNIQUE password can be set for ALL of the Norton
+Utilities files that are able to be password protected.  You are not able to,
+for example, set one password for NDD and another for UNFORMAT.
+
+
+Archive File Extraction Errors:
+
+Several of the Norton Utilities programs are compressed into archive files.  If
+you encounter an error during the extraction of the programs from the archive
+file, first try uncompressing them manually.  This is done by launching the
+archive file with the destination drive and path name where you wish to install
+the Norton Utilities:
+     <Source Disk:Archive File Name> <Target Disk:\Directory>
+
+     Example:
+
+          A:NU5_ARC1.EXE C:\NORTON
+
+If you still encounter an error, please call our Customer Service at
+1-800-365-1010.
+
+
+********************
+*** NORTON CACHE ***
+********************
+
+NCACHE only works on "normally connected" floppies.  If a floppy drive requires
+a special interface board and/or a driver loaded in CONFIG.SYS, NCACHE probably
+won't be able to cache it.  Most external drives are not supported by NCACHE.
+
+NCACHE does contain special code to support Bernoulli Boxes, including the
+external models.  Other removable hard disks are not supported.
+
+Both the Small and Fast versions of Norton Cache will refuse to cache a floppy
+drive that does not have "Change Line" support.  This is a hardware feature on
+the drive that tells the computer when a diskette has been removed.  360K
+drives often do not have a change line, and thus cannot be cached.  Most other
+drives (1.2M, 1.44M, etc.) will work OK.
+
+NCACHE will automatically determine which drives can be cached.  If a drive
+cannot be cached, NCACHE will either print "Cannot detect media change for
+this drive" or simply omit the drive from its status display.
+
+For 8088 or 80286 based machines:
+
+     In order to use Expanded Memory (EMS) with NCACHE, you must have an
+     Expanded Memory Manager that implements VERSION 4 of the EMS specification
+     (sometimes called the "LIM" specification).  You must also have true EMS
+     hardware and cannot use a software emulator like Above Disc.
+
+     If you have an older memory manager, check with your memory board
+     manufacturer to see if an upgrade is available.  In most cases all you'll
+     need is new memory manager software; no hardware changes will be required.
+
+     NCACHE will normally ignore EMS memory if you don't have the correct
+     memory manager.  If you run NCACHE with no parameters it will simply skip
+     over EMS and try to use extended or conventional memory instead.  If you
+     provide an explicit EXP= parameter, you will receive an error message and
+     NCACHE will not install itself.
+
+For users of Xerox Ventura Publisher:
+
+    One version of Ventura Publisher (VP) has problems working with NCACHE.
+    The problems only occur with Version 2.0 of the VP Standard Edition.
+    Users of that version may encounter machine lock ups during loading or
+    "Internal Error 19" dialog boxes.
+
+    There are a number of ways to work around this problem:  if you are
+    loading NCACHE from the AUTOEXEC.BAT file or from the DOS command line,
+    try loading it from CONFIG.SYS instead.  If that doesn't work, try loading
+    NCACHE before any other TSR's you are using.  If you aren't using any
+    TSR's, try loading an additional copy of COMMAND.COM after NCACHE and
+    before VP.
+
+    If none of these changes solves the problem, you'll have no choice but
+    to avoid running VP when NCACHE is loaded.  Xerox Software actually
+    recommends that you run VP Standard Edition on a machine by itself, with
+    no extra drivers or TSR's.  Future versions of VP (greater than 2.0) will
+    have a different memory management system that should solve many driver
+    and TSR problems.
+
+
+*****************************
+*** Norton Disk Doctor II ***
+*****************************
+
+The following switches are not mentioned in the manual:
+
+    /REBUILD    Rebuilds an entire disk that has been destroyed
+    /UNDELETE   Undelete a DOS partition that was previouly skipped
+
+
+******************
+*** SPEED DISK ***
+******************
+
+The DOS CHKDSK report and Speed Disk's Disk Information do not always agree on
+the number of files and directories on a disk, when in fact BOTH are correct.
+The reason is as follows:
+
+     CHKDSK reports the number of hidden files and the number of user files
+     separately, and the total of the sum of these will equal the number
+     reported by Speed Disk.
+
+     CHKDSK reports the number of sub-directories on a disk but does not count
+     the root directory.  Speed Disk counts the root as a directory and will
+     always report one more directory than CHKDSK.
+
+     CHKDSK reports the volume label as a hidden file of 0 length.  Speed Disk
+     doesn't include the volume label as a file.
+
+
+
+**************************
+*** System Information ***
+**************************
+
+The following switches are not mentioned in the manual:
+
+    /AUTO     Unattended Scrolling through and repeatedly displaying of ALL
+              the System Information Screens
+
+    /DEMO     Unattended Scrolling only through the System Information
+              Benchmark Screens
+
+   /SUMMARY   Causes SysInfo to print the same information as SI v4.5 in a
+              TTY display
+
+
+
+***************
+*** UnErase ***
+***************
+
+When in the View File Window,
+     Scroll Left  - CTRL+Left Arrow Key
+     Scroll Right - CTRL+Right Arrow Key
+
+
+
+****************
+*** WipeInfo ***
+****************
+
+FileSave and DiskMon are automatically disabled when you use WIPEINFO.
+
+
+
+
+************* Compatibility Issues and Additional Considerations ************
+
+****************************************
+*** Hard Disks with Cylinders > 1024 ***
+****************************************
+
+Norton Utilities Version 5.0 now provides various levels of support for
+hard disks with more than 1024 cylinders.  Note that it will only support
+drives of this type which are using Ontrack's Disk Manager or Storage
+Dimension's SpeedStor.  All programs will work on these types of drives
+transparently, except for the following limitations:
+
+Calibrate   Will not perform a Low-Level Format on any DOS partition
+            on the 1024+ cylinder drive.  Also won't test or optimize
+            any DOS partition which lies BEYOND the 1024 cylinder
+            boundary.
+NDD         Will state that DOS partitions which lie BEYOND the 1024
+            cylinder boundary are device-driven, which is TRUE.
+SFormat     Can't Format DOS partitions which lie BEYOND the 1024
+            cylinder boundary.
+
+
+****************************************************
+*** Multitasking with MS-WINDOWS, DESQVIEW, etc. ***
+****************************************************
+
+In general, applications or commands that modify the file allocation table can
+cause unpredictable results when run under multitasking environments.
+
+The following applications can be run directly from the DOS prompt:
+
+Batch Enhancer    No problems.
+DiskEdit          Should be run in read only mode.
+Diskreet          For NDisks to work properly, the password prompting
+                  option must be set to manual open.  When running under
+                  DESQVIEW or WINDOWS, you should do the following:
+                      -  Make all NDisks Manual open only
+                      -  Disable Quick Close
+                      -  Disable Auto Close Timeout
+                      -  Disable Screen Clear and Keyboard Lock
+FileFind          No problems.
+FileFix           May cause problems when unzapping a dBASE file.
+FileSave          As a general rule, FileSave should be turned on before
+                  loading Windows.
+                  For Advanced Users: Drives can be manipulated
+                  independently from within separate instances of
+                  command.com.
+NCC               Under Windows, only effects the current instance of
+                  command.com.
+NCD               Only effects the current instance of command.com
+System Info       The CPU Speed Benchmark will not reflect the true speed
+                  of the computer.
+Image             Should be run before loading Windows or Desqview.
+
+dBASE is a registered trademark of Ashton Tate
+Windows is a trademark of Microsoft Corporation
+
+
+
+****************
+*** NETWORKS ***
+****************
+
+The Norton Utilities Version 5.0 can be installed on a network server.
+In order to be used effectively in a networking environment, we recommend
+the following:
+
+                         NU Environment Settings
+
+The Norton Utilities saves configuration information in initialization
+files (*.INI).  Since each user on a network will most likely have a
+unique hardware configuration, the NU environment variable must point
+to a directory on the user's local hard disk.
+
+For example, typing:
+
+SET NU=C:\
+
+will instruct the Norton Utilities to find information about the user's
+computer in the root directory of his C: drive.  You should place this
+statement in your AUTOEXEC.BAT file.
+
+
+                    Running FileSave and NCD on a network
+
+FileSave      The first time FileSave is run on a network drive, it will
+              create an invisible subdirectory off the root directory.
+              This directory will be called TRASHCAN.  All users will
+              need RIGHTS to this directory in order for FileSave to
+              work correctly.  We recommend that the supervisor run
+              FileSave first, then modify the directory attributes so
+              all users have ALL RIGHTS, except SEARCH.
+
+              FileSave must be loaded AFTER the network driver (e.g. IPX)
+              and shell (e.g. NET3).  Loading FileSave before the network
+              software will prevent it from protecting network drives.
+
+NCD           NCD saves a copy of the directory tree on the drive, so that
+              it doesn't have to scan the drive everytime it is run.  On
+              a network drive, it will try to save the directory tree in
+              a subdirectory called NCDTREE.  On non-network drives, the
+              directory tree is saved in the root directory, but most
+              networks don't give users any rights to the root directory.
+              For this reason, in order to use NCD on a network drive,
+              the supervisor should create a directory in the root
+              directory called NCDTREE and give all users ALL RIGHTS to
+              this directory.
+
+
+
+*********************** Manual Corrections and Changes **********************
+
+********************
+*** USER'S GUIDE ***
+********************
+
+Page 18, Paragraph 1
+
+     "By default, 11 of the programs are specified..." should be "By default,
+     none of the programs are specified..."
+
+Page 93, (Append to...)
+
+     Append to reads "Add the contents of the tagged file to another file you
+     specify."  This is incorrect.  Instead, it starts a Manual Unerase
+     operation on the existing file (pre-adding the clusters in the file's
+     allocation chain) so that new clusters can be added to the file.
+
+Page 158, Paragraph 1
+
+     There is INCORRECT INFORMATION in the last sentence of the paragraph which
+     reads "Also, with the system area protected, WipeInfo could not wipe an
+     unused cluster without your permission."  Actually, WipeInfo disables
+     Disk Monitor, so any cluster can be wiped.
+
+Pages 159-160
+
+     Disk Monitor refers to an option called "Allow Floppy Format" which should
+     actually be "Allow Floppy Access".
+
+Page 161, Paragraph 2
+
+     If a protected write occurs while the screen is in graphics mode--for
+     example, while you are working with Windows--Disk Monitor can't pop up the
+     dialog box.  Instead, it automatically rejects the write operation.  All
+     you will hear is a beep.  The application that was attempting the write
+     should issue a "write protect" or "access denied" error message
+
+Page 253, (NCD Funtion Keys)
+
+     F9 and F10 do not do what is described at the bottom of this page.
+     F9 and F10 both simply access the manu bar.
+
+
+*********************
+*** DISK EXPLORER ***
+*********************
+
+Page 167  List at the Bottom of the Page
+
+     "DOS 4.xx" should be "DOS 4.xx and higher"
+
+
+****************  PROBLEMS, ERROR MESSAGES AND SOLUTIONS  *****************
+
+In general, if things are not working the way you expect, check your
+AUTOEXEC.BAT.  Some programs install a 2nd path statement instead of correctly
+modifying the 1st one.  Also, check that the NU and/or NORTON environment
+variables are set to the directory where Norton Utilities 5.0 is installed.
+Finally, check both AUTOEXEC.BAT and CONFIG.SYS for statements that you don't
+recognize or that look out of place.
+
+
+Message:  "Error obtaining directory information, insufficient memory."
+
+Solution:  - Remove (unload) TSR's to free up RAM space
+           - Remove some files from the directory (e.g., move files to another
+             directory).
+
+
+*************************
+*** For Lap Top Users ***
+*************************
+
+The improve the viewing quality of an LCD laptop screen, at the DOS prompt
+you may type NORTON /LCD.  The INSTALL program however, will allow you to
+configure all the Utilities to automatically operate on LCD displays.
+

@@ -1,0 +1,161 @@
+Turbo Assembler	 Version 4.1	    11/19/19 12:28:48	    Page 1
+diff.ASM
+
+
+
+      1					 include macro.asm
+1     2					 read_name macro fnamebuf
+1     3					     local end,	l1, l2
+1     4					     local separator1
+1     5					     local separator2
+1     6					     mov bx, offset fnamebuf
+1     7					 l1:
+1     8					     mov byte ptr al, [si]
+1     9					     cmp al, separator1
+1    10					     je	l2
+1    11					     mov byte ptr [bx],	al
+1    12					     inc bx
+1    13					     inc si
+1    14					     jmp l1
+1    15					 l2:
+1    16					     jmp end
+1    17					 flag db 0
+1    18					 separator1 db " "
+1    19					 separator2 db '"'
+1    20					 end:
+1    21					 endm
+1    22
+1    23					 allocate macro	space
+1    24					     mov bx, space
+1    25					     shr bx, 4h
+1    26					     inc bx
+1    27
+1    28					     mov ax, 48h
+1    29					     int 21h
+1    30					 endm
+1    31
+1    32					 free macro mem
+1    33					     mov es, mem
+1    34
+1    35					     mov ah, 49h
+1    36					     int 21h
+1    37					 endm
+1    38
+1    39					 exit macro
+1    40					     mov ah, 00h
+1    41					     int 21h
+1    42					 endm
+1    43
+1    44					 print macro buf
+1    45						 mov ah, 09h
+1    46						 mov dx, offset	buf
+1    47						 int 21h
+1    48					 endm
+1    49
+1    50					 skipnospace macro
+1    51					     local l, end, separator
+1    52					 l:
+1    53					     mov byte ptr al, [si]
+1    54					     cmp al, " "
+1    55					     inc si
+1    56					     jne l
+1    57					     jmp end
+Turbo Assembler	 Version 4.1	    11/19/19 12:28:48	    Page 2
+diff.ASM
+
+
+
+1    58					 separator db "	"
+1    59					 end:
+1    60					 endm
+     61
+     62	    0000			 model tiny
+     63					 .386
+     64	    0000			 .code
+     65					 org 100h
+     66	    0100			 start:
+     67	    0100  BE 0080		     mov si, 80h
+     68					     skipnospace
+1    69	    0103			 ??0000:
+1    70	    0103  8A 04			     mov byte ptr al, [si]
+1    71	    0105  3C 20			     cmp al, " "
+1    72	    0107  46			     inc si
+1    73	    0108  75 F9			     jne ??0000
+1    74	    010A  EB 01			     jmp ??0001
+1    75	    010C  20			 ??0002	db " "
+1    76	    010D			 ??0001:
+     77					     read_name si, fname1
+1    78	    010D  8B DE			     mov bx, offset si
+1    79	    010F			 ??0004:
+1    80	    010F  8A 04			     mov byte ptr al, [si]
+1    81	    0111  3A 06	0120r		     cmp al, ??0006
+1    82	    0115  74 06			     je	??0005
+1    83	    0117  88 07			     mov byte ptr [bx],	al
+1    84	    0119  43			     inc bx
+1    85	    011A  46			     inc si
+1    86	    011B  EB F2			     jmp ??0004
+1    87	    011D			 ??0005:
+1    88	    011D  EB 03			     jmp ??0003
+1    89	    011F  00			 flag db 0
+1    90	    0120  20			 ??0006	db " "
+1    91	    0121  22			 ??0007	db '"'
+1    92	    0122			 ??0003:
+     93					     print fname1
+1    94	    0122  B4 09				 mov ah, 09h
+1    95	    0124  BA 0129r			 mov dx, offset	fname1
+1    96	    0127  CD 21				 int 21h
+     97	    0129  80*(24)		 fname1	db 128 dup("$")
+     98	    01A9  80*(24)		 fname2	db 128 dup("$")
+     99					 end start
+Turbo Assembler	 Version 4.1	    11/19/19 12:28:48	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??0000				  Near	 DGROUP:0103
+??0001				  Near	 DGROUP:010D
+??0002				  Byte	 DGROUP:010C
+??0003				  Near	 DGROUP:0122
+??0004				  Near	 DGROUP:010F
+??0005				  Near	 DGROUP:011D
+??0006				  Byte	 DGROUP:0120
+??0007				  Byte	 DGROUP:0121
+??DATE				  Text	 "11/19/19"
+??FILENAME			  Text	 "diff	  "
+??TIME				  Text	 "12:28:48"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0F0FH
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 DIFF
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+FLAG				  Byte	 DGROUP:011F
+FNAME1				  Byte	 DGROUP:0129
+FNAME2				  Byte	 DGROUP:01A9
+START				  Near	 DGROUP:0100
+
+Macro Name
+
+ALLOCATE
+EXIT
+FREE
+PRINT
+READ_NAME
+SKIPNOSPACE
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  0229 Word	  Public  CODE
+

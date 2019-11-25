@@ -1,0 +1,37 @@
+
+
+様様様様様様様様様様様様様様様様
+Answers to READ/Window/Menu Quiz
+様様様様様様様様様様様様様様様様
+
+1.      You would add one READ level each time you selected an
+        application from the menu and, therefore, would get 'Too many
+        READs in effect." in short order.
+
+2.      Because the procedure 'menuhit' is contained within EX1.MPR
+        which is not part of EX1.PRG.
+
+3.      It's found in function 'stopread' which is evaluated each time
+        an application window is DEACTIVATEd.
+
+4.      There are at most three READs active:  the Foundation READ,
+        one of the application READs, and a READ MODAL associated with
+        either 'browser' or 'finder'.
+
+5.      The procedure named 'efface', which is called in the cleanup
+        code for each application screen, insures that when the last
+        application window is closed the control panel is released.
+
+6.      The application READ has been terminated because its
+        DEACTIVATE clause has returned .T. but the Foundation READ
+        remains active.
+
+7.      The Foundation READ is still active.
+
+8.      The first application's DEACTIVATE clause returns .T. and,
+        thereby, terminates that application READ.  Termination of the
+        application READ triggers the Foundation READ's VALID clause.
+        This routine, called 'myhandler', notes that WONTOP() is a new
+        application READ then proceeds to execute the .SPR associated
+        with that window.
+

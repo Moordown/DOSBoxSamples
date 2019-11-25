@@ -1,0 +1,20 @@
+ûAssembler support		SRC\ASM.S MAC\ASM.MAC HELP\ASM.HLZ
+ûC support(already installed)                        þ
+ûCMAC support(already installed)                          þ
+ BASIC support			SRC\BASIC.S MAC\BASIC.MAC HELP\BASIC.HLZ
+ FORTRAN support		SRC\FORTRAN.S MAC\FORTRAN.MAC HELP\FORTRAN.HLZ
+ PASCAL support			SRC\PASCAL.S MAC\PASCAL.MAC HELP\PASCAL.HLZ
+ûdBASE support			HELP\DBASE.HLZ SRC\DBASE.S MAC\DBASE.MAC
+ MODULA 2 support		SRC\MODULA_2.S MAC\MODULA_2.MAC HELP\MODULA_2.HLZ
+ Wordstar Keymap		MAC\WORDSTAR.MAC SRC\WORDSTAR.S HELP\WORDSTAR.HLZ WORDSTAR.DB /R=WORDSTAR^WSInstall
+ Brief Keymap			MAC\BRIEF.MAC SRC\BRIEF.S HELP\BRIEF.HLZ BRIEF.DB /R=BRIEF^BriefInstall
+ Version 5.0 to 6.0 conversion	MAC\CONV_600.MAC CONV_600.DAT MEMAC.EXE /R=CONV_600^CONV_INSTALL
+ûHypertext Compiler-DeCompiler	UTILS\HELPCX.EXE UTILS\HELPDX.EXE
+ûMacro Language-Source Help  	HELP\MACRO.HLZ HELP\SRC.HLZ HELP\SOURCE.HLZ
+ûUser interface macro examples	SRC\EXAMPLE.S
+ Dataflex Batch File        	DFLEX.BAT
+ Clarion Batch File		CLARC.BAT
+ ALSYS ADA Batch File		ADACOMP.BAT
+ MEMAC Compiler 		MEMAC.EXE
+ MEMAC to CMAC source converter MAC\SRCCONV.MAC SRC\SRCCONV.S
+ Old style Multi-Edit keymap    KEYMAP.DB

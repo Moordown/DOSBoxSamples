@@ -1,0 +1,18 @@
+; This file is used by DESCRIBE command of 4DOS shell
+. *** COMpact Soft Utilities Package ***
+.. ************************* 08.05.90 ***
+at!.com AntiTurbo Utility
+at!.doc AntiTurbo Documentation
+descript.ion 4DOS Directory Description
+ewoff.com Event_Wait Off Utility for AT!
+ascii.com ASCII Input Utility
+zap.com Directory Trees Removal
+ega25.com EGA 25 lines text mode
+ega43.com EGA 43 lines text mode
+kbqui.com Keyboard Fastener Utility
+kbqui.doc Keyboard Fastener Documentation
+nosound.com Sound Off Utility
+readme.cs Read Me First!
+sound.com Demo for NoSound
+snake.com The smallest game for EGA & AT
+talker.com Shell Chatter

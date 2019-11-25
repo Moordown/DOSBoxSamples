@@ -1,0 +1,1201 @@
+This is nasm.info, produced by makeinfo version 4.3 from nasmdoc.texi.
+
+INFO-DIR-SECTION Programming
+START-INFO-DIR-ENTRY
+* NASM: (nasm).                The Netwide Assembler for x86.
+END-INFO-DIR-ENTRY
+
+   This file documents NASM, the Netwide Assembler: an assembler
+targetting the Intel x86 series of processors, with portable source.
+
+   Copyright 2003 The NASM Development Team
+
+   All rights reserved. This document is redistributable under the
+licence given in the file "COPYING" distributed in the NASM archive.
+
+
+File: nasm.info,  Node: Top,  Next: Chapter 1,  Prev: (dir),  Up: (dir)
+
+The Netwide Assembler for x86
+*****************************
+
+   This file documents NASM, the Netwide Assembler: an assembler
+targetting the Intel x86 series of processors, with portable source.
+
+* Menu:
+
+* Chapter 1:: Introduction
+* Chapter 2:: Running NASM
+* Chapter 3:: The NASM Language
+* Chapter 4:: The NASM Preprocessor
+* Chapter 5:: Assembler Directives
+* Chapter 6:: Output Formats
+* Chapter 7:: Writing 16-bit Code (DOS, Windows 3/3.1)
+* Chapter 8:: Writing 32-bit Code (Unix, Win32, DJGPP)
+* Chapter 9:: Mixing 16 and 32 Bit Code
+* Chapter 10:: Troubleshooting
+* Appendix A:: Ndisasm
+* Appendix B:: x86 Instruction Reference
+* Index::
+
+
+File: nasm.info,  Node: Chapter 1,  Next: Section 1.1,  Prev: Top,  Up: Top
+
+Chapter 1: Introduction
+***********************
+
+* Menu:
+
+* Section 1.1:: What Is NASM?
+* Section 1.2:: Contact Information
+* Section 1.3:: Installation
+
+
+File: nasm.info,  Node: Section 1.1,  Next: Section 1.1.1,  Prev: Chapter 1,  Up: Chapter 1
+
+1.1. What Is NASM?
+==================
+
+   The Netwide Assembler, NASM, is an 80x86 assembler designed for
+portability and modularity. It supports a range of object file formats,
+including Linux and `NetBSD/FreeBSD' `a.out', `ELF', `COFF', Microsoft
+16-bit `OBJ' and `Win32'. It will also output plain binary files.  Its
+syntax is designed to be simple and easy to understand, similar to
+Intel's but less complex. It supports `Pentium', `P6', `MMX', `3DNow!',
+`SSE' and `SSE2' opcodes, and has macro capability.
+
+* Menu:
+
+* Section 1.1.1:: Why Yet Another Assembler?
+* Section 1.1.2:: Licence Conditions
+
+
+File: nasm.info,  Node: Section 1.1.1,  Next: Section 1.1.2,  Prev: Section 1.1,  Up: Section 1.1
+
+1.1.1. Why Yet Another Assembler?
+---------------------------------
+
+   The Netwide Assembler grew out of an idea on `comp.lang.asm.x86' (or
+possibly `alt.lang.asm' - I forget which), which was essentially that
+there didn't seem to be a good _free_ x86-series assembler around, and
+that maybe someone ought to write one.
+
+   * `a86' is good, but not free, and in particular you don't get any
+     32- bit capability until you pay. It's DOS only, too.
+
+   * `gas' is free, and ports over DOS and Unix, but it's not very good,
+     since it's designed to be a back end to `gcc', which always feeds
+     it correct code. So its error checking is minimal. Also, its
+     syntax is horrible, from the point of view of anyone trying to
+     actually _write_ anything in it. Plus you can't write 16-bit code
+     in it (properly).
+
+   * `as86' is Minix- and Linux-specific, and (my version at least)
+     doesn't seem to have much (or any) documentation.
+
+   * `MASM' isn't very good, and it's (was) expensive, and it runs only
+     under DOS.
+
+   * `TASM' is better, but still strives for MASM compatibility, which
+     means millions of directives and tons of red tape. And its syntax
+     is essentially MASM's, with the contradictions and quirks that
+     entails (although it sorts out some of those by means of Ideal
+     mode). It's expensive too. And it's DOS-only.
+
+   So here, for your coding pleasure, is NASM. At present it's still in
+prototype stage - we don't promise that it can outperform any of these
+assemblers. But please, _please_ send us bug reports, fixes, helpful
+information, and anything else you can get your hands on (and thanks to
+the many people who've done this already! You all know who you are),
+and we'll improve it out of all recognition. Again.
+
+
+File: nasm.info,  Node: Section 1.1.2,  Next: Section 1.2,  Prev: Section 1.1.1,  Up: Section 1.1
+
+1.1.2. Licence Conditions
+-------------------------
+
+   Please see the file `COPYING', supplied as part of any NASM
+distribution archive, for the licence conditions under which you may use
+NASM. NASM is now under the so-called GNU Lesser General Public License,
+LGPL.
+
+
+File: nasm.info,  Node: Section 1.2,  Next: Section 1.3,  Prev: Section 1.1.2,  Up: Chapter 1
+
+1.2. Contact Information
+========================
+
+   The current version of NASM (since about 0.98.08) are maintained by
+a team of developers, accessible through the `nasm-devel' mailing list
+(see below for the link). If you want to report a bug, please read
+*Note Section 10.2:: first.
+
+   NASM has a WWW page at `http://nasm.sourceforge.net'. If it's not
+there, google for us!
+
+   The original authors are e-mailable as `jules@dsf.org.uk' and
+`anakin@pobox.com'. The latter is no longer involved in the development
+team.
+
+   New releases of NASM are uploaded to the official sites
+`http://nasm.sourceforge.net' and to `ftp.kernel.org' and `ibiblio.org'.
+
+   Announcements are posted to `comp.lang.asm.x86', `alt.lang.asm' and
+`comp.os.linux.announce'
+
+   If you want information about NASM beta releases, and the current
+development status, please subscribe to the `nasm-devel' email list by
+registering at `http://sourceforge.net/projects/nasm'.
+
+
+File: nasm.info,  Node: Section 1.3,  Next: Section 1.3.1,  Prev: Section 1.2,  Up: Chapter 1
+
+1.3. Installation
+=================
+
+* Menu:
+
+* Section 1.3.1:: Installing NASM under MS-DOS or Windows
+* Section 1.3.2:: Installing NASM under Unix
+
+
+File: nasm.info,  Node: Section 1.3.1,  Next: Section 1.3.2,  Prev: Section 1.3,  Up: Section 1.3
+
+1.3.1. Installing NASM under MS-DOS or Windows
+----------------------------------------------
+
+   Once you've obtained the DOS archive for NASM, `nasmXXX.zip' (where
+`XXX' denotes the version number of NASM contained in the archive),
+unpack it into its own directory (for example `c:\nasm').
+
+   The archive will contain four executable files: the NASM executable
+files `nasm.exe' and `nasmw.exe', and the NDISASM executable files
+`ndisasm.exe' and `ndisasmw.exe'. In each case, the file whose name
+ends in `w' is a `Win32' executable, designed to run under `Windows 95'
+or  `Windows NT' Intel, and the other one is a 16- bit `DOS' executable.
+
+   The only file NASM needs to run is its own executable, so copy (at
+least) one of `nasm.exe' and `nasmw.exe' to a directory on your PATH, or
+alternatively edit `autoexec.bat' to add the `nasm' directory to your
+`PATH'. (If you're only installing the `Win32' version, you may wish to
+rename it to `nasm.exe'.)
+
+   That's it - NASM is installed. You don't need the nasm directory to
+be present to run NASM (unless you've added it to your `PATH'), so you
+can delete it if you need to save space; however, you may want to keep
+the documentation or test programs.
+
+   If you've downloaded the DOS source archive, `nasmXXXs.zip', the
+`nasm' directory will also contain the full NASM source code, and a
+selection of Makefiles you can (hopefully) use to rebuild your copy of
+NASM from scratch.
+
+   Note that the source files `insnsa.c', `insnsd.c', `insnsi.h' and
+`insnsn.c' are automatically generated from the master instruction
+table `insns.dat' by a Perl script; the file `macros.c' is generated
+from `standard.mac' by another Perl script. Although the NASM source
+distribution includes these generated files, you will need to rebuild
+them (and hence, will need a Perl interpreter) if you change insns.dat,
+standard.mac or the documentation. It is possible future source
+distributions may not include these files at all.  Ports of Perl for a
+variety of platforms, including DOS and Windows, are available from
+www.cpan.org.
+
+
+File: nasm.info,  Node: Section 1.3.2,  Next: Chapter 2,  Prev: Section 1.3.1,  Up: Section 1.3
+
+1.3.2. Installing NASM under Unix
+---------------------------------
+
+   Once you've obtained the Unix source archive for NASM,
+`nasm-X.XX.tar.gz' (where `X.XX' denotes the version number of NASM
+contained in the archive), unpack it into a directory such as
+`/usr/local/src'. The archive, when unpacked, will create its own
+subdirectory `nasm-X.XX'.
+
+   NASM is an auto-configuring package: once you've unpacked it, `cd' to
+the directory it's been unpacked into and type `./configure'. This
+shell script will find the best C compiler to use for building NASM and
+set up Makefiles accordingly.
+
+   Once NASM has auto-configured, you can type `make' to build the
+`nasm' and `ndisasm' binaries, and then `make install' to install them
+in `/usr/local/bin' and install the man pages `nasm.1' and `ndisasm.1'
+in `/usr/local/man/man1'.  Alternatively, you can give options such as
+`--prefix' to the configure script (see the file `INSTALL' for more
+details), or install the programs yourself.
+
+   NASM also comes with a set of utilities for handling the `RDOFF'
+custom object-file format, which are in the `rdoff' subdirectory of the
+NASM archive. You can build these with `make rdf' and install them with
+`make rdf_install', if you want them.
+
+   If NASM fails to auto-configure, you may still be able to make it
+compile by using the fall-back Unix makefile `Makefile.unx'. Copy or
+rename that file to `Makefile' and try typing `make'. There is also a
+Makefile.unx file in the `rdoff' subdirectory.
+
+
+File: nasm.info,  Node: Chapter 2,  Next: Section 2.1,  Prev: Section 1.3.2,  Up: Top
+
+Chapter 2: Running NASM
+***********************
+
+* Menu:
+
+* Section 2.1:: NASM Command-Line Syntax
+* Section 2.2:: Quick Start for MASM Users
+
+
+File: nasm.info,  Node: Section 2.1,  Next: Section 2.1.1,  Prev: Chapter 2,  Up: Chapter 2
+
+2.1. NASM Command-Line Syntax
+=============================
+
+   To assemble a file, you issue a command of the form
+
+     nasm -f <format> <filename> [-o <output>]
+
+   For example,
+
+     nasm -f elf myfile.asm
+
+   will assemble `myfile.asm' into an `ELF' object file `myfile.o'. And
+
+     nasm -f bin myfile.asm -o myfile.com
+
+   will assemble `myfile.asm' into a raw binary file `myfile.com'.
+
+   To produce a listing file, with the hex codes output from NASM
+displayed on the left of the original sources, use the `-l' option to
+give a listing file name, for example:
+
+     nasm -f coff myfile.asm -l myfile.lst
+
+   To get further usage instructions from NASM, try typing
+
+     nasm -h
+
+   As `-hf', this will also list the available output file formats, and
+what they are.
+
+   If you use Linux but aren't sure whether your system is `a.out' or
+`ELF', type
+
+     file nasm
+
+   (in the directory in which you put the NASM binary when you
+installed it).  If it says something like
+
+     nasm: ELF 32-bit LSB executable i386 (386 and up) Version 1
+
+   then your system is `ELF', and you should use the option `-f elf'
+when you want NASM to produce Linux object files. If it says
+
+     nasm: Linux/i386 demand-paged executable (QMAGIC)
+
+   or something similar, your system is `a.out', and you should use `-f
+aout' instead (Linux `a.out' systems have long been obsolete, and are
+rare these days.)
+
+   Like Unix compilers and assemblers, NASM is silent unless it goes
+wrong: you won't see any output at all, unless it gives error messages.
+
+* Menu:
+
+* Section 2.1.1:: The `-o' Option: Specifying the Output File Name
+* Section 2.1.2:: The `-f' Option: Specifying the Output File Format
+* Section 2.1.3:: The `-l' Option: Generating a Listing File
+* Section 2.1.4:: The `-M' Option: Generate Makefile Dependencies.
+* Section 2.1.5:: The `-F' Option: Selecting a Debug Information Format
+* Section 2.1.6:: The `-g' Option: Enabling Debug Information.
+* Section 2.1.7:: The `-X' Option: Selecting an Error Reporting Format
+* Section 2.1.8:: The `-E' Option: Send Errors to a File
+* Section 2.1.9:: The `-s' Option: Send Errors to `stdout'
+* Section 2.1.10:: The `-i' Option: Include File Search Directories
+* Section 2.1.11:: The `-p' Option: Pre-Include a File
+* Section 2.1.12:: The `-d' Option: Pre-Define a Macro
+* Section 2.1.13:: The `-u' Option: Undefine a Macro
+* Section 2.1.14:: The `-e' Option: Preprocess Only
+* Section 2.1.15:: The `-a' Option: Don't Preprocess At All
+* Section 2.1.16:: The `-On' Option: Specifying Multipass Optimization.
+* Section 2.1.17:: The `-t' option: Enable TASM Compatibility Mode
+* Section 2.1.18:: The `-w' Option: Enable or Disable Assembly Warnings
+* Section 2.1.19:: The `-v' Option: Display Version Info
+* Section 2.1.20:: The `-y' Option: Display Available Debug Info Formats
+* Section 2.1.21:: The `--prefix' and `--postfix' Options.
+* Section 2.1.22:: The `NASMENV' Environment Variable
+
+
+File: nasm.info,  Node: Section 2.1.1,  Next: Section 2.1.2,  Prev: Section 2.1,  Up: Section 2.1
+
+2.1.1. The `-o' Option: Specifying the Output File Name
+-------------------------------------------------------
+
+   NASM will normally choose the name of your output file for you;
+precisely how it does this is dependent on the object file format. For
+Microsoft object file formats (`obj' and `win32'), it will remove the
+`.asm' extension (or whatever extension you like to use - NASM doesn't
+care) from your source file name and substitute `.obj'. For Unix object
+file formats (`aout', `coff', `elf' and `as86') it will substitute
+`.o'. For `rdf', it will use `.rdf', and for the `bin' format it will
+simply remove the extension, so that `myfile.asm' produces the output
+file `myfile'.
+
+   If the output file already exists, NASM will overwrite it, unless it
+has the same name as the input file, in which case it will give a
+warning and use `nasm.out' as the output file name instead.
+
+   For situations in which this behaviour is unacceptable, NASM
+provides the `-o' command-line option, which allows you to specify your
+desired output file name. You invoke `-o' by following it with the name
+you wish for the output file, either with or without an intervening
+space. For example:
+
+     nasm -f bin program.asm -o program.com
+     nasm -f bin driver.asm -odriver.sys
+
+   Note that this is a small o, and is different from a capital O ,
+which is used to specify the number of optimisation passes required. See
+*Note Section 2.1.16::.
+
+
+File: nasm.info,  Node: Section 2.1.2,  Next: Section 2.1.3,  Prev: Section 2.1.1,  Up: Section 2.1
+
+2.1.2. The `-f' Option: Specifying the Output File Format
+---------------------------------------------------------
+
+   If you do not supply the `-f' option to NASM, it will choose an
+output file format for you itself. In the distribution versions of
+NASM, the default is always `bin'; if you've compiled your own copy of
+NASM, you can redefine `OF_DEFAULT' at compile time and choose what you
+want the default to be.
+
+   Like `-o', the intervening space between `-f' and the output file
+format is optional; so `-f elf' and `-felf' are both valid.
+
+   A complete list of the available output file formats can be given by
+issuing the command `nasm -hf'.
+
+
+File: nasm.info,  Node: Section 2.1.3,  Next: Section 2.1.4,  Prev: Section 2.1.2,  Up: Section 2.1
+
+2.1.3. The `-l' Option: Generating a Listing File
+-------------------------------------------------
+
+   If you supply the `-l' option to NASM, followed (with the usual
+optional space) by a file name, NASM will generate a source-listing file
+for you, in which addresses and generated code are listed on the left,
+and the actual source code, with expansions of multi-line macros
+(except those which specifically request no expansion in source
+listings: see *Note Section 4.3.9::) on the right. For example:
+
+     nasm -f elf myfile.asm -l myfile.lst
+
+   If a list file is selected, you may turn off listing for a section
+of your source with `[list -]', and turn it back on with `[list +]',
+(the default, obviously). There is no "user form" (without the
+brackets). This can be used to list only sections of interest, avoiding
+excessively long listings.
+
+
+File: nasm.info,  Node: Section 2.1.4,  Next: Section 2.1.5,  Prev: Section 2.1.3,  Up: Section 2.1
+
+2.1.4. The `-M' Option: Generate Makefile Dependencies.
+-------------------------------------------------------
+
+   This option can be used to generate makefile dependencies on stdout.
+This can be redirected to a file for further processing. For example:
+
+     NASM -M myfile.asm > myfile.dep
+
+
+File: nasm.info,  Node: Section 2.1.5,  Next: Section 2.1.6,  Prev: Section 2.1.4,  Up: Section 2.1
+
+2.1.5. The `-F' Option: Selecting a Debug Information Format
+------------------------------------------------------------
+
+   This option is used to select the format of the debug information
+emitted into the output file, to be used by a debugger (or _will_ be).
+Use of this switch does _not_ enable output of the selected debug info
+format. Use `-g', see *Note Section 2.1.6::, to enable output.
+
+   A complete list of the available debug file formats for an output
+format can be seen by issuing the command `nasm -f <format> -y'. (only
+"borland" in "-f obj", as of 0.98.35, but "watch this space") See:
+*Note Section 2.1.20::.
+
+   This should not be confused with the "-f dbg" output format option
+which is not built into NASM by default. For information on how to
+enable it when building from the sources, see *Note Section 6.10::
+
+
+File: nasm.info,  Node: Section 2.1.6,  Next: Section 2.1.7,  Prev: Section 2.1.5,  Up: Section 2.1
+
+2.1.6. The `-g' Option: Enabling Debug Information.
+---------------------------------------------------
+
+   This option can be used to generate debugging information in the
+specified format. See: *Note Section 2.1.5::. Using `-g' without `-F'
+results in emitting debug info in the default format, if any, for the
+selected output format. If no debug information is currently
+implemented in the selected output format, `-g' is _silently ignored_.
+
+
+File: nasm.info,  Node: Section 2.1.7,  Next: Section 2.1.8,  Prev: Section 2.1.6,  Up: Section 2.1
+
+2.1.7. The `-X' Option: Selecting an Error Reporting Format
+-----------------------------------------------------------
+
+   This option can be used to select an error reporting format for any
+error messages that might be produced by NASM.
+
+   Currently, two error reporting formats may be selected. They are the
+`-Xvc' option and the `-Xgnu' option. The GNU format is the default and
+looks like this:
+
+     filename.asm:65: error: specific error message
+
+   where `filename.asm' is the name of the source file in which the
+error was detected, `65' is the source file line number on which the
+error was detected, `error' is the severity of the error (this could be
+`warning'), and `specific error message' is a more detailed text
+message which should help pinpoint the exact problem.
+
+   The other format, specified by `-Xvc' is the style used by Microsoft
+Visual C++ and some other programs. It looks like this:
+
+     filename.asm(65) : error: specific error message
+
+   where the only difference is that the line number is in parentheses
+instead of being delimited by colons.
+
+   See also the `Visual C++' output format, *Note Section 6.3::.
+
+
+File: nasm.info,  Node: Section 2.1.8,  Next: Section 2.1.9,  Prev: Section 2.1.7,  Up: Section 2.1
+
+2.1.8. The `-E' Option: Send Errors to a File
+---------------------------------------------
+
+   Under `MS-DOS' it can be difficult (though there are ways) to
+redirect the standard-error output of a program to a file. Since NASM
+usually produces its warning and error messages on `stderr', this can
+make it hard to capture the errors if (for example) you want to load
+them into an editor.
+
+   NASM therefore provides the `-E' option, taking a filename argument
+which causes errors to be sent to the specified files rather than
+standard error. Therefore you can redirect the errors into a file by
+typing
+
+     nasm -E myfile.err -f obj myfile.asm
+
+
+File: nasm.info,  Node: Section 2.1.9,  Next: Section 2.1.10,  Prev: Section 2.1.8,  Up: Section 2.1
+
+2.1.9. The `-s' Option: Send Errors to `stdout'
+-----------------------------------------------
+
+   The `-s' option redirects error messages to `stdout' rather than
+`stderr', so it can be redirected under `MS-DOS'. To assemble the file
+`myfile.asm' and pipe its output to the `more' program, you can type:
+
+     nasm -s -f obj myfile.asm | more
+
+   See also the `-E' option, *Note Section 2.1.8::.
+
+
+File: nasm.info,  Node: Section 2.1.10,  Next: Section 2.1.11,  Prev: Section 2.1.9,  Up: Section 2.1
+
+2.1.10. The `-i' Option: Include File Search Directories
+--------------------------------------------------------
+
+   When NASM sees the `%include' or `incbin' directive in a source file
+(see *Note Section 4.6:: or *Note Section 3.2.3::), it will search for
+the given file not only in the current directory, but also in any
+directories specified on the command line by the use of the `-i'
+option. Therefore you can include files from a macro library, for
+example, by typing
+
+     nasm -ic:\macrolib\ -f obj myfile.asm
+
+   (As usual, a space between `-i' and the path name is allowed, and
+optional).
+
+   NASM, in the interests of complete source-code portability, does not
+understand the file naming conventions of the OS it is running on; the
+string you provide as an argument to the `-i' option will be prepended
+exactly as written to the name of the include file. Therefore the
+trailing backslash in the above example is necessary. Under Unix, a
+trailing forward slash is similarly necessary.
+
+   (You can use this to your advantage, if you're really perverse, by
+noting that the option `-ifoo' will cause `%include "bar.i"' to search
+for the file `foobar.i'...)
+
+   If you want to define a _standard_ include search path, similar to
+`/usr/include' on Unix systems, you should place one or more `-i'
+directives in the `NASMENV' environment variable (see *Note Section
+2.1.22::).
+
+   For Makefile compatibility with many C compilers, this option can
+also be specified as `-I'.
+
+
+File: nasm.info,  Node: Section 2.1.11,  Next: Section 2.1.12,  Prev: Section 2.1.10,  Up: Section 2.1
+
+2.1.11. The `-p' Option: Pre-Include a File
+-------------------------------------------
+
+   NASM allows you to specify files to be _pre-included_ into your
+source file, by the use of the `-p' option. So running
+
+     nasm myfile.asm -p myinc.inc
+
+   is equivalent to running `nasm myfile.asm' and placing the directive
+`%include "myinc.inc"' at the start of the file.
+
+   For consistency with the `-I', `-D' and `-U' options, this option
+can also be specified as `-P'.
+
+
+File: nasm.info,  Node: Section 2.1.12,  Next: Section 2.1.13,  Prev: Section 2.1.11,  Up: Section 2.1
+
+2.1.12. The `-d' Option: Pre-Define a Macro
+-------------------------------------------
+
+   Just as the `-p' option gives an alternative to placing `%include'
+directives at the start of a source file, the `-d' option gives an
+alternative to placing a `%define' directive. You could code
+
+     nasm myfile.asm -dFOO=100
+
+   as an alternative to placing the directive
+
+     %define FOO 100
+
+   at the start of the file. You can miss off the macro value, as well:
+the option `-dFOO' is equivalent to coding `%define FOO'. This form of
+the directive may be useful for selecting assembly-time options which
+are then tested using `%ifdef', for example `-dDEBUG'.
+
+   For Makefile compatibility with many C compilers, this option can
+also be specified as `-D'.
+
+
+File: nasm.info,  Node: Section 2.1.13,  Next: Section 2.1.14,  Prev: Section 2.1.12,  Up: Section 2.1
+
+2.1.13. The `-u' Option: Undefine a Macro
+-----------------------------------------
+
+   The `-u' option undefines a macro that would otherwise have been pre-
+defined, either automatically or by a `-p' or `-d' option specified
+earlier on the command lines.
+
+   For example, the following command line:
+
+     nasm myfile.asm -dFOO=100 -uFOO
+
+   would result in `FOO' _not_ being a predefined macro in the program.
+This is useful to override options specified at a different point in a
+Makefile.
+
+   For Makefile compatibility with many C compilers, this option can
+also be specified as `-U'.
+
+
+File: nasm.info,  Node: Section 2.1.14,  Next: Section 2.1.15,  Prev: Section 2.1.13,  Up: Section 2.1
+
+2.1.14. The `-e' Option: Preprocess Only
+----------------------------------------
+
+   NASM allows the preprocessor to be run on its own, up to a point.
+Using the `-e' option (which requires no arguments) will cause NASM to
+preprocess its input file, expand all the macro references, remove all
+the comments and preprocessor directives, and print the resulting file
+on standard output (or save it to a file, if the `-o' option is also
+used).
+
+   This option cannot be applied to programs which require the
+preprocessor to evaluate expressions which depend on the values of
+symbols: so code such as
+
+     %assign tablesize ($-tablestart)
+
+   will cause an error in preprocess-only mode.
+
+
+File: nasm.info,  Node: Section 2.1.15,  Next: Section 2.1.16,  Prev: Section 2.1.14,  Up: Section 2.1
+
+2.1.15. The `-a' Option: Don't Preprocess At All
+------------------------------------------------
+
+   If NASM is being used as the back end to a compiler, it might be
+desirable to suppress preprocessing completely and assume the compiler
+has already done it, to save time and increase compilation speeds. The
+`-a' option, requiring no argument, instructs NASM to replace its
+powerful preprocessor with a stub preprocessor which does nothing.
+
+
+File: nasm.info,  Node: Section 2.1.16,  Next: Section 2.1.17,  Prev: Section 2.1.15,  Up: Section 2.1
+
+2.1.16. The `-On' Option: Specifying Multipass Optimization.
+------------------------------------------------------------
+
+   NASM defaults to being a two pass assembler. This means that if you
+have a complex source file which needs more than 2 passes to assemble
+optimally, you have to enable extra passes.
+
+   Using the `-O' option, you can tell NASM to carry out multiple
+passes.  The syntax is:
+
+   * `-O0' strict two-pass assembly, JMP and Jcc are handled more like
+     v0.98, except that backward JMPs are short, if possible. Immediate
+     operands take their long forms if a short form is not specified.
+
+   * `-O1' strict two-pass assembly, but forward branches are assembled
+     with code guaranteed to reach; may produce larger code than -O0,
+     but will produce successful assembly more often if branch offset
+     sizes are not specified. Additionally, immediate operands which
+     will fit in a signed byte are optimised, unless the long form is
+     specified.
+
+   * `-On' multi-pass optimization, minimize branch offsets; also will
+     minimize signed immediate bytes, overriding size specification
+     unless the `strict' keyword has been used (see *Note Section
+     3.7::). The number specifies the maximum number of passes. The
+     more passes, the better the code, but the slower is the assembly.
+
+   Note that this is a capital O, and is different from a small o,
+which is used to specify the output format. See *Note Section 2.1.1::.
+
+
+File: nasm.info,  Node: Section 2.1.17,  Next: Section 2.1.18,  Prev: Section 2.1.16,  Up: Section 2.1
+
+2.1.17. The `-t' option: Enable TASM Compatibility Mode
+-------------------------------------------------------
+
+   NASM includes a limited form of compatibility with Borland's `TASM'.
+When NASM's `-t' option is used, the following changes are made:
+
+   * local labels may be prefixed with `@@' instead of `.'
+
+   * TASM-style response files beginning with `@' may be specified on
+     the command line. This is different from the `-@resp' style that
+     NASM natively supports.
+
+   * size override is supported within brackets. In TASM compatible
+     mode, a size override inside square brackets changes the size of
+     the operand, and not the address type of the operand as it does in
+     NASM syntax. E.g.  `mov eax,[DWORD val]' is valid syntax in TASM
+     compatibility mode. Note that you lose the ability to override the
+     default address type for the instruction.
+
+   * `%arg' preprocessor directive is supported which is similar to
+     TASM's `ARG' directive.
+
+   * `%local' preprocessor directive
+
+   * `%stacksize' preprocessor directive
+
+   * unprefixed forms of some directives supported (`arg', `elif',
+     `else', `endif', `if', `ifdef', `ifdifi', `ifndef', `include',
+     `local')
+
+   * more...
+
+   For more information on the directives, see the section on TASM
+Compatiblity preprocessor directives in *Note Section 4.9::.
+
+
+File: nasm.info,  Node: Section 2.1.18,  Next: Section 2.1.19,  Prev: Section 2.1.17,  Up: Section 2.1
+
+2.1.18. The `-w' Option: Enable or Disable Assembly Warnings
+------------------------------------------------------------
+
+   NASM can observe many conditions during the course of assembly which
+are worth mentioning to the user, but not a sufficiently severe error to
+justify NASM refusing to generate an output file. These conditions are
+reported like errors, but come up with the word `warning' before the
+message. Warnings do not prevent NASM from generating an output file and
+returning a success status to the operating system.
+
+   Some conditions are even less severe than that: they are only
+sometimes worth mentioning to the user. Therefore NASM supports the `-w'
+command-line option, which enables or disables certain classes of
+assembly warning. Such warning classes are described by a name, for
+example `orphan-labels'; you can enable warnings of this class by the
+command- line option `-w+orphan-labels' and disable it by
+`-w-orphan-labels'.
+
+   The suppressible warning classes are:
+
+   * `macro-params' covers warnings about multi-line macros being
+     invoked with the wrong number of parameters. This warning class is
+     enabled by default; see *Note Section 4.3.1:: for an example of
+     why you might want to disable it.
+
+   * `macro-selfref' warns if a macro references itself. This warning
+     class is enabled by default.
+
+   * `orphan-labels' covers warnings about source lines which contain no
+     instruction but define a label without a trailing colon. NASM does
+     not warn about this somewhat obscure condition by default; see
+     *Note Section 3.1:: for an example of why you might want it to.
+
+   * `number-overflow' covers warnings about numeric constants which
+     don't fit in 32 bits (for example, it's easy to type one too many
+     Fs and produce `0x7ffffffff' by mistake). This warning class is
+     enabled by default.
+
+   * `gnu-elf-extensions' warns if 8-bit or 16-bit relocations are used
+     in `-f elf' format. The GNU extensions allow this. This warning
+     class is enabled by default.
+
+   * In addition, warning classes may be enabled or disabled across
+     sections of source code with `[warning +warning-name]' or
+     `[warning -warning-name]'. No "user form" (without the brackets)
+     exists.
+
+
+File: nasm.info,  Node: Section 2.1.19,  Next: Section 2.1.20,  Prev: Section 2.1.18,  Up: Section 2.1
+
+2.1.19. The `-v' Option: Display Version Info
+---------------------------------------------
+
+   Typing `NASM -v' will display the version of NASM which you are
+using, and the date on which it was compiled. This replaces the
+deprecated `-r'.
+
+   You will need the version number if you report a bug.
+
+
+File: nasm.info,  Node: Section 2.1.20,  Next: Section 2.1.21,  Prev: Section 2.1.19,  Up: Section 2.1
+
+2.1.20. The `-y' Option: Display Available Debug Info Formats
+-------------------------------------------------------------
+
+   Typing `nasm -f <option> -y' will display a list of the available
+debug info formats for the given output format. The default format is
+indicated by an asterisk. E.g. `nasm -f obj -y' yields `* borland'. (as
+of 0.98.35, the _only_ debug info format implemented).
+
+
+File: nasm.info,  Node: Section 2.1.21,  Next: Section 2.1.22,  Prev: Section 2.1.20,  Up: Section 2.1
+
+2.1.21. The `--prefix' and `--postfix' Options.
+-----------------------------------------------
+
+   The `--prefix' and `--postfix' options prepend or append
+(respectively) the given argument to all `global' or `extern'
+variables. E.g. `--prefix_' will prepend the underscore to all global
+and external variables, as C sometimes (but not always) likes it.
+
+
+File: nasm.info,  Node: Section 2.1.22,  Next: Section 2.2,  Prev: Section 2.1.21,  Up: Section 2.1
+
+2.1.22. The `NASMENV' Environment Variable
+------------------------------------------
+
+   If you define an environment variable called `NASMENV', the program
+will interpret it as a list of extra command-line options, which are
+processed before the real command line. You can use this to define
+standard search directories for include files, by putting `-i' options
+in the `NASMENV' variable.
+
+   The value of the variable is split up at white space, so that the
+value `-s -ic:\nasmlib' will be treated as two separate options.
+However, that means that the value `-dNAME="my name"' won't do what you
+might want, because it will be split at the space and the NASM
+command-line processing will get confused by the two nonsensical words
+`-dNAME="my' and `name"'.
+
+   To get round this, NASM provides a feature whereby, if you begin the
+`NASMENV' environment variable with some character that isn't a minus
+sign, then NASM will treat this character as the separator character for
+options. So setting the `NASMENV' variable to the value
+`!-s!-ic:\nasmlib' is equivalent to setting it to `-s -ic:\nasmlib',
+but `!-dNAME="my name"' will work.
+
+   This environment variable was previously called `NASM'. This was
+changed with version 0.98.31.
+
+
+File: nasm.info,  Node: Section 2.2,  Next: Section 2.2.1,  Prev: Section 2.1.22,  Up: Chapter 2
+
+2.2. Quick Start for MASM Users
+===============================
+
+   If you're used to writing programs with MASM, or with TASM in MASM-
+compatible (non-Ideal) mode, or with `a86', this section attempts to
+outline the major differences between MASM's syntax and NASM's. If
+you're not already used to MASM, it's probably worth skipping this
+section.
+
+* Menu:
+
+* Section 2.2.1:: NASM Is Case-Sensitive
+* Section 2.2.2:: NASM Requires Square Brackets For Memory References
+* Section 2.2.3:: NASM Doesn't Store Variable Types
+* Section 2.2.4:: NASM Doesn't `ASSUME'
+* Section 2.2.5:: NASM Doesn't Support Memory Models
+* Section 2.2.6:: Floating-Point Differences
+* Section 2.2.7:: Other Differences
+
+
+File: nasm.info,  Node: Section 2.2.1,  Next: Section 2.2.2,  Prev: Section 2.2,  Up: Section 2.2
+
+2.2.1. NASM Is Case-Sensitive
+-----------------------------
+
+   One simple difference is that NASM is case-sensitive. It makes a
+difference whether you call your label `foo', `Foo' or `FOO'. If you're
+assembling to `DOS' or `OS/2' `.OBJ' files, you can invoke the
+`UPPERCASE' directive (documented in *Note Section 6.2::) to ensure
+that all symbols exported to other code modules are forced to be upper
+case; but even then, _within_ a single module, NASM will distinguish
+between labels differing only in case.
+
+
+File: nasm.info,  Node: Section 2.2.2,  Next: Section 2.2.3,  Prev: Section 2.2.1,  Up: Section 2.2
+
+2.2.2. NASM Requires Square Brackets For Memory References
+----------------------------------------------------------
+
+   NASM was designed with simplicity of syntax in mind. One of the
+design goals of NASM is that it should be possible, as far as is
+practical, for the user to look at a single line of NASM code and tell
+what opcode is generated by it. You can't do this in MASM: if you
+declare, for example,
+
+     foo     equ     1
+     bar     dw      2
+
+   then the two lines of code
+
+             mov     ax,foo
+             mov     ax,bar
+
+   generate completely different opcodes, despite having
+identical-looking syntaxes.
+
+   NASM avoids this undesirable situation by having a much simpler
+syntax for memory references. The rule is simply that any access to the
+_contents_ of a memory location requires square brackets around the
+address, and any access to the _address_ of a variable doesn't. So an
+instruction of the form `mov ax,foo' will _always_ refer to a
+compile-time constant, whether it's an `EQU' or the address of a
+variable; and to access the _contents_ of the variable `bar', you must
+code `mov ax,[bar]'.
+
+   This also means that NASM has no need for MASM's `OFFSET' keyword,
+since the MASM code `mov ax,offset bar' means exactly the same thing as
+NASM's `mov ax,bar'. If you're trying to get large amounts of MASM code
+to assemble sensibly under NASM, you can always code `%idefine offset'
+to make the preprocessor treat the `OFFSET' keyword as a no-op.
+
+   This issue is even more confusing in `a86', where declaring a label
+with a trailing colon defines it to be a `label' as opposed to a
+`variable' and causes `a86' to adopt NASM-style semantics; so in `a86',
+`mov ax,var' has different behaviour depending on whether `var' was
+declared as `var: dw 0' (a label) or `var dw 0' (a word-size variable).
+NASM is very simple by comparison: _everything_ is a label.
+
+   NASM, in the interests of simplicity, also does not support the
+hybrid syntaxes supported by MASM and its clones, such as `mov
+ax,table[bx]', where a memory reference is denoted by one portion
+outside square brackets and another portion inside. The correct syntax
+for the above is `mov ax,[table+bx]'. Likewise, `mov ax,es:[di]' is
+wrong and `mov ax,[es:di]' is right.
+
+
+File: nasm.info,  Node: Section 2.2.3,  Next: Section 2.2.4,  Prev: Section 2.2.2,  Up: Section 2.2
+
+2.2.3. NASM Doesn't Store Variable Types
+----------------------------------------
+
+   NASM, by design, chooses not to remember the types of variables you
+declare. Whereas MASM will remember, on seeing `var dw 0', that you
+declared `var' as a word-size variable, and will then be able to fill
+in the ambiguity in the size of the instruction `mov var,2', NASM will
+deliberately remember nothing about the symbol `var' except where it
+begins, and so you must explicitly code `mov word [var],2'.
+
+   For this reason, NASM doesn't support the `LODS', `MOVS', `STOS',
+`SCAS', `CMPS', `INS', or `OUTS' instructions, but only supports the
+forms such as `LODSB', `MOVSW', and `SCASD', which explicitly specify
+the size of the components of the strings being manipulated.
+
+
+File: nasm.info,  Node: Section 2.2.4,  Next: Section 2.2.5,  Prev: Section 2.2.3,  Up: Section 2.2
+
+2.2.4. NASM Doesn't `ASSUME'
+----------------------------
+
+   As part of NASM's drive for simplicity, it also does not support the
+`ASSUME' directive. NASM will not keep track of what values you choose
+to put in your segment registers, and will never _automatically_
+generate a segment override prefix.
+
+
+File: nasm.info,  Node: Section 2.2.5,  Next: Section 2.2.6,  Prev: Section 2.2.4,  Up: Section 2.2
+
+2.2.5. NASM Doesn't Support Memory Models
+-----------------------------------------
+
+   NASM also does not have any directives to support different 16-bit
+memory models. The programmer has to keep track of which functions are
+supposed to be called with a far call and which with a near call, and
+is responsible for putting the correct form of `RET' instruction
+(`RETN' or `RETF'; NASM accepts `RET' itself as an alternate form for
+`RETN'); in addition, the programmer is responsible for coding CALL FAR
+instructions where necessary when calling _external_ functions, and
+must also keep track of which external variable definitions are far and
+which are near.
+
+
+File: nasm.info,  Node: Section 2.2.6,  Next: Section 2.2.7,  Prev: Section 2.2.5,  Up: Section 2.2
+
+2.2.6. Floating-Point Differences
+---------------------------------
+
+   NASM uses different names to refer to floating-point registers from
+MASM: where MASM would call them `ST(0)', `ST(1)' and so on, and `a86'
+would call them simply `0', `1' and so on, NASM chooses to call them
+`st0', `st1' etc.
+
+   As of version 0.96, NASM now treats the instructions with `nowait'
+forms in the same way as MASM-compatible assemblers. The idiosyncratic
+treatment employed by 0.95 and earlier was based on a misunderstanding
+by the authors.
+
+
+File: nasm.info,  Node: Section 2.2.7,  Next: Chapter 3,  Prev: Section 2.2.6,  Up: Section 2.2
+
+2.2.7. Other Differences
+------------------------
+
+   For historical reasons, NASM uses the keyword `TWORD' where MASM and
+compatible assemblers use `TBYTE'.
+
+   NASM does not declare uninitialised storage in the same way as MASM:
+where a MASM programmer might use `stack db 64 dup (?)', NASM requires
+`stack resb 64', intended to be read as `reserve 64 bytes'. For a
+limited amount of compatibility, since NASM treats `?' as a valid
+character in symbol names, you can code `? equ 0' and then writing `dw
+?' will at least do something vaguely useful. `DUP' is still not a
+supported syntax, however.
+
+   In addition to all of this, macros and directives work completely
+differently to MASM. See *Note Chapter 4:: and *Note Chapter 5:: for
+further details.
+
+
+File: nasm.info,  Node: Chapter 3,  Next: Section 3.1,  Prev: Section 2.2.7,  Up: Top
+
+Chapter 3: The NASM Language
+****************************
+
+* Menu:
+
+* Section 3.1:: Layout of a NASM Source Line
+* Section 3.2:: Pseudo-Instructions
+* Section 3.3:: Effective Addresses
+* Section 3.4:: Constants
+* Section 3.5:: Expressions
+* Section 3.6:: `SEG' and `WRT'
+* Section 3.7:: `STRICT': Inhibiting Optimization
+* Section 3.8:: Critical Expressions
+* Section 3.9:: Local Labels
+
+
+File: nasm.info,  Node: Section 3.1,  Next: Section 3.2,  Prev: Chapter 3,  Up: Chapter 3
+
+3.1. Layout of a NASM Source Line
+=================================
+
+   Like most assemblers, each NASM source line contains (unless it is a
+macro, a preprocessor directive or an assembler directive: see *Note
+Chapter 4:: and *Note Chapter 5::) some combination of the four fields
+
+     label:    instruction operands        ; comment
+
+   As usual, most of these fields are optional; the presence or absence
+of any combination of a label, an instruction and a comment is allowed.
+Of course, the operand field is either required or forbidden by the
+presence and nature of the instruction field.
+
+   NASM uses backslash (\) as the line continuation character; if a
+line ends with backslash, the next line is considered to be a part of
+the backslash- ended line.
+
+   NASM places no restrictions on white space within a line: labels may
+have white space before them, or instructions may have no space before
+them, or anything. The colon after a label is also optional. (Note that
+this means that if you intend to code `lodsb' alone on a line, and type
+`lodab' by accident, then that's still a valid source line which does
+nothing but define a label. Running NASM with the command-line option
+`-w+orphan-labels' will cause it to warn you if you define a label
+alone on a line without a trailing colon.)
+
+   Valid characters in labels are letters, numbers, `_', `$', `#', `@',
+`~', `.', and `?'. The only characters which may be used as the _first_
+character of an identifier are letters, `.' (with special meaning: see
+*Note Section 3.9::), `_' and `?'. An identifier may also be prefixed
+with a `$' to indicate that it is intended to be read as an identifier
+and not a reserved word; thus, if some other module you are linking
+with defines a symbol called `eax', you can refer to `$eax' in NASM
+code to distinguish the symbol from the register.
+
+   The instruction field may contain any machine instruction: Pentium
+and P6 instructions, FPU instructions, MMX instructions and even
+undocumented instructions are all supported. The instruction may be
+prefixed by `LOCK', `REP', `REPE'/`REPZ' or `REPNE'/`REPNZ', in the
+usual way. Explicit address-size and operand-size prefixes `A16',
+`A32', `O16' and `O32' are provided - one example of their use is given
+in *Note Chapter 9::. You can also use the name of a segment register
+as an instruction prefix: coding `es mov [bx],ax' is equivalent to
+coding `mov [es:bx],ax'. We recommend the latter syntax, since it is
+consistent with other syntactic features of the language, but for
+instructions such as `LODSB', which has no operands and yet can require
+a segment override, there is no clean syntactic way to proceed apart
+from `es lodsb'.
+
+   An instruction is not required to use a prefix: prefixes such as
+`CS', `A32', `LOCK' or `REPE' can appear on a line by themselves, and
+NASM will just generate the prefix bytes.
+
+   In addition to actual machine instructions, NASM also supports a
+number of pseudo-instructions, described in *Note Section 3.2::.
+
+   Instruction operands may take a number of forms: they can be
+registers, described simply by the register name (e.g. `ax', `bp',
+`ebx', `cr0': NASM does not use the `gas'-style syntax in which
+register names must be prefixed by a `%' sign), or they can be
+effective addresses (see *Note Section 3.3::), constants (*Note Section
+3.4::) or expressions (*Note Section 3.5::).
+
+   For floating-point instructions, NASM accepts a wide range of
+syntaxes: you can use two-operand forms like MASM supports, or you can
+use NASM's native single-operand forms in most cases. Details of all
+forms of each supported instruction are given in *Note Appendix B::.
+For example, you can code:
+
+             fadd    st1             ; this sets st0 := st0 + st1
+             fadd    st0,st1         ; so does this
+     
+             fadd    st1,st0         ; this sets st1 := st1 + st0
+             fadd    to st1          ; so does this
+
+   Almost any floating-point instruction that references memory must
+use one of the prefixes `DWORD', `QWORD' or `TWORD' to indicate what
+size of memory operand it refers to.
+
+
+File: nasm.info,  Node: Section 3.2,  Next: Section 3.2.1,  Prev: Section 3.1,  Up: Chapter 3
+
+3.2. Pseudo-Instructions
+========================
+
+   Pseudo-instructions are things which, though not real x86 machine
+instructions, are used in the instruction field anyway because that's
+the most convenient place to put them. The current pseudo-instructions
+are `DB', `DW', `DD', `DQ' and `DT', their uninitialised counterparts
+`RESB', `RESW', `RESD', `RESQ' and `REST', the `INCBIN' command, the
+`EQU' command, and the `TIMES' prefix.
+
+* Menu:
+
+* Section 3.2.1:: `DB' and friends: Declaring Initialised Data
+* Section 3.2.2:: `RESB' and friends: Declaring Uninitialised Data
+* Section 3.2.3:: `INCBIN': Including External Binary Files
+* Section 3.2.4:: `EQU': Defining Constants
+* Section 3.2.5:: `TIMES': Repeating Instructions or Data
+
+
+File: nasm.info,  Node: Section 3.2.1,  Next: Section 3.2.2,  Prev: Section 3.2,  Up: Section 3.2
+
+3.2.1. `DB' and friends: Declaring Initialised Data
+---------------------------------------------------
+
+   `DB', `DW', `DD', `DQ' and `DT' are used, much as in MASM, to
+declare initialised data in the output file. They can be invoked in a
+wide range of ways:
+
+           db    0x55                ; just the byte 0x55
+           db    0x55,0x56,0x57      ; three bytes in succession
+           db    'a',0x55            ; character constants are OK
+           db    'hello',13,10,'$'   ; so are string constants
+           dw    0x1234              ; 0x34 0x12
+           dw    'a'                 ; 0x61 0x00 (it's just a number)
+           dw    'ab'                ; 0x61 0x62 (character constant)
+           dw    'abc'               ; 0x61 0x62 0x63 0x00 (string)
+           dd    0x12345678          ; 0x78 0x56 0x34 0x12
+           dd    1.234567e20         ; floating-point constant
+           dq    1.234567e20         ; double-precision float
+           dt    1.234567e20         ; extended-precision float
+
+   `DQ' and `DT' do not accept numeric constants or string constants as
+operands.
+
+
+File: nasm.info,  Node: Section 3.2.2,  Next: Section 3.2.3,  Prev: Section 3.2.1,  Up: Section 3.2
+
+3.2.2. `RESB' and friends: Declaring Uninitialised Data
+-------------------------------------------------------
+
+   `RESB', `RESW', `RESD', `RESQ' and `REST' are designed to be used in
+the BSS section of a module: they declare _uninitialised_ storage
+space. Each takes a single operand, which is the number of bytes,
+words, doublewords or whatever to reserve. As stated in *Note Section
+2.2.7::, NASM does not support the MASM/TASM syntax of reserving
+uninitialised space by writing `DW ?' or similar things: this is what
+it does instead. The operand to a `RESB'-type pseudo- instruction is a
+_critical expression_: see *Note Section 3.8::.
+
+   For example:
+
+     buffer:         resb    64              ; reserve 64 bytes
+     wordvar:        resw    1               ; reserve a word
+     realarray       resq    10              ; array of ten reals
+
+
+File: nasm.info,  Node: Section 3.2.3,  Next: Section 3.2.4,  Prev: Section 3.2.2,  Up: Section 3.2
+
+3.2.3. `INCBIN': Including External Binary Files
+------------------------------------------------
+
+   `INCBIN' is borrowed from the old Amiga assembler DevPac: it includes
+a binary file verbatim into the output file. This can be handy for (for
+example) including graphics and sound data directly into a game
+executable file. It can be called in one of these three ways:
+
+         incbin  "file.dat"             ; include the whole file
+         incbin  "file.dat",1024        ; skip the first 1024 bytes
+         incbin  "file.dat",1024,512    ; skip the first 1024, and
+                                        ; actually include at most 512
+
+
+File: nasm.info,  Node: Section 3.2.4,  Next: Section 3.2.5,  Prev: Section 3.2.3,  Up: Section 3.2
+
+3.2.4. `EQU': Defining Constants
+--------------------------------
+
+   `EQU' defines a symbol to a given constant value: when `EQU' is
+used, the source line must contain a label. The action of `EQU' is to
+define the given label name to the value of its (only) operand. This
+definition is absolute, and cannot change later. So, for example,
+
+     message         db      'hello, world'
+     msglen          equ     $-message
+
+   defines `msglen' to be the constant 12. `msglen' may not then be
+redefined later. This is not a preprocessor definition either: the
+value of `msglen' is evaluated _once_, using the value of `$' (see
+*Note Section 3.5:: for an explanation of `$') at the point of
+definition, rather than being evaluated wherever it is referenced and
+using the value of `$' at the point of reference. Note that the operand
+to an `EQU' is also a critical expression (*Note Section 3.8::).
+

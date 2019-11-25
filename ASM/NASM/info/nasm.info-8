@@ -1,0 +1,1186 @@
+This is nasm.info, produced by makeinfo version 4.3 from nasmdoc.texi.
+
+INFO-DIR-SECTION Programming
+START-INFO-DIR-ENTRY
+* NASM: (nasm).                The Netwide Assembler for x86.
+END-INFO-DIR-ENTRY
+
+   This file documents NASM, the Netwide Assembler: an assembler
+targetting the Intel x86 series of processors, with portable source.
+
+   Copyright 2003 The NASM Development Team
+
+   All rights reserved. This document is redistributable under the
+licence given in the file "COPYING" distributed in the NASM archive.
+
+
+File: nasm.info,  Node: Section B.4.14,  Next: Section B.4.15,  Prev: Section B.4.13,  Up: Section B.4
+
+B.4.14. `BOUND': Check Array Index against Bounds
+-------------------------------------------------
+
+     BOUND reg16,mem               ; o16 62 /r            [186]
+     BOUND reg32,mem               ; o32 62 /r            [386]
+
+   `BOUND' expects its second operand to point to an area of memory
+containing two signed values of the same size as its first operand (i.e.
+two words for the 16-bit form; two doublewords for the 32-bit form). It
+performs two signed comparisons: if the value in the register passed as
+its first operand is less than the first of the in-memory values, or is
+greater than or equal to the second, it throws a `BR' exception.
+Otherwise, it does nothing.
+
+
+File: nasm.info,  Node: Section B.4.15,  Next: Section B.4.16,  Prev: Section B.4.14,  Up: Section B.4
+
+B.4.15. `BSF', `BSR': Bit Scan
+------------------------------
+
+     BSF reg16,r/m16               ; o16 0F BC /r         [386]
+     BSF reg32,r/m32               ; o32 0F BC /r         [386]
+
+     BSR reg16,r/m16               ; o16 0F BD /r         [386]
+     BSR reg32,r/m32               ; o32 0F BD /r         [386]
+
+   * `BSF' searches for the least significant set bit in its source
+     (second) operand, and if it finds one, stores the index in its
+     destination (first) operand. If no set bit is found, the contents
+     of the destination operand are undefined. If the source operand is
+     zero, the zero flag is set.
+
+   * `BSR' performs the same function, but searches from the top
+     instead, so it finds the most significant set bit.
+
+   Bit indices are from 0 (least significant) to 15 or 31 (most
+significant).  The destination operand can only be a register. The
+source operand can be a register or a memory location.
+
+
+File: nasm.info,  Node: Section B.4.16,  Next: Section B.4.17,  Prev: Section B.4.15,  Up: Section B.4
+
+B.4.16. `BSWAP': Byte Swap
+--------------------------
+
+     BSWAP reg32                   ; o32 0F C8+r          [486]
+
+   `BSWAP' swaps the order of the four bytes of a 32-bit register: bits
+0-7 exchange places with bits 24-31, and bits 8-15 swap with bits 16-23.
+There is no explicit 16-bit equivalent: to byte-swap `AX', `BX', `CX'
+or `DX', `XCHG' can be used. When `BSWAP' is used with a 16-bit
+register, the result is undefined.
+
+
+File: nasm.info,  Node: Section B.4.17,  Next: Section B.4.18,  Prev: Section B.4.16,  Up: Section B.4
+
+B.4.17. `BT', `BTC', `BTR', `BTS': Bit Test
+-------------------------------------------
+
+     BT r/m16,reg16                ; o16 0F A3 /r         [386]
+     BT r/m32,reg32                ; o32 0F A3 /r         [386]
+     BT r/m16,imm8                 ; o16 0F BA /4 ib      [386]
+     BT r/m32,imm8                 ; o32 0F BA /4 ib      [386]
+
+     BTC r/m16,reg16               ; o16 0F BB /r         [386]
+     BTC r/m32,reg32               ; o32 0F BB /r         [386]
+     BTC r/m16,imm8                ; o16 0F BA /7 ib      [386]
+     BTC r/m32,imm8                ; o32 0F BA /7 ib      [386]
+
+     BTR r/m16,reg16               ; o16 0F B3 /r         [386]
+     BTR r/m32,reg32               ; o32 0F B3 /r         [386]
+     BTR r/m16,imm8                ; o16 0F BA /6 ib      [386]
+     BTR r/m32,imm8                ; o32 0F BA /6 ib      [386]
+
+     BTS r/m16,reg16               ; o16 0F AB /r         [386]
+     BTS r/m32,reg32               ; o32 0F AB /r         [386]
+     BTS r/m16,imm                 ; o16 0F BA /5 ib      [386]
+     BTS r/m32,imm                 ; o32 0F BA /5 ib      [386]
+
+   These instructions all test one bit of their first operand, whose
+index is given by the second operand, and store the value of that bit
+into the carry flag. Bit indices are from 0 (least significant) to 15
+or 31 (most significant).
+
+   In addition to storing the original value of the bit into the carry
+flag, `BTR' also resets (clears) the bit in the operand itself. `BTS'
+sets the bit, and `BTC' complements the bit. `BT' does not modify its
+operands.
+
+   The destination can be a register or a memory location. The source
+can be a register or an immediate value.
+
+   If the destination operand is a register, the bit offset should be
+in the range 0-15 (for 16-bit operands) or 0-31 (for 32-bit operands).
+An immediate value outside these ranges will be taken modulo 16/32 by
+the processor.
+
+   If the destination operand is a memory location, then an immediate
+bit offset follows the same rules as for a register. If the bit offset
+is in a register, then it can be anything within the signed range of
+the register used (ie, for a 32-bit operand, it can be (-2^31) to (2^31
+- 1)
+
+
+File: nasm.info,  Node: Section B.4.18,  Next: Section B.4.19,  Prev: Section B.4.17,  Up: Section B.4
+
+B.4.18. `CALL': Call Subroutine
+-------------------------------
+
+     CALL imm                      ; E8 rw/rd             [8086]
+     CALL imm:imm16                ; o16 9A iw iw         [8086]
+     CALL imm:imm32                ; o32 9A id iw         [386]
+     CALL FAR mem16                ; o16 FF /3            [8086]
+     CALL FAR mem32                ; o32 FF /3            [386]
+     CALL r/m16                    ; o16 FF /2            [8086]
+     CALL r/m32                    ; o32 FF /2            [386]
+
+   `CALL' calls a subroutine, by means of pushing the current
+instruction pointer (`IP') and optionally `CS' as well on the stack,
+and then jumping to a given address.
+
+   `CS' is pushed as well as `IP' if and only if the call is a far
+call, i.e. a destination segment address is specified in the
+instruction.  The forms involving two colon-separated arguments are far
+calls; so are the `CALL FAR mem' forms.
+
+   The immediate near call takes one of two forms (`call imm16/imm32',
+determined by the current segment size limit. For 16-bit operands, you
+would use `CALL 0x1234', and for 32-bit operands you would use `CALL
+0x12345678'. The value passed as an operand is a relative offset.
+
+   You can choose between the two immediate far call forms (`CALL
+imm:imm') by the use of the `WORD' and `DWORD' keywords: `CALL WORD
+0x1234:0x5678') or `CALL DWORD 0x1234:0x56789abc'.
+
+   The `CALL FAR mem' forms execute a far call by loading the
+destination address out of memory. The address loaded consists of 16 or
+32 bits of offset (depending on the operand size), and 16 bits of
+segment. The operand size may be overridden using `CALL WORD FAR mem' or
+`CALL DWORD FAR mem'.
+
+   The `CALL r/m' forms execute a near call (within the same segment),
+loading the destination address out of memory or out of a register. The
+keyword `NEAR' may be specified, for clarity, in these forms, but is
+not necessary. Again, operand size can be overridden using `CALL WORD
+mem' or `CALL DWORD mem'.
+
+   As a convenience, NASM does not require you to call a far procedure
+symbol by coding the cumbersome `CALL SEG routine:routine', but instead
+allows the easier synonym `CALL FAR routine'.
+
+   The `CALL r/m' forms given above are near calls; NASM will accept the
+`NEAR' keyword (e.g. `CALL NEAR [address]'), even though it is not
+strictly necessary.
+
+
+File: nasm.info,  Node: Section B.4.19,  Next: Section B.4.20,  Prev: Section B.4.18,  Up: Section B.4
+
+B.4.19. `CBW', `CWD', `CDQ', `CWDE': Sign Extensions
+----------------------------------------------------
+
+     CBW                           ; o16 98               [8086]
+     CWDE                          ; o32 98               [386]
+
+     CWD                           ; o16 99               [8086]
+     CDQ                           ; o32 99               [386]
+
+   All these instructions sign-extend a short value into a longer one,
+by replicating the top bit of the original value to fill the extended
+one.
+
+   `CBW' extends `AL' into `AX' by repeating the top bit of `AL' in
+every bit of `AH'. `CWDE' extends `AX' into `EAX'. `CWD' extends `AX'
+into `DX:AX' by repeating the top bit of `AX' throughout `DX', and
+`CDQ' extends `EAX' into `EDX:EAX'.
+
+
+File: nasm.info,  Node: Section B.4.20,  Next: Section B.4.21,  Prev: Section B.4.19,  Up: Section B.4
+
+B.4.20. `CLC', `CLD', `CLI', `CLTS': Clear Flags
+------------------------------------------------
+
+     CLC                           ; F8                   [8086]
+     CLD                           ; FC                   [8086]
+     CLI                           ; FA                   [8086]
+     CLTS                          ; 0F 06                [286,PRIV]
+
+   These instructions clear various flags. `CLC' clears the carry flag;
+`CLD' clears the direction flag; `CLI' clears the interrupt flag (thus
+disabling interrupts); and `CLTS' clears the task-switched (`TS') flag
+in `CR0'.
+
+   To set the carry, direction, or interrupt flags, use the `STC',
+`STD' and `STI' instructions (*Note Section B.4.301::). To invert the
+carry flag, use `CMC' (*Note Section B.4.22::).
+
+
+File: nasm.info,  Node: Section B.4.21,  Next: Section B.4.22,  Prev: Section B.4.20,  Up: Section B.4
+
+B.4.21. `CLFLUSH': Flush Cache Line
+-----------------------------------
+
+     CLFLUSH mem                   ; 0F AE /7        [WILLAMETTE,SSE2]
+
+   `CLFLUSH' invalidates the cache line that contains the linear address
+specified by the source operand from all levels of the processor cache
+hierarchy (data and instruction). If, at any level of the cache
+hierarchy, the line is inconsistent with memory (dirty) it is written
+to memory before invalidation. The source operand points to a
+byte-sized memory location.
+
+   Although `CLFLUSH' is flagged `SSE2' and above, it may not be
+present on all processors which have `SSE2' support, and it may be
+supported on other processors; the `CPUID' instruction (*Note Section
+B.4.34::) will return a bit which indicates support for the `CLFLUSH'
+instruction.
+
+
+File: nasm.info,  Node: Section B.4.22,  Next: Section B.4.23,  Prev: Section B.4.21,  Up: Section B.4
+
+B.4.22. `CMC': Complement Carry Flag
+------------------------------------
+
+     CMC                           ; F5                   [8086]
+
+   `CMC' changes the value of the carry flag: if it was 0, it sets it to
+1, and vice versa.
+
+
+File: nasm.info,  Node: Section B.4.23,  Next: Section B.4.24,  Prev: Section B.4.22,  Up: Section B.4
+
+B.4.23. `CMOVcc': Conditional Move
+----------------------------------
+
+     CMOVcc reg16,r/m16            ; o16 0F 40+cc /r      [P6]
+     CMOVcc reg32,r/m32            ; o32 0F 40+cc /r      [P6]
+
+   `CMOV' moves its source (second) operand into its destination (first)
+operand if the given condition code is satisfied; otherwise it does
+nothing.
+
+   For a list of condition codes, see *Note Section B.2.2::.
+
+   Although the `CMOV' instructions are flagged `P6' and above, they
+may not be supported by all Pentium Pro processors; the `CPUID'
+instruction (*Note Section B.4.34::) will return a bit which indicates
+whether conditional moves are supported.
+
+
+File: nasm.info,  Node: Section B.4.24,  Next: Section B.4.25,  Prev: Section B.4.23,  Up: Section B.4
+
+B.4.24. `CMP': Compare Integers
+-------------------------------
+
+     CMP r/m8,reg8                 ; 38 /r                [8086]
+     CMP r/m16,reg16               ; o16 39 /r            [8086]
+     CMP r/m32,reg32               ; o32 39 /r            [386]
+
+     CMP reg8,r/m8                 ; 3A /r                [8086]
+     CMP reg16,r/m16               ; o16 3B /r            [8086]
+     CMP reg32,r/m32               ; o32 3B /r            [386]
+
+     CMP r/m8,imm8                 ; 80 /0 ib             [8086]
+     CMP r/m16,imm16               ; o16 81 /0 iw         [8086]
+     CMP r/m32,imm32               ; o32 81 /0 id         [386]
+
+     CMP r/m16,imm8                ; o16 83 /0 ib         [8086]
+     CMP r/m32,imm8                ; o32 83 /0 ib         [386]
+
+     CMP AL,imm8                   ; 3C ib                [8086]
+     CMP AX,imm16                  ; o16 3D iw            [8086]
+     CMP EAX,imm32                 ; o32 3D id            [386]
+
+   `CMP' performs a `mental' subtraction of its second operand from its
+first operand, and affects the flags as if the subtraction had taken
+place, but does not store the result of the subtraction anywhere.
+
+   In the forms with an 8-bit immediate second operand and a longer
+first operand, the second operand is considered to be signed, and is
+sign- extended to the length of the first operand. In these cases, the
+`BYTE' qualifier is necessary to force NASM to generate this form of
+the instruction.
+
+   The destination operand can be a register or a memory location. The
+source can be a register, memory location or an immediate value of the
+same size as the destination.
+
+
+File: nasm.info,  Node: Section B.4.25,  Next: Section B.4.26,  Prev: Section B.4.24,  Up: Section B.4
+
+B.4.25. `CMPccPD': Packed Double-Precision FP Compare
+-----------------------------------------------------
+
+     CMPPD xmm1,xmm2/mem128,imm8   ; 66 0F C2 /r ib  [WILLAMETTE,SSE2]
+
+     CMPEQPD xmm1,xmm2/mem128      ; 66 0F C2 /r 00  [WILLAMETTE,SSE2]
+     CMPLTPD xmm1,xmm2/mem128      ; 66 0F C2 /r 01  [WILLAMETTE,SSE2]
+     CMPLEPD xmm1,xmm2/mem128      ; 66 0F C2 /r 02  [WILLAMETTE,SSE2]
+     CMPUNORDPD xmm1,xmm2/mem128   ; 66 0F C2 /r 03  [WILLAMETTE,SSE2]
+     CMPNEQPD xmm1,xmm2/mem128     ; 66 0F C2 /r 04  [WILLAMETTE,SSE2]
+     CMPNLTPD xmm1,xmm2/mem128     ; 66 0F C2 /r 05  [WILLAMETTE,SSE2]
+     CMPNLEPD xmm1,xmm2/mem128     ; 66 0F C2 /r 06  [WILLAMETTE,SSE2]
+     CMPORDPD xmm1,xmm2/mem128     ; 66 0F C2 /r 07  [WILLAMETTE,SSE2]
+
+   The `CMPccPD' instructions compare the two packed double-precision FP
+values in the source and destination operands, and returns the result of
+the comparison in the destination register. The result of each
+comparison is a quadword mask of all 1s (comparison true) or all 0s
+(comparison false).
+
+   The destination is an `XMM' register. The source can be either an
+`XMM' register or a 128-bit memory location.
+
+   The third operand is an 8-bit immediate value, of which the low 3
+bits define the type of comparison. For ease of programming, the 8
+two-operand pseudo-instructions are provided, with the third operand
+already filled in.  The  `Condition Predicates' are:
+
+     EQ     0   Equal
+     LT     1   Less-than
+     LE     2   Less-than-or-equal
+     UNORD  3   Unordered
+     NE     4   Not-equal
+     NLT    5   Not-less-than
+     NLE    6   Not-less-than-or-equal
+     ORD    7   Ordered
+
+   For more details of the comparison predicates, and details of how to
+emulate the "greater-than" equivalents, see *Note Section B.2.3::
+
+
+File: nasm.info,  Node: Section B.4.26,  Next: Section B.4.27,  Prev: Section B.4.25,  Up: Section B.4
+
+B.4.26. `CMPccPS': Packed Single-Precision FP Compare
+-----------------------------------------------------
+
+     CMPPS xmm1,xmm2/mem128,imm8   ; 0F C2 /r ib     [KATMAI,SSE]
+
+     CMPEQPS xmm1,xmm2/mem128      ; 0F C2 /r 00     [KATMAI,SSE]
+     CMPLTPS xmm1,xmm2/mem128      ; 0F C2 /r 01     [KATMAI,SSE]
+     CMPLEPS xmm1,xmm2/mem128      ; 0F C2 /r 02     [KATMAI,SSE]
+     CMPUNORDPS xmm1,xmm2/mem128   ; 0F C2 /r 03     [KATMAI,SSE]
+     CMPNEQPS xmm1,xmm2/mem128     ; 0F C2 /r 04     [KATMAI,SSE]
+     CMPNLTPS xmm1,xmm2/mem128     ; 0F C2 /r 05     [KATMAI,SSE]
+     CMPNLEPS xmm1,xmm2/mem128     ; 0F C2 /r 06     [KATMAI,SSE]
+     CMPORDPS xmm1,xmm2/mem128     ; 0F C2 /r 07     [KATMAI,SSE]
+
+   The `CMPccPS' instructions compare the two packed single-precision FP
+values in the source and destination operands, and returns the result of
+the comparison in the destination register. The result of each
+comparison is a doubleword mask of all 1s (comparison true) or all 0s
+(comparison false).
+
+   The destination is an `XMM' register. The source can be either an
+`XMM' register or a 128-bit memory location.
+
+   The third operand is an 8-bit immediate value, of which the low 3
+bits define the type of comparison. For ease of programming, the 8
+two-operand pseudo-instructions are provided, with the third operand
+already filled in.  The  `Condition Predicates' are:
+
+     EQ     0   Equal
+     LT     1   Less-than
+     LE     2   Less-than-or-equal
+     UNORD  3   Unordered
+     NE     4   Not-equal
+     NLT    5   Not-less-than
+     NLE    6   Not-less-than-or-equal
+     ORD    7   Ordered
+
+   For more details of the comparison predicates, and details of how to
+emulate the "greater-than" equivalents, see *Note Section B.2.3::
+
+
+File: nasm.info,  Node: Section B.4.27,  Next: Section B.4.28,  Prev: Section B.4.26,  Up: Section B.4
+
+B.4.27. `CMPSB', `CMPSW', `CMPSD': Compare Strings
+--------------------------------------------------
+
+     CMPSB                         ; A6                   [8086]
+     CMPSW                         ; o16 A7               [8086]
+     CMPSD                         ; o32 A7               [386]
+
+   `CMPSB' compares the byte at `[DS:SI]' or `[DS:ESI]' with the byte
+at `[ES:DI]' or `[ES:EDI]', and sets the flags accordingly. It then
+increments or decrements (depending on the direction flag: increments
+if the flag is clear, decrements if it is set) `SI' and `DI' (or `ESI'
+and `EDI').
+
+   The registers used are `SI' and `DI' if the address size is 16 bits,
+and `ESI' and `EDI' if it is 32 bits. If you need to use an address
+size not equal to the current `BITS' setting, you can use an explicit
+`a16' or `a32' prefix.
+
+   The segment register used to load from `[SI]' or `[ESI]' can be
+overridden by using a segment register name as a prefix (for example,
+`ES CMPSB'). The use of `ES' for the load from `[DI]' or `[EDI]' cannot
+be overridden.
+
+   `CMPSW' and `CMPSD' work in the same way, but they compare a word or
+a doubleword instead of a byte, and increment or decrement the
+addressing registers by 2 or 4 instead of 1.
+
+   The `REPE' and `REPNE' prefixes (equivalently, `REPZ' and `REPNZ')
+may be used to repeat the instruction up to `CX' (or `ECX' - again, the
+address size chooses which) times until the first unequal or equal byte
+is found.
+
+
+File: nasm.info,  Node: Section B.4.28,  Next: Section B.4.29,  Prev: Section B.4.27,  Up: Section B.4
+
+B.4.28. `CMPccSD': Scalar Double-Precision FP Compare
+-----------------------------------------------------
+
+     CMPSD xmm1,xmm2/mem64,imm8    ; F2 0F C2 /r ib  [WILLAMETTE,SSE2]
+
+     CMPEQSD xmm1,xmm2/mem64       ; F2 0F C2 /r 00  [WILLAMETTE,SSE2]
+     CMPLTSD xmm1,xmm2/mem64       ; F2 0F C2 /r 01  [WILLAMETTE,SSE2]
+     CMPLESD xmm1,xmm2/mem64       ; F2 0F C2 /r 02  [WILLAMETTE,SSE2]
+     CMPUNORDSD xmm1,xmm2/mem64    ; F2 0F C2 /r 03  [WILLAMETTE,SSE2]
+     CMPNEQSD xmm1,xmm2/mem64      ; F2 0F C2 /r 04  [WILLAMETTE,SSE2]
+     CMPNLTSD xmm1,xmm2/mem64      ; F2 0F C2 /r 05  [WILLAMETTE,SSE2]
+     CMPNLESD xmm1,xmm2/mem64      ; F2 0F C2 /r 06  [WILLAMETTE,SSE2]
+     CMPORDSD xmm1,xmm2/mem64      ; F2 0F C2 /r 07  [WILLAMETTE,SSE2]
+
+   The `CMPccSD' instructions compare the low-order double-precision FP
+values in the source and destination operands, and returns the result of
+the comparison in the destination register. The result of each
+comparison is a quadword mask of all 1s (comparison true) or all 0s
+(comparison false).
+
+   The destination is an `XMM' register. The source can be either an
+`XMM' register or a 128-bit memory location.
+
+   The third operand is an 8-bit immediate value, of which the low 3
+bits define the type of comparison. For ease of programming, the 8
+two-operand pseudo-instructions are provided, with the third operand
+already filled in.  The  `Condition Predicates' are:
+
+     EQ     0   Equal
+     LT     1   Less-than
+     LE     2   Less-than-or-equal
+     UNORD  3   Unordered
+     NE     4   Not-equal
+     NLT    5   Not-less-than
+     NLE    6   Not-less-than-or-equal
+     ORD    7   Ordered
+
+   For more details of the comparison predicates, and details of how to
+emulate the "greater-than" equivalents, see *Note Section B.2.3::
+
+
+File: nasm.info,  Node: Section B.4.29,  Next: Section B.4.30,  Prev: Section B.4.28,  Up: Section B.4
+
+B.4.29. `CMPccSS': Scalar Single-Precision FP Compare
+-----------------------------------------------------
+
+     CMPSS xmm1,xmm2/mem32,imm8    ; F3 0F C2 /r ib  [KATMAI,SSE]
+
+     CMPEQSS xmm1,xmm2/mem32       ; F3 0F C2 /r 00  [KATMAI,SSE]
+     CMPLTSS xmm1,xmm2/mem32       ; F3 0F C2 /r 01  [KATMAI,SSE]
+     CMPLESS xmm1,xmm2/mem32       ; F3 0F C2 /r 02  [KATMAI,SSE]
+     CMPUNORDSS xmm1,xmm2/mem32    ; F3 0F C2 /r 03  [KATMAI,SSE]
+     CMPNEQSS xmm1,xmm2/mem32      ; F3 0F C2 /r 04  [KATMAI,SSE]
+     CMPNLTSS xmm1,xmm2/mem32      ; F3 0F C2 /r 05  [KATMAI,SSE]
+     CMPNLESS xmm1,xmm2/mem32      ; F3 0F C2 /r 06  [KATMAI,SSE]
+     CMPORDSS xmm1,xmm2/mem32      ; F3 0F C2 /r 07  [KATMAI,SSE]
+
+   The `CMPccSS' instructions compare the low-order single-precision FP
+values in the source and destination operands, and returns the result of
+the comparison in the destination register. The result of each
+comparison is a doubleword mask of all 1s (comparison true) or all 0s
+(comparison false).
+
+   The destination is an `XMM' register. The source can be either an
+`XMM' register or a 128-bit memory location.
+
+   The third operand is an 8-bit immediate value, of which the low 3
+bits define the type of comparison. For ease of programming, the 8
+two-operand pseudo-instructions are provided, with the third operand
+already filled in.  The  `Condition Predicates' are:
+
+     EQ     0   Equal
+     LT     1   Less-than
+     LE     2   Less-than-or-equal
+     UNORD  3   Unordered
+     NE     4   Not-equal
+     NLT    5   Not-less-than
+     NLE    6   Not-less-than-or-equal
+     ORD    7   Ordered
+
+   For more details of the comparison predicates, and details of how to
+emulate the "greater-than" equivalents, see *Note Section B.2.3::
+
+
+File: nasm.info,  Node: Section B.4.30,  Next: Section B.4.31,  Prev: Section B.4.29,  Up: Section B.4
+
+B.4.30. `CMPXCHG', `CMPXCHG486': Compare and Exchange
+-----------------------------------------------------
+
+     CMPXCHG r/m8,reg8             ; 0F B0 /r             [PENT]
+     CMPXCHG r/m16,reg16           ; o16 0F B1 /r         [PENT]
+     CMPXCHG r/m32,reg32           ; o32 0F B1 /r         [PENT]
+
+     CMPXCHG486 r/m8,reg8          ; 0F A6 /r             [486,UNDOC]
+     CMPXCHG486 r/m16,reg16        ; o16 0F A7 /r         [486,UNDOC]
+     CMPXCHG486 r/m32,reg32        ; o32 0F A7 /r         [486,UNDOC]
+
+   These two instructions perform exactly the same operation; however,
+apparently some (not all) 486 processors support it under a non-standard
+opcode, so NASM provides the undocumented `CMPXCHG486' form to generate
+the non-standard opcode.
+
+   `CMPXCHG' compares its destination (first) operand to the value in
+`AL', `AX' or `EAX' (depending on the operand size of the instruction).
+If they are equal, it copies its source (second) operand into the
+destination and sets the zero flag. Otherwise, it clears the zero flag
+and copies the destination register to AL, AX or EAX.
+
+   The destination can be either a register or a memory location. The
+source is a register.
+
+   `CMPXCHG' is intended to be used for atomic operations in
+multitasking or multiprocessor environments. To safely update a value
+in shared memory, for example, you might load the value into `EAX',
+load the updated value into `EBX', and then execute the instruction
+`LOCK CMPXCHG [value],EBX'. If `value' has not changed since being
+loaded, it is updated with your desired new value, and the zero flag is
+set to let you know it has worked. (The `LOCK' prefix prevents another
+processor doing anything in the middle of this operation: it guarantees
+atomicity.) However, if another processor has modified the value in
+between your load and your attempted store, the store does not happen,
+and you are notified of the failure by a cleared zero flag, so you can
+go round and try again.
+
+
+File: nasm.info,  Node: Section B.4.31,  Next: Section B.4.32,  Prev: Section B.4.30,  Up: Section B.4
+
+B.4.31. `CMPXCHG8B': Compare and Exchange Eight Bytes
+-----------------------------------------------------
+
+     CMPXCHG8B mem                 ; 0F C7 /1             [PENT]
+
+   This is a larger and more unwieldy version of `CMPXCHG': it compares
+the 64-bit (eight-byte) value stored at `[mem]' with the value in
+`EDX:EAX'. If they are equal, it sets the zero flag and stores
+`ECX:EBX' into the memory area. If they are unequal, it clears the zero
+flag and stores the memory contents into `EDX:EAX'.
+
+   `CMPXCHG8B' can be used with the `LOCK' prefix, to allow atomic
+execution. This is useful in multi-processor and multi-tasking
+environments.
+
+
+File: nasm.info,  Node: Section B.4.32,  Next: Section B.4.33,  Prev: Section B.4.31,  Up: Section B.4
+
+B.4.32. `COMISD': Scalar Ordered Double-Precision FP Compare and Set EFLAGS
+---------------------------------------------------------------------------
+
+     COMISD xmm1,xmm2/mem64        ; 66 0F 2F /r     [WILLAMETTE,SSE2]
+
+   `COMISD' compares the low-order double-precision FP value in the two
+source operands. ZF, PF and CF are set according to the result. OF, AF
+and AF are cleared. The unordered result is returned if either source
+is a NaN (QNaN or SNaN).
+
+   The destination operand is an `XMM' register. The source can be
+either an `XMM' register or a memory location.
+
+   The flags are set according to the following rules:
+
+        Result          Flags        Values
+
+        UNORDERED:      ZF,PF,CF <-- 111;
+        GREATER_THAN:   ZF,PF,CF <-- 000;
+        LESS_THAN:      ZF,PF,CF <-- 001;
+        EQUAL:          ZF,PF,CF <-- 100;
+
+
+File: nasm.info,  Node: Section B.4.33,  Next: Section B.4.34,  Prev: Section B.4.32,  Up: Section B.4
+
+B.4.33. `COMISS': Scalar Ordered Single-Precision FP Compare and Set EFLAGS
+---------------------------------------------------------------------------
+
+     COMISS xmm1,xmm2/mem32        ; 66 0F 2F /r     [KATMAI,SSE]
+
+   `COMISS' compares the low-order single-precision FP value in the two
+source operands. ZF, PF and CF are set according to the result. OF, AF
+and AF are cleared. The unordered result is returned if either source
+is a NaN (QNaN or SNaN).
+
+   The destination operand is an `XMM' register. The source can be
+either an `XMM' register or a memory location.
+
+   The flags are set according to the following rules:
+
+        Result          Flags        Values
+
+        UNORDERED:      ZF,PF,CF <-- 111;
+        GREATER_THAN:   ZF,PF,CF <-- 000;
+        LESS_THAN:      ZF,PF,CF <-- 001;
+        EQUAL:          ZF,PF,CF <-- 100;
+
+
+File: nasm.info,  Node: Section B.4.34,  Next: Section B.4.35,  Prev: Section B.4.33,  Up: Section B.4
+
+B.4.34. `CPUID': Get CPU Identification Code
+--------------------------------------------
+
+     CPUID                         ; 0F A2                [PENT]
+
+   `CPUID' returns various information about the processor it is being
+executed on. It fills the four registers `EAX', `EBX', `ECX' and `EDX'
+with information, which varies depending on the input contents of `EAX'.
+
+   `CPUID' also acts as a barrier to serialise instruction execution:
+executing the `CPUID' instruction guarantees that all the effects
+(memory modification, flag modification, register modification) of
+previous instructions have been completed before the next instruction
+gets fetched.
+
+   The information returned is as follows:
+
+   * If `EAX' is zero on input, `EAX' on output holds the maximum
+     acceptable input value of `EAX', and `EBX:EDX:ECX' contain the
+     string `"GenuineIntel"' (or not, if you have a clone processor).
+     That is to say, `EBX' contains `"Genu"' (in NASM's own sense of
+     character constants, described in *Note Section 3.4.2::), `EDX'
+     contains `"ineI"' and `ECX' contains `"ntel"'.
+
+   * If `EAX' is one on input, `EAX' on output contains version
+     information about the processor, and `EDX' contains a set of
+     feature flags, showing the presence and absence of various
+     features. For example, bit 8 is set if the `CMPXCHG8B' instruction
+     (*Note Section B.4.31::) is supported, bit 15 is set if the
+     conditional move instructions (*Note Section B.4.23:: and *Note
+     Section B.4.72::) are supported, and bit 23 is set if `MMX'
+     instructions are supported.
+
+   * If `EAX' is two on input, `EAX', `EBX', `ECX' and `EDX' all
+     contain information about caches and TLBs (Translation Lookahead
+     Buffers).
+
+   For more information on the data returned from `CPUID', see the
+documentation from Intel and other processor manufacturers.
+
+
+File: nasm.info,  Node: Section B.4.35,  Next: Section B.4.36,  Prev: Section B.4.34,  Up: Section B.4
+
+B.4.35. `CVTDQ2PD': Packed Signed INT32 to Packed Double-Precision FP Conversion
+--------------------------------------------------------------------------------
+
+     CVTDQ2PD xmm1,xmm2/mem64      ; F3 0F E6 /r     [WILLAMETTE,SSE2]
+
+   `CVTDQ2PD' converts two packed signed doublewords from the source
+operand to two packed double-precision FP values in the destination
+operand.
+
+   The destination operand is an `XMM' register. The source can be
+either an `XMM' register or a 64-bit memory location. If the source is a
+register, the packed integers are in the low quadword.
+
+
+File: nasm.info,  Node: Section B.4.36,  Next: Section B.4.37,  Prev: Section B.4.35,  Up: Section B.4
+
+B.4.36. `CVTDQ2PS': Packed Signed INT32 to Packed Single-Precision FP Conversion
+--------------------------------------------------------------------------------
+
+     CVTDQ2PS xmm1,xmm2/mem128     ; 0F 5B /r        [WILLAMETTE,SSE2]
+
+   `CVTDQ2PS' converts four packed signed doublewords from the source
+operand to four packed single-precision FP values in the destination
+operand.
+
+   The destination operand is an `XMM' register. The source can be
+either an `XMM' register or a 128-bit memory location.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.37,  Next: Section B.4.38,  Prev: Section B.4.36,  Up: Section B.4
+
+B.4.37. `CVTPD2DQ': Packed Double-Precision FP to Packed Signed INT32 Conversion
+--------------------------------------------------------------------------------
+
+     CVTPD2DQ xmm1,xmm2/mem128     ; F2 0F E6 /r     [WILLAMETTE,SSE2]
+
+   `CVTPD2DQ' converts two packed double-precision FP values from the
+source operand to two packed signed doublewords in the low quadword of
+the destination operand. The high quadword of the destination is set to
+all 0s.
+
+   The destination operand is an `XMM' register. The source can be
+either an `XMM' register or a 128-bit memory location.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.38,  Next: Section B.4.39,  Prev: Section B.4.37,  Up: Section B.4
+
+B.4.38. `CVTPD2PI': Packed Double-Precision FP to Packed Signed INT32 Conversion
+--------------------------------------------------------------------------------
+
+     CVTPD2PI mm,xmm/mem128        ; 66 0F 2D /r     [WILLAMETTE,SSE2]
+
+   `CVTPD2PI' converts two packed double-precision FP values from the
+source operand to two packed signed doublewords in the destination
+operand.
+
+   The destination operand is an `MMX' register. The source can be
+either an `XMM' register or a 128-bit memory location.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.39,  Next: Section B.4.40,  Prev: Section B.4.38,  Up: Section B.4
+
+B.4.39. `CVTPD2PS': Packed Double-Precision FP to Packed Single-Precision FP Conversion
+---------------------------------------------------------------------------------------
+
+     CVTPD2PS xmm1,xmm2/mem128     ; 66 0F 5A /r     [WILLAMETTE,SSE2]
+
+   `CVTPD2PS' converts two packed double-precision FP values from the
+source operand to two packed single-precision FP values in the low
+quadword of the destination operand. The high quadword of the
+destination is set to all 0s.
+
+   The destination operand is an `XMM' register. The source can be
+either an `XMM' register or a 128-bit memory location.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.40,  Next: Section B.4.41,  Prev: Section B.4.39,  Up: Section B.4
+
+B.4.40. `CVTPI2PD': Packed Signed INT32 to Packed Double-Precision FP Conversion
+--------------------------------------------------------------------------------
+
+     CVTPI2PD xmm,mm/mem64         ; 66 0F 2A /r     [WILLAMETTE,SSE2]
+
+   `CVTPI2PD' converts two packed signed doublewords from the source
+operand to two packed double-precision FP values in the destination
+operand.
+
+   The destination operand is an `XMM' register. The source can be
+either an `MMX' register or a 64-bit memory location.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.41,  Next: Section B.4.42,  Prev: Section B.4.40,  Up: Section B.4
+
+B.4.41. `CVTPI2PS': Packed Signed INT32 to Packed Single-FP Conversion
+----------------------------------------------------------------------
+
+     CVTPI2PS xmm,mm/mem64         ; 0F 2A /r        [KATMAI,SSE]
+
+   `CVTPI2PS' converts two packed signed doublewords from the source
+operand to two packed single-precision FP values in the low quadword of
+the destination operand. The high quadword of the destination remains
+unchanged.
+
+   The destination operand is an `XMM' register. The source can be
+either an `MMX' register or a 64-bit memory location.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.42,  Next: Section B.4.43,  Prev: Section B.4.41,  Up: Section B.4
+
+B.4.42. `CVTPS2DQ': Packed Single-Precision FP to Packed Signed INT32 Conversion
+--------------------------------------------------------------------------------
+
+     CVTPS2DQ xmm1,xmm2/mem128     ; 66 0F 5B /r     [WILLAMETTE,SSE2]
+
+   `CVTPS2DQ' converts four packed single-precision FP values from the
+source operand to four packed signed doublewords in the destination
+operand.
+
+   The destination operand is an `XMM' register. The source can be
+either an `XMM' register or a 128-bit memory location.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.43,  Next: Section B.4.44,  Prev: Section B.4.42,  Up: Section B.4
+
+B.4.43. `CVTPS2PD': Packed Single-Precision FP to Packed Double-Precision FP Conversion
+---------------------------------------------------------------------------------------
+
+     CVTPS2PD xmm1,xmm2/mem64      ; 0F 5A /r        [WILLAMETTE,SSE2]
+
+   `CVTPS2PD' converts two packed single-precision FP values from the
+source operand to two packed double-precision FP values in the
+destination operand.
+
+   The destination operand is an `XMM' register. The source can be
+either an `XMM' register or a 64-bit memory location. If the source is a
+register, the input values are in the low quadword.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.44,  Next: Section B.4.45,  Prev: Section B.4.43,  Up: Section B.4
+
+B.4.44. `CVTPS2PI': Packed Single-Precision FP to Packed Signed INT32 Conversion
+--------------------------------------------------------------------------------
+
+     CVTPS2PI mm,xmm/mem64         ; 0F 2D /r        [KATMAI,SSE]
+
+   `CVTPS2PI' converts two packed single-precision FP values from the
+source operand to two packed signed doublewords in the destination
+operand.
+
+   The destination operand is an `MMX' register. The source can be
+either an `XMM' register or a 64-bit memory location. If the source is a
+register, the input values are in the low quadword.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.45,  Next: Section B.4.46,  Prev: Section B.4.44,  Up: Section B.4
+
+B.4.45. `CVTSD2SI': Scalar Double-Precision FP to Signed INT32 Conversion
+-------------------------------------------------------------------------
+
+     CVTSD2SI reg32,xmm/mem64      ; F2 0F 2D /r     [WILLAMETTE,SSE2]
+
+   `CVTSD2SI' converts a double-precision FP value from the source
+operand to a signed doubleword in the destination operand.
+
+   The destination operand is a general purpose register. The source
+can be either an `XMM' register or a 64-bit memory location. If the
+source is a register, the input value is in the low quadword.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.46,  Next: Section B.4.47,  Prev: Section B.4.45,  Up: Section B.4
+
+B.4.46. `CVTSD2SS': Scalar Double-Precision FP to Scalar Single-Precision FP Conversion
+---------------------------------------------------------------------------------------
+
+     CVTSD2SS xmm1,xmm2/mem64      ; F2 0F 5A /r     [KATMAI,SSE]
+
+   `CVTSD2SS' converts a double-precision FP value from the source
+operand to a single-precision FP value in the low doubleword of the
+destination operand. The upper 3 doublewords are left unchanged.
+
+   The destination operand is an `XMM' register. The source can be
+either an `XMM' register or a 64-bit memory location. If the source is a
+register, the input value is in the low quadword.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.47,  Next: Section B.4.48,  Prev: Section B.4.46,  Up: Section B.4
+
+B.4.47. `CVTSI2SD': Signed INT32 to Scalar Double-Precision FP Conversion
+-------------------------------------------------------------------------
+
+     CVTSI2SD xmm,r/m32            ; F2 0F 2A /r     [WILLAMETTE,SSE2]
+
+   `CVTSI2SD' converts a signed doubleword from the source operand to a
+double-precision FP value in the low quadword of the destination
+operand.  The high quadword is left unchanged.
+
+   The destination operand is an `XMM' register. The source can be
+either a general purpose register or a 32-bit memory location.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.48,  Next: Section B.4.49,  Prev: Section B.4.47,  Up: Section B.4
+
+B.4.48. `CVTSI2SS': Signed INT32 to Scalar Single-Precision FP Conversion
+-------------------------------------------------------------------------
+
+     CVTSI2SS xmm,r/m32            ; F3 0F 2A /r     [KATMAI,SSE]
+
+   `CVTSI2SS' converts a signed doubleword from the source operand to a
+single-precision FP value in the low doubleword of the destination
+operand.  The upper 3 doublewords are left unchanged.
+
+   The destination operand is an `XMM' register. The source can be
+either a general purpose register or a 32-bit memory location.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.49,  Next: Section B.4.50,  Prev: Section B.4.48,  Up: Section B.4
+
+B.4.49. `CVTSS2SD': Scalar Single-Precision FP to Scalar Double-Precision FP Conversion
+---------------------------------------------------------------------------------------
+
+     CVTSS2SD xmm1,xmm2/mem32      ; F3 0F 5A /r     [WILLAMETTE,SSE2]
+
+   `CVTSS2SD' converts a single-precision FP value from the source
+operand to a double-precision FP value in the low quadword of the
+destination operand. The upper quadword is left unchanged.
+
+   The destination operand is an `XMM' register. The source can be
+either an `XMM' register or a 32-bit memory location. If the source is a
+register, the input value is contained in the low doubleword.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.50,  Next: Section B.4.51,  Prev: Section B.4.49,  Up: Section B.4
+
+B.4.50. `CVTSS2SI': Scalar Single-Precision FP to Signed INT32 Conversion
+-------------------------------------------------------------------------
+
+     CVTSS2SI reg32,xmm/mem32      ; F3 0F 2D /r     [KATMAI,SSE]
+
+   `CVTSS2SI' converts a single-precision FP value from the source
+operand to a signed doubleword in the destination operand.
+
+   The destination operand is a general purpose register. The source
+can be either an `XMM' register or a 32-bit memory location. If the
+source is a register, the input value is in the low doubleword.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.51,  Next: Section B.4.52,  Prev: Section B.4.50,  Up: Section B.4
+
+B.4.51. `CVTTPD2DQ': Packed Double-Precision FP to Packed Signed INT32 Conversion with Truncation
+-------------------------------------------------------------------------------------------------
+
+     CVTTPD2DQ xmm1,xmm2/mem128    ; 66 0F E6 /r     [WILLAMETTE,SSE2]
+
+   `CVTTPD2DQ' converts two packed double-precision FP values in the
+source operand to two packed single-precision FP values in the
+destination operand. If the result is inexact, it is truncated (rounded
+toward zero).  The high quadword is set to all 0s.
+
+   The destination operand is an `XMM' register. The source can be
+either an `XMM' register or a 128-bit memory location.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.52,  Next: Section B.4.53,  Prev: Section B.4.51,  Up: Section B.4
+
+B.4.52. `CVTTPD2PI': Packed Double-Precision FP to Packed Signed INT32 Conversion with Truncation
+-------------------------------------------------------------------------------------------------
+
+     CVTTPD2PI mm,xmm/mem128        ; 66 0F 2C /r     [WILLAMETTE,SSE2]
+
+   `CVTTPD2PI' converts two packed double-precision FP values in the
+source operand to two packed single-precision FP values in the
+destination operand. If the result is inexact, it is truncated (rounded
+toward zero).
+
+   The destination operand is an `MMX' register. The source can be
+either an `XMM' register or a 128-bit memory location.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.53,  Next: Section B.4.54,  Prev: Section B.4.52,  Up: Section B.4
+
+B.4.53. `CVTTPS2DQ': Packed Single-Precision FP to Packed Signed INT32 Conversion with Truncation
+-------------------------------------------------------------------------------------------------
+
+     CVTTPS2DQ xmm1,xmm2/mem128    ; F3 0F 5B /r     [WILLAMETTE,SSE2]
+
+   `CVTTPS2DQ' converts four packed single-precision FP values in the
+source operand to four packed signed doublewords in the destination
+operand. If the result is inexact, it is truncated (rounded toward
+zero).
+
+   The destination operand is an `XMM' register. The source can be
+either an `XMM' register or a 128-bit memory location.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.54,  Next: Section B.4.55,  Prev: Section B.4.53,  Up: Section B.4
+
+B.4.54. `CVTTPS2PI': Packed Single-Precision FP to Packed Signed INT32 Conversion with Truncation
+-------------------------------------------------------------------------------------------------
+
+     CVTTPS2PI mm,xmm/mem64         ; 0F 2C /r       [KATMAI,SSE]
+
+   `CVTTPS2PI' converts two packed single-precision FP values in the
+source operand to two packed signed doublewords in the destination
+operand.  If the result is inexact, it is truncated (rounded toward
+zero). If the source is a register, the input values are in the low
+quadword.
+
+   The destination operand is an `MMX' register. The source can be
+either an `XMM' register or a 64-bit memory location. If the source is a
+register, the input value is in the low quadword.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.55,  Next: Section B.4.56,  Prev: Section B.4.54,  Up: Section B.4
+
+B.4.55. `CVTTSD2SI': Scalar Double-Precision FP to Signed INT32 Conversion with Truncation
+------------------------------------------------------------------------------------------
+
+     CVTTSD2SI reg32,xmm/mem64      ; F2 0F 2C /r    [WILLAMETTE,SSE2]
+
+   `CVTTSD2SI' converts a double-precision FP value in the source
+operand to a signed doubleword in the destination operand. If the
+result is inexact, it is truncated (rounded toward zero).
+
+   The destination operand is a general purpose register. The source
+can be either an `XMM' register or a 64-bit memory location. If the
+source is a register, the input value is in the low quadword.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.56,  Next: Section B.4.57,  Prev: Section B.4.55,  Up: Section B.4
+
+B.4.56. `CVTTSS2SI': Scalar Single-Precision FP to Signed INT32 Conversion with Truncation
+------------------------------------------------------------------------------------------
+
+     CVTTSD2SI reg32,xmm/mem32      ; F3 0F 2C /r    [KATMAI,SSE]
+
+   `CVTTSS2SI' converts a single-precision FP value in the source
+operand to a signed doubleword in the destination operand. If the
+result is inexact, it is truncated (rounded toward zero).
+
+   The destination operand is a general purpose register. The source
+can be either an `XMM' register or a 32-bit memory location. If the
+source is a register, the input value is in the low doubleword.
+
+   For more details of this instruction, see the Intel Processor
+manuals.
+
+
+File: nasm.info,  Node: Section B.4.57,  Next: Section B.4.58,  Prev: Section B.4.56,  Up: Section B.4
+
+B.4.57. `DAA', `DAS': Decimal Adjustments
+-----------------------------------------
+
+     DAA                           ; 27                   [8086]
+     DAS                           ; 2F                   [8086]
+
+   These instructions are used in conjunction with the add and subtract
+instructions to perform binary-coded decimal arithmetic in _packed_
+(one BCD digit per nibble) form. For the unpacked equivalents, see
+*Note Section B.4.1::.
+
+   `DAA' should be used after a one-byte `ADD' instruction whose
+destination was the `AL' register: by means of examining the value in
+the `AL' and also the auxiliary carry flag `AF', it determines whether
+either digit of the addition has overflowed, and adjusts it (and sets
+the carry and auxiliary-carry flags) if so. You can add long BCD
+strings together by doing `ADD'/`DAA' on the low two digits, then doing
+`ADC'/`DAA' on each subsequent pair of digits.
+
+   `DAS' works similarly to `DAA', but is for use after `SUB'
+instructions rather than `ADD'.
+
+
+File: nasm.info,  Node: Section B.4.58,  Next: Section B.4.59,  Prev: Section B.4.57,  Up: Section B.4
+
+B.4.58. `DEC': Decrement Integer
+--------------------------------
+
+     DEC reg16                     ; o16 48+r             [8086]
+     DEC reg32                     ; o32 48+r             [386]
+     DEC r/m8                      ; FE /1                [8086]
+     DEC r/m16                     ; o16 FF /1            [8086]
+     DEC r/m32                     ; o32 FF /1            [386]
+
+   `DEC' subtracts 1 from its operand. It does _not_ affect the carry
+flag: to affect the carry flag, use `SUB something,1' (see *Note
+Section B.4.305::). `DEC' affects all the other flags according to the
+result.
+
+   This instruction can be used with a `LOCK' prefix to allow atomic
+execution.
+
+   See also `INC' (*Note Section B.4.120::).
+
+
+File: nasm.info,  Node: Section B.4.59,  Next: Section B.4.60,  Prev: Section B.4.58,  Up: Section B.4
+
+B.4.59. `DIV': Unsigned Integer Divide
+--------------------------------------
+
+     DIV r/m8                      ; F6 /6                [8086]
+     DIV r/m16                     ; o16 F7 /6            [8086]
+     DIV r/m32                     ; o32 F7 /6            [386]
+
+   `DIV' performs unsigned integer division. The explicit operand
+provided is the divisor; the dividend and destination operands are
+implicit, in the following way:
+
+   * For `DIV r/m8', `AX' is divided by the given operand; the quotient
+     is stored in `AL' and the remainder in `AH'.
+
+   * For `DIV r/m16', `DX:AX' is divided by the given operand; the
+     quotient is stored in `AX' and the remainder in `DX'.
+
+   * For `DIV r/m32', `EDX:EAX' is divided by the given operand; the
+     quotient is stored in `EAX' and the remainder in `EDX'.
+
+   Signed integer division is performed by the `IDIV' instruction: see
+*Note Section B.4.117::.
+
+
+File: nasm.info,  Node: Section B.4.60,  Next: Section B.4.61,  Prev: Section B.4.59,  Up: Section B.4
+
+B.4.60. `DIVPD': Packed Double-Precision FP Divide
+--------------------------------------------------
+
+     DIVPD xmm1,xmm2/mem128        ; 66 0F 5E /r     [WILLAMETTE,SSE2]
+
+   `DIVPD' divides the two packed double-precision FP values in the
+destination operand by the two packed double-precision FP values in the
+source operand, and stores the packed double-precision results in the
+destination register.
+
+   The destination is an `XMM' register. The source operand can be
+either an `XMM' register or a 128-bit memory location.
+
+        dst[0-63]   := dst[0-63]   / src[0-63],
+        dst[64-127] := dst[64-127] / src[64-127].
+
+
+File: nasm.info,  Node: Section B.4.61,  Next: Section B.4.62,  Prev: Section B.4.60,  Up: Section B.4
+
+B.4.61. `DIVPS': Packed Single-Precision FP Divide
+--------------------------------------------------
+
+     DIVPS xmm1,xmm2/mem128        ; 0F 5E /r        [KATMAI,SSE]
+
+   `DIVPS' divides the four packed single-precision FP values in the
+destination operand by the four packed single-precision FP values in the
+source operand, and stores the packed single-precision results in the
+destination register.
+
+   The destination is an `XMM' register. The source operand can be
+either an `XMM' register or a 128-bit memory location.
+
+        dst[0-31]   := dst[0-31]   / src[0-31],
+        dst[32-63]  := dst[32-63]  / src[32-63],
+        dst[64-95]  := dst[64-95]  / src[64-95],
+        dst[96-127] := dst[96-127] / src[96-127].
+

@@ -1,0 +1,987 @@
+@pb
+                      @e17. Указатели@e0
+
+              @e17.1. Таблица прерываний ПЭВМ@e0
+
+────────────────────────────────────────────────────────────────
+Адрес  Прерывание           Описание                 Раздел
+────────────────────────────────────────────────────────────────
+
+             Прерывания от центрального процессора
+
+00000h  Int 00h   Деление на нуль
+00004h  Int 01h   Пошаговое прерывание
+00008h  Int 02h   Немаскируемое прерывание
+0000Ch  Int 03h   Точка останова
+00010h  Int 04h   Прерывание по переполнению
+00014h  Int 05h   Печать экрана
+00018h  Int 06h   Неверный код команды (80286)
+0001Ch  Int 07h   Нет сопроцессора 80287 (80286)
+
+            Прерывания от контроллера прерываний #1
+
+00020h  Int 08h   Таймер, канал 0              - IRQ0
+00024h  Int 09h   Клавиатура                   - IRQ1
+00028h  Int 0Ah   Каскад со вторым ПКП (AT)    - IRQ2
+0002Ch  Int 0Bh   RS-232C, COM2                - IRQ3
+00030h  Int 0Ch   RS-232C, COM1                - IRQ4
+00034h  Int 0Dh   Жесткий диск PC/XT           - IRQ5
+00038h  Int 0Eh   Контроллер НГМД              - IRQ6
+0003Ch  Int 0Fh   Параллельный принтер         - IRQ7
+
+                   Функции и прерывания BIOS
+
+00040h  Int 10h   Обслуживание экрана
+00044h  Int 11h   Оборудование ПЭВМ
+00048h  Int 12h   Размер памяти
+0004Ch  Int 13h   Обслуживание дисков
+00050h  Int 14h   Обслуживание RS-232C
+00054h  Int 15h   Системные услуги
+00058h  Int 16h   Обслуживание клавиатуры
+0005Ch  Int 17h   Обслуживание принтера
+00060h  Int 18h   Вход в Бейсик
+00064h  Int 19h   Перезагрузка системы
+00068h  Int 1Ah   Обслуживание таймера
+0006Ch  Int 1Bh   Обработка нажатия Ctrl-Break
+00070h  Int 1Ch   Пользовательская обработка таймера
+00074h  Int 1Dh   Указатель на параметры дисплея
+00078h  Int 1Eh   Указатель на параметры НГМД
+0007Ch  Int 1Fh   Указатель на графические символы
+
+                        Прерывания ДОС
+
+00080h  Int 20h   Завершение программы
+00084h  Int 21h   Функции ДОС
+00088h  Int 22h   Адрес завершения программы
+0008Ch  Int 23h   Адрес обработки Ctrl-Break
+00090h  Int 24h   Адрес обработки фатальных ошибок
+00094h  Int 25h   Чтение секторов диска
+00098h  Int 26h   Запись секторов диска
+0009Ch  Int 27h   Оставить программу резидентной
+000A0h  Int 28h   Планировщик ДОС
+000A4h  Int 29h   Быстрый вывод на экран
+000A8h  Int 2Ah   Критическая секция ДОС
+000ACh  Int 2Bh   \_ Зарезервировано
+000B4h  Int 2Dh   /  для ДОС
+000B8h  Int 2Eh   Выполнить команду ДОС
+000BCh  Int 2Fh   Мультиплексное прерывание
+000C0h  Int 30h   \_ Внутренний интерфейс
+000C4h  Int 31h   /  ДОС
+000C8h  Int 32h   Зарезервировано для ДОС
+000CCh  Int 33h   Драйвер мыши
+000D0h  Int 34h   \_ Эмуляция сопроцессора 8087/287
+000F8h  Int 3Eh   /  в языках Microsoft/Borland
+000FCh  Int 3Fh   Программа загрузки перекрытий для LINK.EXE
+
+                Дополнительные прерывания BIOS
+
+00100h  Int 40h   Ревекторизованный Int 13h для НГМД
+00104h  Int 41h   Параметры первого жесткого диска
+00108h  Int 42h   Ревекторизованный Int 10h для EGA/VGA
+0010Ch  Int 43h   Таблица пользовательских шрифтов для EGA/VGA
+00110h  Int 44h   Младшие графические символы для EGA/VGA/PCjr
+00114h  Int 45h   Зарезервировано
+00118h  Int 46h   Параметры второго жесткого диска (AT)
+0011Ch  Int 47h   Зарезервировано
+00120h  Int 48h   Таблица трансляции 62-клав. клавиатуры PCjr
+00124h  Int 49h   Таблица трансляции скан-кодов (PCjr)
+00128h  Int 4Ah   Пользовательская обработка побудки (AT)
+0012Ch  Int 4Bh   \_ Зарезервированы для BIOS
+0013Ch  Int 4Fh   /
+00140h  Int 50h   Прерывание побудки (AT)
+
+                      Сетевые прерывания
+
+00144h  Int 51h   \_ Зарезервированы для адаптеров ЛВС
+00160h  Int 58h   /
+00164h  Int 59h   Графический интерфейс GSS*CGI
+00168h  Int 5Ah   Функции PC Cluster
+0016Ch  Int 5Bh   Ревекторизованный Int 19h в PC Cluster
+00170h  Int 5Ch   Функции NETBIOS
+00174h  Int 5Dh   \_ Зарезервированы для адаптеров ЛВС
+0017Ch  Int 5Fh   /
+
+                  Пользовательские прерывания
+
+00180h  Int 60h   \_ Определяются
+00198h  Int 66h   /  пользователем
+0019Ch  Int 67h   Драйвер LIM/EMS
+001A0h  Int 68h   \_ Зарезервированы
+001A4h  Int 69h   /
+001A8h  Int 6Ah   DECNet - Драйвер LAT
+001ACh  Int 6Bh   DECNet - Драйвер порта
+001B0h  Int 6Ch   DECNet - Планировщик реального времени
+001B4h  Int 6Dh   DECNet - Уровень данных
+001B8h  Int 6Eh   DECNet - Сетевой процесс
+001BCh  Int 6Fh   DECNet
+
+            Прерывания от контроллера прерываний #2
+
+001C0h  Int 70h   Часы реального времени (AT)    - IRQ8
+001C4h  Int 71h   Переназначение IRQ2 (AT)       - IRQ9
+001C8h  Int 72h   Зарезервировано                - IRQ10
+001CCh  Int 73h   Зарезервировано                - IRQ11
+001D0h  Int 74h   Мышь (PS/2, кроме модели 30)   - IRQ12
+001D4h  Int 75h   NMI от сопроцессора 287 (AT)   - IRQ13
+001D8h  Int 76h   Контроллер жесткого диска (AT) - IRQ14
+001DCh  Int 77h   Зарезервировано                - IRQ15
+
+                       Прочие прерывания
+
+001E0h  Int 78h   \_ Не используются
+001E4h  Int 79h   /
+001E8h  Int 7Ah   Функции API Novell Netware
+001ECh  Int 7Bh   \_ Не используются
+001FCh  Int 7Fh   /
+00200h  Int 80h   \_ Зарезервировано для Бейсика
+00214h  Int 85h   /
+00218h  Int 86h   Ревекторизованный Int 18h в NETBIOS
+0021Ch  Int 87h   \_ Используются
+00380h  Int E0h   /  интерпретатором Бейсика
+00384h  Int E1h   Информация о сервере PC Cluster
+00388h  Int E2h   Ревекторизованный Int 1Ch в PC Cluster
+0038Ch  Int E3h   \_ Используются
+003C0h  Int F0h   /  интерпретатором Бейсика
+003C4h  Int F1h   \_ Не используются
+003FCh  Int FFh   /
+────────────────────────────────────────────────────────────────
+@pb
+                  @e17.2. Видеорежимы ПЭВМ@e0
+
+     BIOS  ПЭВМ  IBM  PC   и  IBM  PS/2  поддерживает  следующие
+видеорежимы:
+
+────────────────────────────────────────────────────────────
+Номер   Тип  Количество Разрешение Допустимый       Адрес
+режима         цветов    экрана      адаптер     видеопамяти
+────────────────────────────────────────────────────────────
+0, 1   текст     16      40 X 25   CGA, EGA, VGA    B8000h
+2, 3   текст     16      80 X 25   CGA, EGA, VGA    B8000h
+4, 5   графика   4      320 X 200  CGA, EGA, VGA    B8000h
+6      графика   2      640 X 200  CGA, EGA, VGA    B8000h
+7      текст     моно    80 X 25   MDA, EGA, VGA    B0000h
+8      графика   16     160 X 200  PCjr             B0000h
+9      графика   16     320 X 200  PCjr             B0000h
+Ah     графика   4      640 X 200  PCjr             B0000h
+Bh, Ch     ----- Внутренние режимы EGA -----
+Dh     графика   16     320 X 200  EGA, VGA         A0000h
+Eh     графика   16     640 X 200  EGA, VGA         A0000h
+Fh     графика   2      640 X 350  EGA, VGA         A0000h
+10h    графика   16     640 X 350  EGA, VGA         A0000h
+11h    графика   2      640 X 480  VGA, MCGA        A0000h
+12h    графика   16     640 X 480  VGA              A0000h
+13h    графика   256    320 X 200  VGA, MCGA        A0000h
+────────────────────────────────────────────────────────────
+@pb
+     В   следующей  таблице   перечислены  характеристики   всех
+видеорежимов, зависящие от аппаратных особенностей адаптеров.
+
+───────────────────────────────────────────────────────
+Номер   Разрешение Размер      Адаптер       Количество
+режима    экрана   символа                    страниц
+───────────────────────────────────────────────────────
+ 0, 1   320 X 200  8 X 8    PCjr, CGA, LCD        8
+        320 X 350  8 X 14   EGA                   8
+        320 X 400  8 X 16   MCGA                  8
+        360 X 400  9 X 16   VGA                   8
+ 2, 3   640 X 200  8 X 8    PCjr, CGA, LCD        4
+        640 X 350  8 X 14   EGA                   8
+        640 X 400  8 X 16   MCGA                  8
+        720 X 400  9 X 16   VGA                   8
+ 4, 5   320 X 200  8 X 8    PCjr, CGA, EGA, VGA   1
+ 6      640 X 200  8 X 8    PCjr, CGA, EGA, VGA   1
+ 7      720 X 350  9 X 14   MDA                   1
+        720 X 350  9 X 14   Монохромный EGA       8
+        720 X 400  9 X 16   Монохромный VGA       8
+        640 X 200  8 X 8    Монохромный LCD       4
+ 8      160 X 200  8 X 8    PCjr                  1
+ 9      320 X 200  8 X 8    PCjr                  1
+ Ah     640 X 200  8 X 8    PCjr                  1
+ Dh     320 X 200  8 X 8    EGA, VGA              8
+ Eh     640 X 200  8 X 8    EGA, VGA              4
+ Fh,10h 640 X 350  8 X 14   EGA, VGA              2
+ 11h    640 X 480  8 X 16   VGA, MCGA             1
+ 12h    640 X 480  8 X 16   VGA                   1
+ 13h    320 X 200  8 X 8    VGA, MCGA             1
+───────────────────────────────────────────────────────
+
+     Приведем  для  полноты описание  нестандартных графических
+видеорежимов, которые  поддерживаются  BIOS различных адаптеров
+третьих фирм. К сожалению, это описание содержит некоторые про-
+белы,  т. к. авторы не имели возможности проверить все перечис-
+ленные здесь адаптеры.
+
+───────────────────────────────────────────────────────────────
+Номер  Размер Размер  Количество Разр-ние Адаптер
+режима текста символа  цветов     экрана
+───────────────────────────────────────────────────────────────
+14h    80x25  8x8                640x200  Lava Chrome II EGA
+                         16      640x400  Tecmar VGA/AD
+15h    80x25  8x14               640x350  Lava Chrome II EGA
+16h    80x25  8x14               640x350  Lava Chrome II EGA
+                         16      800x600  Tecmar VGA/AD
+17h    80x34  8x14               640x480  Lava Chrome II EGA
+      132x25                              Tecmar VGA/AD
+18h   132x44  8x8       моно              Tseng Labs EVA
+       80x34  8x14               640x480  Lava Chrome II EGA
+                         16     1024x768  Tecmar VGA/AD
+19h   132x25  8x14      моно              Tseng Labs EVA
+1Ah   132x28  8x13      моно              Tseng Labs EVA
+                        256      640x350  Tecmar VGA/AD
+1Bh                     256      640x400  Tecmar VGA/AD
+1Ch                     256      640x480  Tecmar VGA/AD
+1Dh                     256      800x600  Tecmar VGA/AD
+22h   132x44  8x8                         Tseng Labs EVA
+      132x44  8x8                         Ahead Systems EGA2001
+      132x43                              Allstar Peacock (VGA)
+23h   132x25  6x14                        Tseng Labs EVA
+      132x25  8x14                        Ahead Systems EGA2001
+      132x25  8x8        16               ATI EGA Wonder,ATI VIP
+      132x28                              Allstar Peacock (VGA)
+24h   132x28  6x13                        Tseng Labs EVA
+      132x25                              Allstar Peacock (VGA)
+25h    80x60  8x8                640x480  Tseng Labs EVA
+                         16      640x480  VEGA VGA
+26h    80x60  8x8                         Tseng Labs EVA
+       80x60  8x8                640x480  Ahead Systems EGA2001
+       80x60                              Allstar Peacock (VGA)
+27h                      16      720x512  VEGA VGA
+      132x25  8x8       моно              ATI EGA Wonder,ATI VIP
+28h   ???x???                             VEGA VGA
+29h                      16      800x600  VEGA VGA
+                         16      800x600  Allstar Peacock (VGA)
+2Ah   100x40                              Allstar Peacock (VGA)
+2Dh                     256      640x350  VEGA VGA
+2Eh                     256      640x480  VEGA VGA
+2Fh                     256      720x512  VEGA VGA
+30h                     256      800x600  VEGA VGA
+      ???x???                             AT&T 6300
+33h   132x44  8x8        16               ATI EGA Wonder,ATI VIP
+36h                      16      960x720  VEGA VGA
+37h                      16     1024x768  VEGA VGA
+      132x44  8x8       моно              ATI EGA Wonder,ATI VIP
+40h    80x25  8x16        2     640x400   AT&T 6300, AT&T VDC600
+       80x25  8x16        2     640x400   Compaq Portable
+       80x43                              VEGA VGA, Tecmar VGA/AD
+       80x43                              Video7 V-RAM VGA
+       80x43                              Tatung VGA
+41h                      16     640x200   AT&T 6300
+      132x25                              VEGA VGA
+      132x25                              Tatung VGA
+      132x25                              Video7 V-RAM VGA
+42h    80x25  8x16       16     640x400   AT&T 6300, AT&T VDC600
+      132x43                              VEGA VGA
+      132x43                              Tatung VGA
+      132x43                              Video7 V-RAM VGA
+43h    80x60                              VEGA VGA
+       80x60                              Tatung VGA
+       80x60                              Video7 V-RAM VGA
+44h   100x60                              VEGA VGA
+      100x60                              Tatung VGA
+      100x60                              Video7 V-RAM VGA
+45h   132x28                              Tatung VGA
+      132x28                              Video7 V-RAM VGA
+46h   100x40  8x15        2     800x600   AT&T VDC600
+47h   100x37  8x16       16     800x600   AT&T VDC600
+48h    80x50  8x8         2     640x400   AT&T 6300, AT&T VDC600
+49h    80x30  8x16              640x480   Lava Chrome II EGA
+4Dh   120x25                              VEGA VGA
+4Eh   120x43                              VEGA VGA
+4Fh   132x25                              VEGA VGA
+50h   132x25  9x14      моно              Ahead Systems EGA2001
+       80x30  8x16       16     640x480   Paradise EGA-480
+       80x43            моно              VEGA VGA
+                                640x480   Taxan 565 EGA
+       80x34                              Lava Chrome II EGA
+51h    80x30  8x16                        Paradise EGA-480
+       80x30                              Lava Chrome II EGA
+       80x34  8x14       16     640x480   ATI EGA Wonder
+      132x25            моно              VEGA VGA
+52h   132x44  9x8       моно              Ahead Systems EGA2001
+      132x43            моно              VEGA VGA
+       94x29  8x14       16     752x410   ATI EGA Wonder
+       80x60                              Lava Chrome II EGA
+53h   100x40  8x14       16     800x560   ATI EGA Wonder,ATI VIP
+      132x43                              Lava Chrome II EGA
+54h   132x43  8x8                         Paradise EGA-480
+      132x43  7x9    16/256Кб             Paradise VGA
+      132x43  8x9    16/256Кб             Paradise VGA+Multisync
+      132x43                              Taxan 565 EGA
+      132x43                              AST VGA Plus
+      132x43                              Hewlett-Packard D1180A
+      132x43  7x9        16               AT&T VDC600
+      132x25                              Lava Chrome II EGA
+      100x42  8x14       16      800x600  ATI EGA Wonder
+55h   132x25  8x14                        Paradise EGA-480
+      132x25  7x16   16/256Кб             Paradise VGA
+      132x25  8x16   16/256Кб             Paradise VGA+Multisync
+      132x25                              Taxan 565 EGA
+      132x25                              AST VGA Plus
+      132x25                              Hewlett-Packard D1180A
+      132x25  7x16       16               AT&T VDC600
+       80x66  8x8    16/256Кб             ATI VIP
+       94x29  8x14               752x410  Lava Chrome II EGA
+56h   132x43  8x8         2               NSI Smart EGA+
+      132x43  7x9         4               Paradise VGA
+      132x43  8x9         4               Paradisе VGA+Multisync
+      132x43            моно              Taxan 565 EGA
+      132x43  7x9         2               AT&T VDC600
+57h   132x25  8x14        4               NSI Smart EGA+
+      132x25  7x16        4               Paradise VGA
+      132x25  8x16        4               Paradise VGA+Multisync
+      132x25            моно              Taxan 565 EGA
+      132x25  7x16        2               AT&T VDC600
+58h   100x75  8x8    16/256Кб   800x600   Paradise VGA
+      100x75  8x8        16     800x600   AT&T VDC600
+       80x33  8x14       16               ATI EGA Wonder,ATI VIP
+                         16     800x600   AST VGA Plus
+                         16     800x600   Hewlett-Packard D1180A
+59h   100x75  8x8         2     800x600   Paradise VGA
+      100x75  8x8         2     800x600   AT&T VDC600
+       80x66  8x8    16/256Кб             ATI VIP
+                          2     800x600   AST VGA Plus
+                          2     800x600   Hewlett-Packard D1180A
+5Eh                     256     640x400   Paradise VGA,VEGA VGA
+                        256     640x400   AST VGA Plus
+       80x25  8x16      256     640x400   AT&T VDC600
+5Fh                     256     640x480   Paradise VGA
+                        256     640x480   AST VGA Plus
+                        256     640x480   Hewlett-Packard D1180A
+       80x30  8x16      256     640x480   AT&T VDC600 (512K)
+60h    80x???                   ???x400   Corona/Cordata BIOS 4.10+
+                                752x410   VEGA VGA
+                         16     752x410   Tatung VGA
+                         16     752x410   Video7 V-RAM VGA
+61h                             ???x400   Corona/Cordata BIOS 4.10+
+                                720x540   VEGA VGA
+                         16     720x540   Tatung VGA
+                         16     720x540   Video7 V-RAM VGA
+62h                             800x600   VEGA VGA
+                         16     800x600   Tatung VGA
+                         16     800x600   Video7 V-RAM VGA
+63h                       2    1024x768   Video7 V-RAM VGA
+64h                       4    1024x768   Video7 V-RAM VGA
+65h                      16    1024x768   Video7 V-RAM VGA
+66h                     256     640x400   Tatung VGA
+                        256     640x400   Video7 V-RAM VGA
+67h                     256     640x480   Video7 V-RAM VGA
+69h                     256     720x540   Video7 V-RAM VGA
+70h   установка расширенного режима       Everex Micro Enhancer EGA
+71h   100x35  8x16  16 из 64    800x600   NSI Smart EGA+
+74h                       2     640x400   Toshiba 3100 AT&T mode
+7Eh   установка специального режима       Paradise VGA, AT&T VDC600
+7Fh   установка специальных функций       Paradise VGA, AT&T VDC600
+82h *  80x25          моно                AT&T VDC, режим перекрытия
+83h *  80x25                              AT&T VDC, режим перекрытия
+86h *                 моно      640x200   AT&T VDC, режим перекрытия
+C0h *                     2     640x400   AT&T VDC, режим перекрытия
+C4h * запрет видеовывода                  AT&T VDC, режим перекрытия
+D0h                       2     640x400   DEC VAXmate AT&T mode
+───────────────────────────────────────────────────────────────
+
+     * Для режимов перекрытия AT&T VDC, BL содержит режим отлад-
+ки, который может быть равен 06h, 40h или 44h.
+@pb
+           @e17.3. ASCII-коды и скан-коды клавиш@e0
+
+     В   таблице    перечислены   все   комбинации    клавиш   и
+соответствующие им ASCII- и скан-коды, возвращаемые Int 16h. Они
+приводятся  в   формате  "скан-код/ASCII-код"  (оба   указаны  в
+шестнадцатиричном виде).
+
+────────────────────────────────────────────────────────────────
+                 83/84-клав.      101/102-клав.    101/102-клав.
+                 стандартная       стандартная      расширенная
+Клавиша            функция           функция          функция
+────────────────────────────────────────────────────────────────
+Esc                 01/1B             01/1B            01/1B
+1                   02/31             02/31            02/31
+2                   03/32             03/32            03/32
+3                   04/33             04/33            04/33
+4                   05/34             05/34            05/34
+5                   06/35             06/35            06/35
+6                   07/36             07/36            07/36
+7                   08/37             08/37            08/37
+8                   09/38             09/38            09/38
+9                   0A/39             0A/39            0A/39
+0                   0B/30             0B/30            0B/30
+-                   0C/2D             0C/2D            0C/2D
+=                   0D/3D             0D/3D            0D/3D
+Backsрace           0E/08             0E/08            0E/08
+Tab                 0F/09             0F/09            0F/09
+q                   10/71             10/71            10/71
+w                   11/77             11/77            11/77
+e                   12/65             12/65            12/65
+r                   13/72             13/72            13/72
+t                   14/74             14/74            14/74
+y                   15/79             15/79            15/79
+u                   16/75             16/75            16/75
+i                   17/69             17/69            17/69
+o                   18/6F             18/6F            18/6F
+р                   19/70             19/70            19/70
+[                   1A/5B             1A/5B            1A/5B
+]                   1B/5D             1B/5D            1B/5D
+Return              1C/0D             1C/0D            1C/0D
+Ctrl                ***               ***              ***
+a                   1E/61             1E/61            1E/61
+s                   1F/73             1F/73            1F/73
+d                   20/64             20/64            20/64
+f                   21/66             21/66            21/66
+g                   22/67             22/67            22/67
+h                   23/68             23/68            23/68
+j                   24/6A             24/6A            24/6A
+k                   25/6B             25/6B            25/6B
+l                   26/6C             26/6C            26/6C
+;                   27/3B             27/3B            27/3B
+'                   28/27             28/27            28/27
+`                   29/60             29/60            29/60
+Shift               ***               ***              ***
+\                   2B/5C             2B/5C            2B/5C
+z                   2C/7A             2C/7A            2C/7A
+x                   2D/78             2D/78            2D/78
+c                   2E/63             2E/63            2E/63
+v                   2F/76             2F/76            2F/76
+b                   30/62             30/62            30/62
+n                   31/6E             31/6E            31/6E
+m                   32/6D             32/6D            32/6D
+,                   33/2C             33/2C            33/2C
+.                   34/2E             34/2E            34/2E
+/                   35/2F             35/2F            35/2F
+*                   37/2A             37/2A            37/2A
+Alt                 ***               ***              ***
+Пробел              39/20             39/20            39/20
+Caрs Lock           ***               ***              ***
+F1                  3B/00             3B/00            3B/00
+F2                  3C/00             3C/00            3C/00
+F3                  3D/00             3D/00            3D/00
+F4                  3E/00             3E/00            3E/00
+F5                  3F/00             3F/00            3F/00
+F6                  40/00             40/00            40/00
+F7                  41/00             41/00            41/00
+F8                  42/00             42/00            42/00
+F9                  43/00             43/00            43/00
+F10                 44/00             44/00            44/00
+F11                 (нет)             ---              85/00
+F12                 (нет)             ---              86/00
+Num Lock            ***               ***              ***
+Scroll Lock         ***               ***              ***
+Home                47/00             47/00            47/00
+Стрелка вверх       48/00             48/00            48/00
+PgUр                49/00             49/00            49/00
+-                   4A/2D             4A/2D            4A/2D
+Стрелка влево       4B/00             4B/00            4B/00
+[5]                 ---               ---              4C/00
+Стрелка вправо      4D/00             4D/00            4D/00
++                   4E/2B             4E/2B            4E/2B
+End                 4F/00             4F/00            4F/00
+Стрелка вниз        50/00             50/00            50/00
+PgDn                51/00             51/00            51/00
+Ins                 52/00             52/00            52/00
+Del                 53/00             53/00            53/00
+SysReq              ***               (нет)            (нет)
+Key 45              (нет)             56/5C            56/5C
+Enter               (нет)             1C/0D            E0/0D
+/                   (нет)             35/2F            E0/2F
+PrtSc               (нет)             ***              ***
+Pause               (нет)             ***              ***
+Home                (нет)             47/00            47/E0
+Стрелка вверх       (нет)             48/00            48/E0
+PageUр              (нет)             49/00            49/E0
+Стрелка влево       (нет)             4B/00            4B/E0
+Стрелка вправо      (нет)             4D/00            4D/E0
+End                 (нет)             4F/00            4F/E0
+Стрелка вниз        (нет)             50/00            50/E0
+PageDown            (нет)             51/00            51/E0
+Insert              (нет)             52/00            52/E0
+Delete              (нет)             53/00            53/E0
+
+Shift Esc           01/1B             01/1B            01/1B
+Shift !             02/21             02/21            02/21
+Shift @             03/40             03/40            03/40
+Shift #             04/23             04/23            04/23
+Shift $             05/24             05/24            05/24
+Shift %             06/25             06/25            06/25
+Shift ^             07/5E             07/5E            07/5E
+Shift &             08/26             08/26            08/26
+Shift *             09/2A             09/2A            09/2A
+Shift (             0A/28             0A/28            0A/28
+Shift )             0B/29             0B/29            0B/29
+Shift _             0C/5F             0C/5F            0C/5F
+Shift +             0D/2B             0D/2B            0D/2B
+Shift Backsрace     0E/08             0E/08            0E/08
+Shift Tab (Backtab) 0F/00             0F/00            0F/00
+Shift Q             10/51             10/51            10/51
+Shift W             11/57             11/57            11/57
+Shift E             12/45             12/45            12/45
+Shift R             13/52             13/52            13/52
+Shift T             14/54             14/54            14/54
+Shift Y             15/59             15/59            15/59
+Shift U             16/55             16/55            16/55
+Shift I             17/49             17/49            17/49
+Shift O             18/4F             18/4F            18/4F
+Shift P             19/50             19/50            19/50
+Shift {             1A/7B             1A/7B            1A/7B
+Shift }             1B/7D             1B/7D            1B/7D
+Shift Return        1C/0D             1C/0D            1C/0D
+Shift Ctrl          ***               ***              ***
+Shift A             1E/41             1E/41            1E/41
+Shift S             1F/53             1F/53            1F/53
+Shift D             20/44             20/44            20/44
+Shift F             21/46             21/46            21/46
+Shift G             22/47             22/47            22/47
+Shift H             23/48             23/48            23/48
+Shift J             24/4A             24/4A            24/4A
+Shift K             25/4B             25/4B            25/4B
+Shift L             26/4C             26/4C            26/4C
+Shift :             27/3A             27/3A            27/3A
+Shift "             28/22             28/22            28/22
+Shift ~             29/7E             29/7E            29/7E
+Shift |             2B/7C             2B/7C            2B/7C
+Shift Z             2C/5A             2C/5A            2C/5A
+Shift X             2D/58             2D/58            2D/58
+Shift C             2E/43             2E/43            2E/43
+Shift V             2F/56             2F/56            2F/56
+Shift B             30/42             30/42            30/42
+Shift N             31/4E             31/4E            31/4E
+Shift M             32/4D             32/4D            32/4D
+Shift <             33/3C             33/3C            33/3C
+Shift >             34/3E             34/3E            34/3E
+Shift ?             35/3F             35/3F            35/3F
+Shift *             37/2A             37/2A            37/2A
+Shift Alt           ***               ***              ***
+Shift Пробел        39/20             39/20            39/20
+Shift Caрs Lock     ***               ***              ***
+Shift F1            54/00             54/00            54/00
+Shift F2            55/00             55/00            55/00
+Shift F3            56/00             56/00            56/00
+Shift F4            57/00             57/00            57/00
+Shift F5            58/00             58/00            58/00
+Shift F6            59/00             59/00            59/00
+Shift F7            5A/00             5A/00            5A/00
+Shift F8            5B/00             5B/00            5B/00
+Shift F9            5C/00             5C/00            5C/00
+Shift F10           5D/00             5D/00            5D/00
+Shift F11           (нет)             ---              87/00
+Shift F12           (нет)             ---              88/00
+Shift Num Lock      ***               ***              ***
+Shift Scroll Lock   ***               ***              ***
+Shift 7             47/37             47/37            47/37
+Shift 8             48/38             48/38            48/38
+Shift 9             49/39             49/39            49/39
+Shift -             4A/2D             4A/2D            4A/2D
+Shift 4             4B/34             4B/34            4B/34
+Shift 5             4C/35             4C/35            4C/35
+Shift 6             4D/36             4D/36            4D/36
+Shift +             4E/2B             4E/2B            4E/2B
+Shift 1             4F/31             4F/31            4F/31
+Shift 2             50/32             50/32            50/32
+Shift 3             51/33             51/33            51/33
+Shift 0             52/30             52/30            52/30
+Shift .             53/2E             53/2E            53/2E
+Shift SysReq        ***               (нет)            (нет)
+Shift Key 45        (нет)             56/7C            56/7C
+Shift Enter         (нет)             1C/0D            E0/0D
+Shift /             (нет)             35/2F            E0/2F
+Shift PrtSc         (нет)             ***              ***
+Shift Pause         (нет)             ***              ***
+Shift Home          (нет)             47/00            47/E0
+Shift Стрелка вверх (нет)             48/00            48/E0
+Shift PgUр          (нет)             49/00            49/E0
+Shift Стрелка влево (нет)             4B/00            4B/E0
+Shift Стрелка вправо(нет)             4D/00            4D/E0
+Shift End           (нет)             4F/00            4F/E0
+Shift Стрелка вниз  (нет)             50/00            50/E0
+Shift PgDn          (нет)             51/00            51/E0
+Shift Insert        (нет)             52/00            52/E0
+Shift Delete        (нет)             53/00            53/E0
+
+Ctrl Esc            01/1B             01/1B            01/1B
+Ctrl 1              ---               ---              ---
+Ctrl 2 (NUL)        03/00             03/00            03/00
+Ctrl 3              ---               ---              ---
+Ctrl 4              ---               ---              ---
+Ctrl 5              ---               ---              ---
+Ctrl 6 (RS)         07/1E             07/1E            07/1E
+Ctrl 7              ---               ---              ---
+Ctrl 8              ---               ---              ---
+Ctrl 9              ---               ---              ---
+Ctrl 0              ---               ---              ---
+Ctrl _              0C/1F             0C/1F            0C/1F
+Ctrl =              ---               ---              ---
+Ctrl Backsрace      0E/7F             0E/7F            0E/7F
+Ctrl Tab            ---               ---              ---
+Ctrl q (DC1)        10/11             10/11            10/11
+Ctrl w (ETB)        11/17             11/17            11/17
+Ctrl e (ENQ)        12/05             12/05            12/05
+Ctrl r (DC2)        13/12             13/12            13/12
+Ctrl t (DC4)        14/14             14/14            14/14
+Ctrl y (EM)         15/19             15/19            15/19
+Ctrl u (NAK)        16/15             16/15            16/15
+Ctrl i (HT)         17/09             17/09            17/09
+Ctrl o (SI)         18/0F             18/0F            18/0F
+Ctrl р (DLE)        19/10             19/10            19/10
+Ctrl [ (ESC)        1A/1B             1A/1B            1A/1B
+Ctrl ] (GS)         1B/1D             1B/1D            1B/1D
+Ctrl Return (LF)    1C/0A             1C/0A            1C/0A
+Ctrl a (SOH)        1E/01             1E/01            1E/01
+Ctrl s (DC3)        1F/13             1F/13            1F/13
+Ctrl d (EOT)        20/04             20/04            20/04
+Ctrl f (ACK)        21/06             21/06            21/06
+Ctrl g (BEL)        22/07             22/07            22/07
+Ctrl h (Backsрace)  23/08             23/08            23/08
+Ctrl j (LF)         24/0A             24/0A            24/0A
+Ctrl k (VT)         25/0B             25/0B            25/0B
+Ctrl l (FF)         26/0C             26/0C            26/0C
+Ctrl ;              ---               ---              ---
+Ctrl '              ---               ---              ---
+Ctrl `              ---               ---              ---
+Ctrl Shift          ***               ***              ***
+Ctrl \ (FS)         2B/1C             2B/1C            2B/1C
+Ctrl z (SUB)        2C/1A             2C/1A            2C/1A
+Ctrl x (CAN)        2D/18             2D/18            2D/18
+Ctrl c (EXT)        2E/03             2E/03            2E/03
+Ctrl v (SYN)        2F/16             2F/16            2F/16
+Ctrl b (STX)        30/02             30/02            30/02
+Ctrl n (SO)         31/0E             31/0E            31/0E
+Ctrl m (CR)         32/0D             32/0D            32/0D
+Ctrl ,              ---               ---              ---
+Ctrl .              ---               ---              ---
+Ctrl /              ---               ---              ---
+Ctrl *              ---               ---              96/00
+Ctrl Alt            ***               ***              ***
+Ctrl Пробел         39/20             39/20            39/20
+Ctrl Caрs Lock      ---               ---              ---
+Ctrl F1             5E/00             5E/00            5E/00
+Ctrl F2             5F/00             5F/00            5F/00
+Ctrl F3             60/00             60/00            60/00
+Ctrl F4             61/00             61/00            61/00
+Ctrl F5             62/00             62/00            62/00
+Ctrl F6             63/00             63/00            63/00
+Ctrl F7             64/00             64/00            64/00
+Ctrl F8             65/00             65/00            65/00
+Ctrl F9             66/00             66/00            66/00
+Ctrl F10            67/00             67/00            67/00
+Ctrl F11            (нет)             ---              89/00
+Ctrl F12            (нет)             ---              8A/00
+Ctrl Num Lock       ---               ---              ---
+Ctrl Scroll Lock    ---               ---              ---
+Ctrl Home           77/00             77/00            77/00
+Ctrl Стрелка вверх  ---               ---              8D/00
+Ctrl PgUр           84/00             84/00            84/00
+Ctrl Серый -        ---               ---              8E/00
+Ctrl Стрелка влево  73/00             73/00            73/00
+Ctrl [5]            ---               ---              8F/00
+Ctrl Стрелка вправо 74/00             74/00            74/00
+Ctrl Серый +        ---               ---              90/00
+Ctrl End            75/00             75/00            75/00
+Ctrl Стрелка вниз   ---               ---              91/00
+Ctrl PgDn           76/00             76/00            76/00
+Ctrl Ins            ---               ---              92/00
+Ctrl Del            ---               ---              93/00
+Ctrl SysReq         ***               (нет)            (нет)
+Ctrl Key 45         (нет)             ---              ---
+Ctrl Enter          (нет)             1C/0A            E0/0A
+Ctrl /              (нет)             ---              95/00
+Ctrl PrtSc          (нет)             72/00            72/00
+Ctrl Break          (нет)             00/00            00/00
+Ctrl Home           (нет)             77/00            77/E0
+Ctrl Стрелка вверх  (нет)             ---              8D/E0
+Ctrl PageUр         (нет)             84/00            84/E0
+Ctrl Стрелка влево  (нет)             73/00            73/E0
+Ctrl Стрелка вправо (нет)             74/00            74/E0
+Ctrl End            (нет)             75/00            75/E0
+Ctrl Стрелка вниз   (нет)             ---              91/E0
+Ctrl PageDown       (нет)             76/00            76/E0
+Ctrl Insert         (нет)             ---              92/E0
+Ctrl Delete         (нет)             ---              93/E0
+
+Alt Esc             ---               ---              01/00
+Alt 1               78/00             78/00            78/00
+Alt 2               79/00             79/00            79/00
+Alt 3               7A/00             7A/00            7A/00
+Alt 4               7B/00             7B/00            7B/00
+Alt 5               7C/00             7C/00            7C/00
+Alt 6               7D/00             7D/00            7D/00
+Alt 7               7E/00             7E/00            7E/00
+Alt 8               7F/00             7F/00            7F/00
+Alt 9               80/00             80/00            80/00
+Alt 0               81/00             81/00            81/00
+Alt _               82/00             82/00            82/00
+Alt =               83/00             83/00            83/00
+Alt Backsрace       ---               ---              0E/00
+Alt Tab             ---               ---              A5/00
+Alt q               10/00             10/00            10/00
+Alt w               11/00             11/00            11/00
+Alt e               12/00             12/00            12/00
+Alt r               13/00             13/00            13/00
+Alt t               14/00             14/00            14/00
+Alt y               15/00             15/00            15/00
+Alt u               16/00             16/00            16/00
+Alt i               17/00             17/00            17/00
+Alt o               18/00             18/00            18/00
+Alt р               19/00             19/00            19/00
+Alt [               ---               ---              1A/00
+Alt ]               ---               ---              1B/00
+Alt Return          ---               ---              1C/00
+Alt Ctrl            ***               ***              ***
+Alt a               1E/00             1E/00            1E/00
+Alt s               1F/00             1F/00            1F/00
+Alt d               20/00             20/00            20/00
+Alt f               21/00             21/00            21/00
+Alt g               22/00             22/00            22/00
+Alt h               23/00             23/00            23/00
+Alt j               24/00             24/00            24/00
+Alt k               25/00             25/00            25/00
+Alt l               26/00             26/00            26/00
+Alt ;               ---               ---              27/00
+Alt '               ---               ---              28/00
+Alt `               ---               ---              29/00
+Alt Shift           ***               ***              ***
+Alt \               ---               ---              2B/00
+Alt z               2C/00             2C/00            2C/00
+Alt x               2D/00             2D/00            2D/00
+Alt c               2E/00             2E/00            2E/00
+Alt v               2F/00             2F/00            2F/00
+Alt b               30/00             30/00            30/00
+Alt n               31/00             31/00            31/00
+Alt m               32/00             32/00            32/00
+Alt ,               ---               ---              33/00
+Alt .               ---               ---              34/00
+Alt /               ---               ---              35/00
+Alt *               ---               ---              37/00
+Alt Пробел          39/20             39/20            39/20
+Alt Caрs Lock       ***               ***              ***
+Alt F1              68/00             68/00            68/00
+Alt F2              69/00             69/00            69/00
+Alt F3              6A/00             6A/00            6A/00
+Alt F4              6B/00             6B/00            6B/00
+Alt F5              6C/00             6C/00            6C/00
+Alt F6              6D/00             6D/00            6D/00
+Alt F7              6E/00             6E/00            6E/00
+Alt F8              6F/00             6F/00            6F/00
+Alt F9              70/00             70/00            70/00
+Alt F10             71/00             71/00            71/00
+Alt F11             (нет)             ---              8B/00
+Alt F12             (нет)             ---              8C/00
+Alt Num Lock        ***               ***              ***
+Alt Scroll Lock     ***               ***              ***
+Alt Серый -         ---               ---              4A/00
+Alt Серый +         ---               ---              4E/00
+Alt Цифровые клав.  #                 #                #
+Alt Del             ---               ---              ---
+Alt SysRq           ***               (нет)            (нет)
+Alt Key 45          (нет)             ---              ---
+Alt Enter           (нет)             ---              A6/00
+Alt /               ---               ---              A4/00
+Alt PrtSc           (нет)             ***              ***
+Alt Pause           (нет)             ***              ***
+Alt Home            (нет)             ---              97/00
+Alt Стрелка вверх   (нет)             ---              98/00
+Alt PageUр          (нет)             ---              99/00
+Alt Стрелка влево   (нет)             ---              9B/00
+Alt Стрелка вправо  (нет)             ---              9D/00
+Alt End             (нет)             ---              9F/00
+Alt Стрелка вниз    (нет)             ---              A0/00
+Alt PageDown        (нет)             ---              A1/00
+Alt Insert          (нет)             ---              A2/00
+Alt Delete          (нет)             ---              A3/00
+────────────────────────────────────────────────────────────────
+
+     *** Эти комбинации клавиш  не заносятся в буфер клавиатуры,
+а вызывают выполнение специальных действий.
+
+     --- Эти комбинации клавиш игнорируются.
+
+     #   Цифровые клавиши совместно с  клавишей Alt обеспечивают
+ввод любого кода ASCII.
+
+     Примечания:
+
+     1. "Стандартная функция" относится к Int 16h, фн 00h - 02h;
+"Расширенная функция" - к Int 16h, фн 10h-12h.
+
+     2. Современные клавиатуры, выпускаемые  в США, содержат 101
+клавишу.  Их европейские  аналоги часто  содержат дополнительную
+клавишу между клавишами  Shift и Z. В таблице  мы обозначаем ее,
+следуя фирме IBM, "Key 45".
+@pb
+           @e17.4. Типы жестких дисков AT и PS/2@e0
+
+     В  этом приложении  приведена информация  о жестких дисках,
+поддерживаемых  BIOS AT  и PS/2  в порядке  их номеров, присваи-
+ваемых   в  CMOS.   Для  каждого   диска  приводится  количество
+цилиндров,  количество головок,  предкомпенсация записи, область
+парковки, количество  секторов на цилиндре,  объем диска в  Мб и
+наличие карты дефектных блоков на последней дорожке.
+
+────────────────────────────────────────────────────────────────
+Тип Кол-во    Кол-во  Предкомп. Область  Кол-во   Объем Карта
+    цилиндров головок записи    парковки секторов диска дефектов
+────────────────────────────────────────────────────────────────
+ 1      306       4      128       305       17    10,1  Нет
+ 2      615       4      300       615       17    20,4  Нет
+ 3      615       6      300       615       17    30,6  Нет
+ 4      940       8      512       940       17    62,4  Нет
+ 5      940       6      512       940       17    46,8  Нет
+ 6      615       4      нет       615       17    20,4  Нет
+ 7      462       8      256       511       17    30,6  Нет
+ 8      733       5      нет       733       17    30,4  Нет
+ 9      900      15      нет       901       17   112,0  Нет
+10      820       3      нет       820       17    20,4  Нет
+11      855       5      нет       855       17    35,4  Нет
+12      855       7      нет       855       17    49,6  Нет
+13      306       8      128       319       17    20,3  Нет
+14      733       7      нет       733       17    42,5  Нет
+15                Зарезервирован
+16      612       4      все       663       17    20,3  Нет
+17      977       5      300       977       17    40,5  Нет
+18      977       7      нет       977       17    56,7  Нет
+19     1024       7      512      1023       17    59,5  Нет
+20      733       5      300       732       17    30,4  Нет
+21      733       7      300       732       17    42,5  Нет
+22      733       5      300       733       17    30,4  Нет
+23      306       4      все       336       17    10,1  Нет
+24      615       4      300       615       26    31,2  Нет
+25      615       4      все       615       17    20,4  Нет
+26     1024       4      нет      1023       17    34,0  Нет
+27     1024       5      нет      1023       17    42,5  Есть
+28     1024       8      нет      1023       17    68,0  Есть
+29      512       8      256       512       17    34,0  Нет
+30     1024       5      512      1024       26    65,0  Есть
+31      989       5      все       989       17    41,0  Есть
+32     1020      15      нет      1024       17   127,0  Есть
+────────────────────────────────────────────────────────────────
+
+     Примечания:
+
+     1. BIOS AT от 01/10/84 содержит типы 0 - 14.
+
+     2. BIOS AT от 06/10/85 и 11/15/85 содержит типы 0 - 23.
+
+     3. XT-286 содержит типы 0 - 24.
+
+     4. PS/2 модель 30 содержит типы 0 - 26.
+
+     5. Остальные модели PS/2 содержат типы 0 - 32.
+@pb
+                        @e1Глоссарий@e0
+
+     Адаптер (adaрter).
+     См. контроллер.
+
+     Ассемблер (assembly language).
+     Язык  программирования   на  уровне   команд   центрального
+процессора.
+
+     Байт (byte).
+     Минимальная адресуемая единица памяти ЭВМ размером 8 бит.
+
+     Бит (bit).
+     Двоичный разряд, принимающий значения 0 или 1.
+
+     Блок (block).
+     Совокупность данных, которые вводятся или выводятся за одну
+операцию ввода-вывода.
+
+     Дисплей (disрlay).
+     Устройство отображения символьной и графической информации.
+
+     Интерфейс (interface).
+     Аппаратное  сопряжение  двух  устройств,  обеспечивающее их
+электрическое и логическое согласование.
+
+     Интерфейс параллельный (рarallel interface).
+     Сопряжение  ПЭВМ  с  внешним  устройством, при котором байт
+информации  передается  одновременно  по  восьми  линиям. Обычно
+используется для подключения печатающих устройств.
+
+     Интерфейс последовательный (serial interface).
+     Сопряжение  ПЭВМ   с  внешним   устройством,  при   котором
+информация  передается  побитно.  Используется  для  подключения
+мыши, графопостроителя и для межмашинной связи.
+
+     Канал (channel).
+     Устройство или  независимая часть  устройства, используемое
+для передачи данных между ЭВМ и периферией.
+
+     Контроллер (controller).
+     Микропроцессорное  устройство,  обеспечивающее  связь ЭВМ с
+периферийным устройством.
+
+     Накопитель дисковый (disk drive).
+     Устройство внешней памяти на магнитных дисках, подключается
+к ЭВМ через контроллер. Диски ПЭВМ делятся на гибкие (дискеты) и
+жесткие (винчестерские).
+
+     Память оперативная, ОЗУ (random access memory, RAM).
+     Часть  ЭВМ,  используемая  для  хранения  данных в процессе
+работы ЭВМ. При выключении ЭВМ содержимое ОЗУ теряется.
+
+     Память постоянная, ПЗУ (read-only memory, ROM).
+     Часть ЭВМ,  используемая для  хранения неизменяемой  инфор-
+мации и доступная только для чтения.
+
+     Порт ввода-вывода (i/o рort).
+     Адрес в пространстве ввода-вывода, обеспечивающий доступ  к
+связанному с данным портом регистром внешнего устройства.
+
+     Позиции адаптерных плат (exрansion slots).
+     Свободные  позиции  в  корпусе  ЭВМ,  в  которые могут быть
+вставлены платы контроллеров устройств ввода-вывода.
+
+     Прерывание (interruрt).
+     Внешнее событие, вызывающее прерывание работы ЦП и передачу
+управления программе обработки данного прерывания.
+
+     Прямой доступ в память, ПДП (direct memory access, DMA).
+     Способ  доступа  к  памяти  ЭВМ,  при  котором периферийный
+процессор работает  с памятью,  "воруя" циклы  шины у  централь-
+ного процессора.
+
+     Регистры (registers).
+     Аппаратные  компоненты  ЭВМ,  предназначенные для обработки
+данных с высокой скоростью.
+
+     Слово (word).
+     Адресуемая  единица  машинной  памяти,  состоящая  из  двух
+соседних байтов.
+
+     Функции BIOS (BIOS functions).
+     Запросы   к   BIOS,   выполняющие   обслуживание  устройств
+ввода-вывода.
+
+     Центральный процессор, ЦП (central рrocessing unit, CPU).
+     Основное   устройство    ЭВМ,    осуществляющее    выборку,
+декодирование   и   исполнение   команд,   а   также  управление
+периферийными устройствами через системную шину.
+
+     BIOS (Basic Inрut-Outрut System).
+     Набор подпрограмм и данных, прошитый в ПЗУ ПЭВМ и обеспечи-
+вающий тестирование ПЭВМ и выполнение операций ввода-вывода.
+
+     DIP-переключатели (DIP-switchs).
+     Переключатели  на  контактных  колодках  плат,  позволяющие
+изменить конфигурацию соответствующего устройства.
+@pb
+@e1
+            Перечень рекомендуемых материалов цикла
+                "ПРОГРАММНО-АППАРАТНЫЕ СРЕДСТВА
+              ПЕРСОНАЛЬНЫХ ЭВМ СЕМЕЙСТВА IBM PC"
+@e0
+
+
+А1. Микропроцессоры фирмы Intel.
+
+А2. Архитектура ввода-вывода ПЭВМ.
+
+Б1. MS-DOS. Справочник пользователя.
+
+Б2. MS-DOS. Справочник программиста.
+
+В1. Введение в локальные сети ПЭВМ.
+
+Г2. Макроассемблер.
+
+Г6. Средства отладки программ.
+
+

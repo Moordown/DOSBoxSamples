@@ -1,0 +1,1142 @@
+This is nasm.info, produced by makeinfo version 4.3 from nasmdoc.texi.
+
+INFO-DIR-SECTION Programming
+START-INFO-DIR-ENTRY
+* NASM: (nasm).                The Netwide Assembler for x86.
+END-INFO-DIR-ENTRY
+
+   This file documents NASM, the Netwide Assembler: an assembler
+targetting the Intel x86 series of processors, with portable source.
+
+   Copyright 2003 The NASM Development Team
+
+   All rights reserved. This document is redistributable under the
+licence given in the file "COPYING" distributed in the NASM archive.
+
+
+File: nasm.info,  Node: Section 8.2,  Next: Section 8.2.1,  Prev: Section 8.1.4,  Up: Chapter 8
+
+8.2. Writing NetBSD/FreeBSD/OpenBSD and Linux/ELF Shared Libraries
+==================================================================
+
+   `ELF' replaced the older `a.out' object file format under Linux
+because it contains support for position-independent code (PIC), which
+makes writing shared libraries much easier. NASM supports the `ELF'
+position-independent code features, so you can write Linux `ELF' shared
+libraries in NASM.
+
+   NetBSD, and its close cousins FreeBSD and OpenBSD, take a different
+approach by hacking PIC support into the `a.out' format. NASM supports
+this as the `aoutb' output format, so you can write BSD shared
+libraries in NASM too.
+
+   The operating system loads a PIC shared library by memory-mapping the
+library file at an arbitrarily chosen point in the address space of the
+running process. The contents of the library's code section must
+therefore not depend on where it is loaded in memory.
+
+   Therefore, you cannot get at your variables by writing code like
+this:
+
+             mov     eax,[myvar]             ; WRONG
+
+   Instead, the linker provides an area of memory called the _global
+offset table_, or GOT; the GOT is situated at a constant distance from
+your library's code, so if you can find out where your library is
+loaded (which is typically done using a `CALL' and `POP' combination),
+you can obtain the address of the GOT, and you can then load the
+addresses of your variables out of linker-generated entries in the GOT.
+
+   The _data_ section of a PIC shared library does not have these
+restrictions: since the data section is writable, it has to be copied
+into memory anyway rather than just paged in from the library file, so
+as long as it's being copied it can be relocated too. So you can put
+ordinary types of relocation in the data section without too much worry
+(but see *Note Section 8.2.4:: for a caveat).
+
+* Menu:
+
+* Section 8.2.1:: Obtaining the Address of the GOT
+* Section 8.2.2:: Finding Your Local Data Items
+* Section 8.2.3:: Finding External and Common Data Items
+* Section 8.2.4:: Exporting Symbols to the Library User
+* Section 8.2.5:: Calling Procedures Outside the Library
+* Section 8.2.6:: Generating the Library File
+
+
+File: nasm.info,  Node: Section 8.2.1,  Next: Section 8.2.2,  Prev: Section 8.2,  Up: Section 8.2
+
+8.2.1. Obtaining the Address of the GOT
+---------------------------------------
+
+   Each code module in your shared library should define the GOT as an
+external symbol:
+
+     extern  _GLOBAL_OFFSET_TABLE_   ; in ELF
+     extern  __GLOBAL_OFFSET_TABLE_  ; in BSD a.out
+
+   At the beginning of any function in your shared library which plans
+to access your data or BSS sections, you must first calculate the
+address of the GOT. This is typically done by writing the function in
+this form:
+
+     func:   push    ebp
+             mov     ebp,esp
+             push    ebx
+             call    .get_GOT
+     .get_GOT:
+             pop     ebx
+             add     ebx,_GLOBAL_OFFSET_TABLE_+$$-.get_GOT wrt ..gotpc
+     
+             ; the function body comes here
+     
+             mov     ebx,[ebp-4]
+             mov     esp,ebp
+             pop     ebp
+             ret
+
+   (For BSD, again, the symbol `_GLOBAL_OFFSET_TABLE' requires a second
+leading underscore.)
+
+   The first two lines of this function are simply the standard C
+prologue to set up a stack frame, and the last three lines are standard
+C function epilogue. The third line, and the fourth to last line, save
+and restore the `EBX' register, because PIC shared libraries use this
+register to store the address of the GOT.
+
+   The interesting bit is the `CALL' instruction and the following two
+lines. The `CALL' and `POP' combination obtains the address of the
+label `.get_GOT', without having to know in advance where the program
+was loaded (since the `CALL' instruction is encoded relative to the
+current position). The `ADD' instruction makes use of one of the
+special PIC relocation types: GOTPC relocation. With the `WRT ..gotpc'
+qualifier specified, the symbol referenced (here
+`_GLOBAL_OFFSET_TABLE_', the special symbol assigned to the GOT) is
+given as an offset from the beginning of the section. (Actually, `ELF'
+encodes it as the offset from the operand field of the `ADD'
+instruction, but NASM simplifies this deliberately, so you do things the
+same way for both `ELF' and `BSD'.) So the instruction then _adds_ the
+beginning of the section, to get the real address of the GOT, and
+subtracts the value of `.get_GOT' which it knows is in `EBX'.
+Therefore, by the time that instruction has finished, `EBX' contains
+the address of the GOT.
+
+   If you didn't follow that, don't worry: it's never necessary to
+obtain the address of the GOT by any other means, so you can put those
+three instructions into a macro and safely ignore them:
+
+     %macro  get_GOT 0
+     
+             call    %%getgot
+       %%getgot:
+             pop     ebx
+             add     ebx,_GLOBAL_OFFSET_TABLE_+$$-%%getgot wrt ..gotpc
+     
+     %endmacro
+
+
+File: nasm.info,  Node: Section 8.2.2,  Next: Section 8.2.3,  Prev: Section 8.2.1,  Up: Section 8.2
+
+8.2.2. Finding Your Local Data Items
+------------------------------------
+
+   Having got the GOT, you can then use it to obtain the addresses of
+your data items. Most variables will reside in the sections you have
+declared; they can be accessed using the `..gotoff' special `WRT' type.
+The way this works is like this:
+
+             lea     eax,[ebx+myvar wrt ..gotoff]
+
+   The expression `myvar wrt ..gotoff' is calculated, when the shared
+library is linked, to be the offset to the local variable `myvar' from
+the beginning of the GOT. Therefore, adding it to `EBX' as above will
+place the real address of `myvar' in `EAX'.
+
+   If you declare variables as `GLOBAL' without specifying a size for
+them, they are shared between code modules in the library, but do not
+get exported from the library to the program that loaded it. They will
+still be in your ordinary data and BSS sections, so you can access them
+in the same way as local variables, using the above `..gotoff'
+mechanism.
+
+   Note that due to a peculiarity of the way BSD `a.out' format handles
+this relocation type, there must be at least one non-local symbol in the
+same section as the address you're trying to access.
+
+
+File: nasm.info,  Node: Section 8.2.3,  Next: Section 8.2.4,  Prev: Section 8.2.2,  Up: Section 8.2
+
+8.2.3. Finding External and Common Data Items
+---------------------------------------------
+
+   If your library needs to get at an external variable (external to the
+_library_, not just to one of the modules within it), you must use the
+`..got' type to get at it. The `..got' type, instead of giving you the
+offset from the GOT base to the variable, gives you the offset from the
+GOT base to a GOT _entry_ containing the address of the variable.  The
+linker will set up this GOT entry when it builds the library, and the
+dynamic linker will place the correct address in it at load time. So to
+obtain the address of an external variable `extvar' in `EAX', you would
+code
+
+             mov     eax,[ebx+extvar wrt ..got]
+
+   This loads the address of `extvar' out of an entry in the GOT. The
+linker, when it builds the shared library, collects together every
+relocation of type `..got', and builds the GOT so as to ensure it has
+every necessary entry present.
+
+   Common variables must also be accessed in this way.
+
+
+File: nasm.info,  Node: Section 8.2.4,  Next: Section 8.2.5,  Prev: Section 8.2.3,  Up: Section 8.2
+
+8.2.4. Exporting Symbols to the Library User
+--------------------------------------------
+
+   If you want to export symbols to the user of the library, you have to
+declare whether they are functions or data, and if they are data, you
+have to give the size of the data item. This is because the dynamic
+linker has to build procedure linkage table entries for any exported
+functions, and also moves exported data items away from the library's
+data section in which they were declared.
+
+   So to export a function to users of the library, you must use
+
+     global  func:function           ; declare it as a function
+     
+     func:   push    ebp
+     
+             ; etc.
+
+   And to export a data item such as an array, you would have to code
+
+     global  array:data array.end-array      ; give the size too
+     
+     array:  resd    128
+     .end:
+
+   Be careful: If you export a variable to the library user, by
+declaring it as `GLOBAL' and supplying a size, the variable will end up
+living in the data section of the main program, rather than in your
+library's data section, where you declared it. So you will have to
+access your own global variable with the `..got' mechanism rather than
+`..gotoff', as if it were external (which, effectively, it has become).
+
+   Equally, if you need to store the address of an exported global in
+one of your data sections, you can't do it by means of the standard
+sort of code:
+
+     dataptr:        dd      global_data_item        ; WRONG
+
+   NASM will interpret this code as an ordinary relocation, in which
+`global_data_item' is merely an offset from the beginning of the
+`.data' section (or whatever); so this reference will end up pointing
+at your data section instead of at the exported global which resides
+elsewhere.
+
+   Instead of the above code, then, you must write
+
+     dataptr:        dd      global_data_item wrt ..sym
+
+   which makes use of the special `WRT' type `..sym' to instruct NASM
+to search the symbol table for a particular symbol at that address,
+rather than just relocating by section base.
+
+   Either method will work for functions: referring to one of your
+functions by means of
+
+     funcptr:        dd      my_function
+
+   will give the user the address of the code you wrote, whereas
+
+     funcptr:        dd      my_function wrt .sym
+
+   will give the address of the procedure linkage table for the
+function, which is where the calling program will _believe_ the
+function lives.  Either address is a valid way to call the function.
+
+
+File: nasm.info,  Node: Section 8.2.5,  Next: Section 8.2.6,  Prev: Section 8.2.4,  Up: Section 8.2
+
+8.2.5. Calling Procedures Outside the Library
+---------------------------------------------
+
+   Calling procedures outside your shared library has to be done by
+means of a _procedure linkage table_, or PLT. The PLT is placed at a
+known offset from where the library is loaded, so the library code can
+make calls to the PLT in a position-independent way. Within the PLT
+there is code to jump to offsets contained in the GOT, so function
+calls to other shared libraries or to routines in the main program can
+be transparently passed off to their real destinations.
+
+   To call an external routine, you must use another special PIC
+relocation type, `WRT ..plt'. This is much easier than the GOT-based
+ones: you simply replace calls such as `CALL printf' with the
+PLT-relative version `CALL printf WRT ..plt'.
+
+
+File: nasm.info,  Node: Section 8.2.6,  Next: Chapter 9,  Prev: Section 8.2.5,  Up: Section 8.2
+
+8.2.6. Generating the Library File
+----------------------------------
+
+   Having written some code modules and assembled them to `.o' files,
+you then generate your shared library with a command such as
+
+     ld -shared -o library.so module1.o module2.o       # for ELF
+     ld -Bshareable -o library.so module1.o module2.o   # for BSD
+
+   For ELF, if your shared library is going to reside in system
+directories such as `/usr/lib' or `/lib', it is usually worth using the
+`-soname' flag to the linker, to store the final library file name,
+with a version number, into the library:
+
+     ld -shared -soname library.so.1 -o library.so.1.2 *.o
+
+   You would then copy `library.so.1.2' into the library directory, and
+create `library.so.1' as a symbolic link to it.
+
+
+File: nasm.info,  Node: Chapter 9,  Next: Section 9.1,  Prev: Section 8.2.6,  Up: Top
+
+Chapter 9: Mixing 16 and 32 Bit Code
+************************************
+
+   This chapter tries to cover some of the issues, largely related to
+unusual forms of addressing and jump instructions, encountered when
+writing operating system code such as protected-mode initialisation
+routines, which require code that operates in mixed segment sizes, such
+as code in a 16-bit segment trying to modify data in a 32-bit one, or
+jumps between different- size segments.
+
+* Menu:
+
+* Section 9.1:: Mixed-Size Jumps
+* Section 9.2:: Addressing Between Different-Size Segments
+* Section 9.3:: Other Mixed-Size Instructions
+
+
+File: nasm.info,  Node: Section 9.1,  Next: Section 9.2,  Prev: Chapter 9,  Up: Chapter 9
+
+9.1. Mixed-Size Jumps
+=====================
+
+   The most common form of mixed-size instruction is the one used when
+writing a 32-bit OS: having done your setup in 16-bit mode, such as
+loading the kernel, you then have to boot it by switching into
+protected mode and jumping to the 32-bit kernel start address. In a
+fully 32-bit OS, this tends to be the _only_ mixed-size instruction you
+need, since everything before it can be done in pure 16-bit code, and
+everything after it can be pure 32-bit.
+
+   This jump must specify a 48-bit far address, since the target
+segment is a 32-bit one. However, it must be assembled in a 16-bit
+segment, so just coding, for example,
+
+             jmp     0x1234:0x56789ABC       ; wrong!
+
+   will not work, since the offset part of the address will be
+truncated to `0x9ABC' and the jump will be an ordinary 16-bit far one.
+
+   The Linux kernel setup code gets round the inability of `as86' to
+generate the required instruction by coding it manually, using `DB'
+instructions. NASM can go one better than that, by actually generating
+the right instruction itself. Here's how to do it right:
+
+             jmp     dword 0x1234:0x56789ABC         ; right
+
+   The `DWORD' prefix (strictly speaking, it should come _after_ the
+colon, since it is declaring the _offset_ field to be a doubleword; but
+NASM will accept either form, since both are unambiguous) forces the
+offset part to be treated as far, in the assumption that you are
+deliberately writing a jump from a 16-bit segment to a 32-bit one.
+
+   You can do the reverse operation, jumping from a 32-bit segment to a
+16-bit one, by means of the `WORD' prefix:
+
+             jmp     word 0x8765:0x4321      ; 32 to 16 bit
+
+   If the `WORD' prefix is specified in 16-bit mode, or the `DWORD'
+prefix in 32-bit mode, they will be ignored, since each is explicitly
+forcing NASM into a mode it was in anyway.
+
+
+File: nasm.info,  Node: Section 9.2,  Next: Section 9.3,  Prev: Section 9.1,  Up: Chapter 9
+
+9.2. Addressing Between Different-Size Segments
+===============================================
+
+   If your OS is mixed 16 and 32-bit, or if you are writing a DOS
+extender, you are likely to have to deal with some 16-bit segments and
+some 32-bit ones. At some point, you will probably end up writing code
+in a 16-bit segment which has to access data in a 32-bit segment, or
+vice versa.
+
+   If the data you are trying to access in a 32-bit segment lies within
+the first 64K of the segment, you may be able to get away with using an
+ordinary 16-bit addressing operation for the purpose; but sooner or
+later, you will want to do 32-bit addressing from 16-bit mode.
+
+   The easiest way to do this is to make sure you use a register for the
+address, since any effective address containing a 32-bit register is
+forced to be a 32-bit address. So you can do
+
+             mov     eax,offset_into_32_bit_segment_specified_by_fs
+             mov     dword [fs:eax],0x11223344
+
+   This is fine, but slightly cumbersome (since it wastes an
+instruction and a register) if you already know the precise offset you
+are aiming at. The x86 architecture does allow 32-bit effective
+addresses to specify nothing but a 4-byte offset, so why shouldn't NASM
+be able to generate the best instruction for the purpose?
+
+   It can. As in *Note Section 9.1::, you need only prefix the address
+with the `DWORD' keyword, and it will be forced to be a 32-bit address:
+
+             mov     dword [fs:dword my_offset],0x11223344
+
+   Also as in *Note Section 9.1::, NASM is not fussy about whether the
+`DWORD' prefix comes before or after the segment override, so arguably
+a nicer-looking way to code the above instruction is
+
+             mov     dword [dword fs:my_offset],0x11223344
+
+   Don't confuse the `DWORD' prefix _outside_ the square brackets,
+which controls the size of the data stored at the address, with the one
+`inside' the square brackets which controls the length of the address
+itself. The two can quite easily be different:
+
+             mov     word [dword 0x12345678],0x9ABC
+
+   This moves 16 bits of data to an address specified by a 32-bit
+offset.
+
+   You can also specify `WORD' or `DWORD' prefixes along with the `FAR'
+prefix to indirect far jumps or calls. For example:
+
+             call    dword far [fs:word 0x4321]
+
+   This instruction contains an address specified by a 16-bit offset;
+it loads a 48-bit far pointer from that (16-bit segment and 32-bit
+offset), and calls that address.
+
+
+File: nasm.info,  Node: Section 9.3,  Next: Chapter 10,  Prev: Section 9.2,  Up: Chapter 9
+
+9.3. Other Mixed-Size Instructions
+==================================
+
+   The other way you might want to access data might be using the string
+instructions (`LODSx', `STOSx' and so on) or the `XLATB' instruction.
+These instructions, since they take no parameters, might seem to have
+no easy way to make them perform 32-bit addressing when assembled in a
+16-bit segment.
+
+   This is the purpose of NASM's `a16' and `a32' prefixes. If you are
+coding `LODSB' in a 16-bit segment but it is supposed to be accessing a
+string in a 32-bit segment, you should load the desired address into
+`ESI' and then code
+
+             a32     lodsb
+
+   The prefix forces the addressing size to 32 bits, meaning that
+`LODSB' loads from `[DS:ESI]' instead of `[DS:SI]'. To access a string
+in a 16-bit segment when coding in a 32-bit one, the corresponding `a16'
+prefix can be used.
+
+   The `a16' and `a32' prefixes can be applied to any instruction in
+NASM's instruction table, but most of them can generate all the useful
+forms without them. The prefixes are necessary only for instructions
+with implicit addressing: `CMPSx' (*Note Section B.4.27::), `SCASx'
+(*Note Section B.4.286::), `LODSx' (*Note Section B.4.141::), `STOSx'
+(*Note Section B.4.303::), `MOVSx' (*Note Section B.4.178::), `INSx'
+(*Note Section B.4.121::), `OUTSx' (*Note Section B.4.195::), and
+`XLATB' (*Note Section B.4.334::). Also, the various push and pop
+instructions (`PUSHA' and `POPF' as well as the more usual `PUSH' and
+`POP') can accept `a16' or `a32' prefixes to force a particular one of
+`SP' or `ESP' to be used as a stack pointer, in case the stack segment
+in use is a different size from the code segment.
+
+   `PUSH' and `POP', when applied to segment registers in 32-bit mode,
+also have the slightly odd behaviour that they push and pop 4 bytes at
+a time, of which the top two are ignored and the bottom two give the
+value of the segment register being manipulated. To force the 16-bit
+behaviour of segment-register push and pop instructions, you can use the
+operand-size prefix `o16':
+
+             o16 push    ss
+             o16 push    ds
+
+   This code saves a doubleword of stack space by fitting two segment
+registers into the space which would normally be consumed by pushing
+one.
+
+   (You can also use the `o32' prefix to force the 32-bit behaviour when
+in 16-bit mode, but this seems less useful.)
+
+
+File: nasm.info,  Node: Chapter 10,  Next: Section 10.1,  Prev: Section 9.3,  Up: Top
+
+Chapter 10: Troubleshooting
+***************************
+
+   This chapter describes some of the common problems that users have
+been known to encounter with NASM, and answers them. It also gives
+instructions for reporting bugs in NASM if you find a difficulty that
+isn't listed here.
+
+* Menu:
+
+* Section 10.1:: Common Problems
+* Section 10.2:: Bugs
+
+
+File: nasm.info,  Node: Section 10.1,  Next: Section 10.1.1,  Prev: Chapter 10,  Up: Chapter 10
+
+10.1. Common Problems
+=====================
+
+* Menu:
+
+* Section 10.1.1:: NASM Generates Inefficient Code
+* Section 10.1.2:: My Jumps are Out of Range
+* Section 10.1.3:: `ORG' Doesn't Work
+* Section 10.1.4:: `TIMES' Doesn't Work
+
+
+File: nasm.info,  Node: Section 10.1.1,  Next: Section 10.1.2,  Prev: Section 10.1,  Up: Section 10.1
+
+10.1.1. NASM Generates Inefficient Code
+---------------------------------------
+
+   We sometimes get `bug' reports about NASM generating inefficient, or
+even `wrong', code on instructions such as `ADD ESP,8'. This is a
+deliberate design feature, connected to predictability of output: NASM,
+on seeing `ADD ESP,8', will generate the form of the instruction which
+leaves room for a 32-bit offset. You need to code `ADD ESP,BYTE 8' if
+you want the space-efficient form of the instruction. This isn't a bug,
+it's user error: if you prefer to have NASM produce the more efficient
+code automatically enable optimization with the `-On' option (see *Note
+Section 2.1.16::).
+
+
+File: nasm.info,  Node: Section 10.1.2,  Next: Section 10.1.3,  Prev: Section 10.1.1,  Up: Section 10.1
+
+10.1.2. My Jumps are Out of Range
+---------------------------------
+
+   Similarly, people complain that when they issue conditional jumps
+(which are `SHORT' by default) that try to jump too far, NASM reports
+`short jump out of range' instead of making the jumps longer.
+
+   This, again, is partly a predictability issue, but in fact has a more
+practical reason as well. NASM has no means of being told what type of
+processor the code it is generating will be run on; so it cannot decide
+for itself that it should generate `Jcc NEAR' type instructions, because
+it doesn't know that it's working for a 386 or above. Alternatively, it
+could replace the out-of-range short `JNE' instruction with a very
+short `JE' instruction that jumps over a `JMP NEAR'; this is a sensible
+solution for processors below a 386, but hardly efficient on processors
+which have good branch prediction _and_ could have used `JNE NEAR'
+instead. So, once again, it's up to the user, not the assembler, to
+decide what instructions should be generated. See *Note Section
+2.1.16::.
+
+
+File: nasm.info,  Node: Section 10.1.3,  Next: Section 10.1.4,  Prev: Section 10.1.2,  Up: Section 10.1
+
+10.1.3. `ORG' Doesn't Work
+--------------------------
+
+   People writing boot sector programs in the `bin' format often
+complain that `ORG' doesn't work the way they'd like: in order to place
+the `0xAA55' signature word at the end of a 512-byte boot sector, people
+who are used to MASM tend to code
+
+             ORG 0
+     
+             ; some boot sector code
+     
+             ORG 510
+             DW 0xAA55
+
+   This is not the intended use of the `ORG' directive in NASM, and will
+not work. The correct way to solve this problem in NASM is to use the
+`TIMES' directive, like this:
+
+             ORG 0
+     
+             ; some boot sector code
+     
+             TIMES 510-($-$$) DB 0
+             DW 0xAA55
+
+   The `TIMES' directive will insert exactly enough zero bytes into the
+output to move the assembly point up to 510. This method also has the
+advantage that if you accidentally fill your boot sector too full, NASM
+will catch the problem at assembly time and report it, so you won't end
+up with a boot sector that you have to disassemble to find out what's
+wrong with it.
+
+
+File: nasm.info,  Node: Section 10.1.4,  Next: Section 10.2,  Prev: Section 10.1.3,  Up: Section 10.1
+
+10.1.4. `TIMES' Doesn't Work
+----------------------------
+
+   The other common problem with the above code is people who write the
+`TIMES' line as
+
+             TIMES 510-$ DB 0
+
+   by reasoning that `$' should be a pure number, just like 510, so the
+difference between them is also a pure number and can happily be fed to
+`TIMES'.
+
+   NASM is a _modular_ assembler: the various component parts are
+designed to be easily separable for re-use, so they don't exchange
+information unnecessarily. In consequence, the `bin' output format,
+even though it has been told by the `ORG' directive that the `.text'
+section should start at 0, does not pass that information back to the
+expression evaluator. So from the evaluator's point of view, `$' isn't
+a pure number: it's an offset from a section base. Therefore the
+difference between `$' and 510 is also not a pure number, but involves
+a section base. Values involving section bases cannot be passed as
+arguments to `TIMES'.
+
+   The solution, as in the previous section, is to code the `TIMES' line
+in the form
+
+             TIMES 510-($-$$) DB 0
+
+   in which `$' and `$$' are offsets from the same section base, and so
+their difference is a pure number. This will solve the problem and
+generate sensible code.
+
+
+File: nasm.info,  Node: Section 10.2,  Next: Appendix A,  Prev: Section 10.1.4,  Up: Chapter 10
+
+10.2. Bugs
+==========
+
+   We have never yet released a version of NASM with any _known_ bugs.
+That doesn't usually stop there being plenty we didn't know about,
+though.  Any that you find should be reported firstly via the
+`bugtracker' at `https://sourceforge.net/projects/nasm/' (click on
+"Bugs"), or if that fails then through one of the contacts in *Note
+Section 1.2::.
+
+   Please read *Note Section 2.2:: first, and don't report the bug if
+it's listed in there as a deliberate feature. (If you think the feature
+is badly thought out, feel free to send us reasons why you think it
+should be changed, but don't just send us mail saying `This is a bug'
+if the documentation says we did it on purpose.) Then read *Note
+Section 10.1::, and don't bother reporting the bug if it's listed there.
+
+   If you do report a bug, _please_ give us all of the following
+information:
+
+   * What operating system you're running NASM under. DOS, Linux,
+     NetBSD, Win16, Win32, VMS (I'd be impressed), whatever.
+
+   * If you're running NASM under DOS or Win32, tell us whether you've
+     compiled your own executable from the DOS source archive, or
+     whether you were using the standard distribution binaries out of
+     the archive. If you were using a locally built executable, try to
+     reproduce the problem using one of the standard binaries, as this
+     will make it easier for us to reproduce your problem prior to
+     fixing it.
+
+   * Which version of NASM you're using, and exactly how you invoked
+     it. Give us the precise command line, and the contents of the
+     `NASMENV' environment variable if any.
+
+   * Which versions of any supplementary programs you're using, and how
+     you invoked them. If the problem only becomes visible at link
+     time, tell us what linker you're using, what version of it you've
+     got, and the exact linker command line. If the problem involves
+     linking against object files generated by a compiler, tell us what
+     compiler, what version, and what command line or options you used.
+     (If you're compiling in an IDE, please try to reproduce the
+     problem with the command-line version of the compiler.)
+
+   * If at all possible, send us a NASM source file which exhibits the
+     problem.  If this causes copyright problems (e.g. you can only
+     reproduce the bug in restricted-distribution code) then bear in
+     mind the following two points: firstly, we guarantee that any
+     source code sent to us for the purposes of debugging NASM will be
+     used _only_ for the purposes of debugging NASM, and that we will
+     delete all our copies of it as soon as we have found and fixed the
+     bug or bugs in question; and secondly, we would prefer _not_ to be
+     mailed large chunks of code anyway. The smaller the file, the
+     better.  A three-line sample file that does nothing useful
+     _except_ demonstrate the problem is much easier to work with than
+     a fully fledged ten-thousand- line program. (Of course, some
+     errors _do_ only crop up in large files, so this may not be
+     possible.)
+
+   * A description of what the problem actually _is_. `It doesn't work'
+     is _not_ a helpful description! Please describe exactly what is
+     happening that shouldn't be, or what isn't happening that should.
+     Examples might be: `NASM generates an error message saying Line 3
+     for an error that's actually on Line 5'; `NASM generates an error
+     message that I believe it shouldn't be generating at all'; `NASM
+     fails to generate an error message that I believe it _should_ be
+     generating'; `the object file produced from this source code
+     crashes my linker'; `the ninth byte of the output file is 66 and I
+     think it should be 77 instead'.
+
+   * If you believe the output file from NASM to be faulty, send it to
+     us. That allows us to determine whether our own copy of NASM
+     generates the same file, or whether the problem is related to
+     portability issues between our development platforms and yours. We
+     can handle binary files mailed to us as MIME attachments,
+     uuencoded, and even BinHex. Alternatively, we may be able to
+     provide an FTP site you can upload the suspect files to; but
+     mailing them is easier for us.
+
+   * Any other information or data files that might be helpful. If, for
+     example, the problem involves NASM failing to generate an object
+     file while TASM can generate an equivalent file without trouble,
+     then send us _both_ object files, so we can see what TASM is doing
+     differently from us.
+
+
+File: nasm.info,  Node: Appendix A,  Next: Section A.1,  Prev: Section 10.2,  Up: Top
+
+Appendix A: Ndisasm
+*******************
+
+   The Netwide Disassembler, NDISASM
+
+* Menu:
+
+* Section A.1:: Introduction
+* Section A.2:: Getting Started: Installation
+* Section A.3:: Running NDISASM
+* Section A.4:: Bugs and Improvements
+
+
+File: nasm.info,  Node: Section A.1,  Next: Section A.2,  Prev: Appendix A,  Up: Appendix A
+
+A.1. Introduction
+=================
+
+   The Netwide Disassembler is a small companion program to the Netwide
+Assembler, NASM. It seemed a shame to have an x86 assembler, complete
+with a full instruction table, and not make as much use of it as
+possible, so here's a disassembler which shares the instruction table
+(and some other bits of code) with NASM.
+
+   The Netwide Disassembler does nothing except to produce
+disassemblies of _binary_ source files. NDISASM does not have any
+understanding of object file formats, like `objdump', and it will not
+understand `DOS .EXE' files like `debug' will. It just disassembles.
+
+
+File: nasm.info,  Node: Section A.2,  Next: Section A.3,  Prev: Section A.1,  Up: Appendix A
+
+A.2. Getting Started: Installation
+==================================
+
+   See *Note Section 1.3:: for installation instructions. NDISASM, like
+NASM, has a `man page' which you may want to put somewhere useful, if
+you are on a Unix system.
+
+
+File: nasm.info,  Node: Section A.3,  Next: Section A.3.1,  Prev: Section A.2,  Up: Appendix A
+
+A.3. Running NDISASM
+====================
+
+   To disassemble a file, you will typically use a command of the form
+
+            ndisasm [-b16 | -b32] filename
+
+   NDISASM can disassemble 16-bit code or 32-bit code equally easily,
+provided of course that you remember to specify which it is to work
+with. If no `-b' switch is present, NDISASM works in 16-bit mode by
+default. The `-u' switch (for USE32) also invokes 32-bit mode.
+
+   Two more command line options are `-r' which reports the version
+number of NDISASM you are running, and `-h' which gives a short summary
+of command line options.
+
+* Menu:
+
+* Section A.3.1:: COM Files: Specifying an Origin
+* Section A.3.2:: Code Following Data: Synchronisation
+* Section A.3.3:: Mixed Code and Data: Automatic (Intelligent) Synchronisation
+* Section A.3.4:: Other Options
+
+
+File: nasm.info,  Node: Section A.3.1,  Next: Section A.3.2,  Prev: Section A.3,  Up: Section A.3
+
+A.3.1. COM Files: Specifying an Origin
+--------------------------------------
+
+   To disassemble a `DOS .COM' file correctly, a disassembler must
+assume that the first instruction in the file is loaded at address
+`0x100', rather than at zero. NDISASM, which assumes by default that
+any file you give it is loaded at zero, will therefore need to be
+informed of this.
+
+   The `-o' option allows you to declare a different origin for the file
+you are disassembling. Its argument may be expressed in any of the NASM
+numeric formats: decimal by default, if it begins with ``$'' or ``0x''
+or ends in ``H'' it's `hex', if it ends in ``Q'' it's `octal', and if
+it ends in ``B'' it's `binary'.
+
+   Hence, to disassemble a `.COM' file:
+
+            ndisasm -o100h filename.com
+
+   will do the trick.
+
+
+File: nasm.info,  Node: Section A.3.2,  Next: Section A.3.3,  Prev: Section A.3.1,  Up: Section A.3
+
+A.3.2. Code Following Data: Synchronisation
+-------------------------------------------
+
+   Suppose you are disassembling a file which contains some data which
+isn't machine code, and _then_ contains some machine code. NDISASM will
+faithfully plough through the data section, producing machine
+instructions wherever it can (although most of them will look bizarre,
+and some may have unusual prefixes, e.g. ``FS OR AX,0x240A''), and
+generating `DB' instructions ever so often if it's totally stumped.
+Then it will reach the code section.
+
+   Supposing NDISASM has just finished generating a strange machine
+instruction from part of the data section, and its file position is now
+one byte _before_ the beginning of the code section. It's entirely
+possible that another spurious instruction will get generated, starting
+with the final byte of the data section, and then the correct first
+instruction in the code section will not be seen because the starting
+point skipped over it. This isn't really ideal.
+
+   To avoid this, you can specify a ``synchronisation'' point, or indeed
+as many synchronisation points as you like (although NDISASM can only
+handle 8192 sync points internally). The definition of a sync point is
+this: NDISASM guarantees to hit sync points exactly during disassembly.
+If it is thinking about generating an instruction which would cause it
+to jump over a sync point, it will discard that instruction and output a
+``db'' instead. So it _will_ start disassembly exactly from the sync
+point, and so you _will_ see all the instructions in your code section.
+
+   Sync points are specified using the `-s' option: they are measured in
+terms of the program origin, not the file position. So if you want to
+synchronise after 32 bytes of a `.COM' file, you would have to do
+
+            ndisasm -o100h -s120h file.com
+
+   rather than
+
+            ndisasm -o100h -s20h file.com
+
+   As stated above, you can specify multiple sync markers if you need
+to, just by repeating the `-s' option.
+
+
+File: nasm.info,  Node: Section A.3.3,  Next: Section A.3.4,  Prev: Section A.3.2,  Up: Section A.3
+
+A.3.3. Mixed Code and Data: Automatic (Intelligent) Synchronisation
+-------------------------------------------------------------------
+
+   Suppose you are disassembling the boot sector of a `DOS' floppy
+(maybe it has a virus, and you need to understand the virus so that you
+know what kinds of damage it might have done you). Typically, this will
+contain a `JMP' instruction, then some data, then the rest of the code.
+So there is a very good chance of NDISASM being _misaligned_ when the
+data ends and the code begins. Hence a sync point is needed.
+
+   On the other hand, why should you have to specify the sync point
+manually?  What you'd do in order to find where the sync point would
+be, surely, would be to read the `JMP' instruction, and then to use its
+target address as a sync point. So can NDISASM do that for you?
+
+   The answer, of course, is yes: using either of the synonymous
+switches `-a' (for automatic sync) or `-i' (for intelligent sync) will
+enable `auto-sync' mode. Auto-sync mode automatically generates a sync
+point for any forward-referring PC-relative jump or call instruction
+that NDISASM encounters. (Since NDISASM is one-pass, if it encounters a
+PC- relative jump whose target has already been processed, there isn't
+much it can do about it...)
+
+   Only PC-relative jumps are processed, since an absolute jump is
+either through a register (in which case NDISASM doesn't know what the
+register contains) or involves a segment address (in which case the
+target code isn't in the same segment that NDISASM is working in, and
+so the sync point can't be placed anywhere useful).
+
+   For some kinds of file, this mechanism will automatically put sync
+points in all the right places, and save you from having to place any
+sync points manually. However, it should be stressed that auto-sync
+mode is _not_ guaranteed to catch all the sync points, and you may
+still have to place some manually.
+
+   Auto-sync mode doesn't prevent you from declaring manual sync
+points: it just adds automatically generated ones to the ones you
+provide. It's perfectly feasible to specify `-i' _and_ some `-s'
+options.
+
+   Another caveat with auto-sync mode is that if, by some unpleasant
+fluke, something in your data section should disassemble to a
+PC-relative call or jump instruction, NDISASM may obediently place a
+sync point in a totally random place, for example in the middle of one
+of the instructions in your code section. So you may end up with a
+wrong disassembly even if you use auto-sync. Again, there isn't much I
+can do about this. If you have problems, you'll have to use manual sync
+points, or use the `-k' option (documented below) to suppress
+disassembly of the data area.
+
+
+File: nasm.info,  Node: Section A.3.4,  Next: Section A.4,  Prev: Section A.3.3,  Up: Section A.3
+
+A.3.4. Other Options
+--------------------
+
+   The `-e' option skips a header on the file, by ignoring the first N
+bytes. This means that the header is _not_ counted towards the
+disassembly offset: if you give `-e10 -o10', disassembly will start at
+byte 10 in the file, and this will be given offset 10, not 20.
+
+   The `-k' option is provided with two comma-separated numeric
+arguments, the first of which is an assembly offset and the second is a
+number of bytes to skip. This _will_ count the skipped bytes towards
+the assembly offset: its use is to suppress disassembly of a data
+section which wouldn't contain anything you wanted to see anyway.
+
+
+File: nasm.info,  Node: Section A.4,  Next: Appendix B,  Prev: Section A.3.4,  Up: Appendix A
+
+A.4. Bugs and Improvements
+==========================
+
+   There are no known bugs. However, any you find, with patches if
+possible, should be sent to `jules@dsf.org.uk' or `anakin@pobox.com', or
+to the developer's site at `https://sourceforge.net/projects/nasm/' and
+we'll try to fix them. Feel free to send contributions and new features
+as well.
+
+   Future plans include awareness of which processors certain
+instructions will run on, and marking of instructions that are too
+advanced for some processor (or are `FPU' instructions, or are
+undocumented opcodes, or are privileged protected-mode instructions, or
+whatever).
+
+   That's All Folks!
+
+   I hope NDISASM is of some use to somebody. Including me. :-)
+
+   I don't recommend taking NDISASM apart to see how an efficient
+disassembler works, because as far as I know, it isn't an efficient one
+anyway. You have been warned.
+
+
+File: nasm.info,  Node: Appendix B,  Next: Section B.1,  Prev: Section A.4,  Up: Top
+
+Appendix B: x86 Instruction Reference
+*************************************
+
+   This appendix provides a complete list of the machine instructions
+which NASM will assemble, and a short description of the function of
+each one.
+
+   It is not intended to be exhaustive documentation on the fine
+details of the instructions' function, such as which exceptions they
+can trigger: for such documentation, you should go to Intel's Web site,
+`http://developer.intel.com/design/Pentium4/manuals/'.
+
+   Instead, this appendix is intended primarily to provide
+documentation on the way the instructions may be used within NASM. For
+example, looking up `LOOP' will tell you that NASM allows `CX' or `ECX'
+to be specified as an optional second argument to the `LOOP'
+instruction, to enforce which of the two possible counter registers
+should be used if the default is not the one desired.
+
+   The instructions are not quite listed in alphabetical order, since
+groups of instructions with similar functions are lumped together in
+the same entry. Most of them don't move very far from their alphabetic
+position because of this.
+
+* Menu:
+
+* Section B.1:: Key to Operand Specifications
+* Section B.2:: Key to Opcode Descriptions
+* Section B.3:: Key to Instruction Flags
+* Section B.4:: x86 Instruction Set
+
+
+File: nasm.info,  Node: Section B.1,  Next: Section B.2,  Prev: Appendix B,  Up: Appendix B
+
+B.1. Key to Operand Specifications
+==================================
+
+   The instruction descriptions in this appendix specify their operands
+using the following notation:
+
+   * Registers: `reg8' denotes an 8-bit general purpose register,
+     `reg16' denotes a 16-bit general purpose register, and `reg32' a
+     32-bit one. `fpureg' denotes one of the eight FPU stack registers,
+     `mmxreg' denotes one of the eight 64-bit MMX registers, and
+     `segreg' denotes a segment register. In addition, some registers
+     (such as `AL', `DX' or `ECX') may be specified explicitly.
+
+   * Immediate operands: `imm' denotes a generic immediate operand.
+     `imm8', `imm16' and `imm32' are used when the operand is intended
+     to be a specific size. For some of these instructions, NASM needs
+     an explicit specifier: for example, `ADD ESP,16' could be
+     interpreted as either `ADD r/m32,imm32' or `ADD r/m32,imm8'. NASM
+     chooses the former by default, and so you must specify `ADD
+     ESP,BYTE 16' for the latter.
+
+   * Memory references: `mem' denotes a generic memory reference;
+     `mem8', `mem16', `mem32', `mem64' and `mem80' are used when the
+     operand needs to be a specific size. Again, a specifier is needed
+     in some cases: `DEC [address]' is ambiguous and will be rejected
+     by NASM. You must specify `DEC BYTE [address]', `DEC WORD
+     [address]' or `DEC DWORD [address]' instead.
+
+   * Restricted memory references: one form of the `MOV' instruction
+     allows a memory address to be specified _without_ allowing the
+     normal range of register combinations and effective address
+     processing. This is denoted by `memoffs8', `memoffs16' and
+     `memoffs32'.
+
+   * Register or memory choices: many instructions can accept either a
+     register _or_ a memory reference as an operand. `r/m8' is a
+     shorthand for `reg8/mem8'; similarly `r/m16' and `r/m32'. `r/m64'
+     is MMX-related, and is a shorthand for `mmxreg/mem64'.
+
+
+File: nasm.info,  Node: Section B.2,  Next: Section B.2.1,  Prev: Section B.1,  Up: Appendix B
+
+B.2. Key to Opcode Descriptions
+===============================
+
+   This appendix also provides the opcodes which NASM will generate for
+each form of each instruction. The opcodes are listed in the following
+way:
+
+   * A hex number, such as `3F', indicates a fixed byte containing that
+     number.
+
+   * A hex number followed by `+r', such as `C8+r', indicates that one
+     of the operands to the instruction is a register, and the
+     `register value' of that register should be added to the hex
+     number to produce the generated byte. For example, EDX has
+     register value 2, so the code `C8+r', when the register operand is
+     EDX, generates the hex byte `CA'. Register values for specific
+     registers are given in *Note Section B.2.1::.
+
+   * A hex number followed by `+cc', such as `40+cc', indicates that
+     the instruction name has a condition code suffix, and the numeric
+     representation of the condition code should be added to the hex
+     number to produce the generated byte. For example, the code
+     `40+cc', when the instruction contains the `NE' condition,
+     generates the hex byte `45'. Condition codes and their numeric
+     representations are given in *Note Section B.2.2::.
+
+   * A slash followed by a digit, such as `/2', indicates that one of
+     the operands to the instruction is a memory address or register
+     (denoted `mem' or `r/m', with an optional size). This is to be
+     encoded as an effective address, with a ModR/M byte, an optional
+     SIB byte, and an optional displacement, and the spare (register)
+     field of the ModR/M byte should be the digit given (which will be
+     from 0 to 7, so it fits in three bits). The encoding of effective
+     addresses is given in *Note Section B.2.5::.
+
+   * The code `/r' combines the above two: it indicates that one of the
+     operands is a memory address or `r/m', and another is a register,
+     and that an effective address should be generated with the spare
+     (register) field in the ModR/M byte being equal to the `register
+     value' of the register operand. The encoding of effective
+     addresses is given in *Note Section B.2.5::; register values are
+     given in *Note Section B.2.1::.
+
+   * The codes `ib', `iw' and `id' indicate that one of the operands to
+     the instruction is an immediate value, and that this is to be
+     encoded as a byte, little-endian word or little-endian doubleword
+     respectively.
+
+   * The codes `rb', `rw' and `rd' indicate that one of the operands to
+     the instruction is an immediate value, and that the _difference_
+     between this value and the address of the end of the instruction
+     is to be encoded as a byte, word or doubleword respectively.
+     Where the form `rw/rd' appears, it indicates that either `rw' or
+     `rd' should be used according to whether assembly is being
+     performed in `BITS 16' or `BITS 32' state respectively.
+
+   * The codes `ow' and `od' indicate that one of the operands to the
+     instruction is a reference to the contents of a memory address
+     specified as an immediate value: this encoding is used in some
+     forms of the `MOV' instruction in place of the standard
+     effective-address mechanism. The displacement is encoded as a word
+     or doubleword. Again, `ow/od' denotes that `ow' or `od' should be
+     chosen according to the `BITS' setting.
+
+   * The codes `o16' and `o32' indicate that the given form of the
+     instruction should be assembled with operand size 16 or 32 bits.
+     In other words, `o16' indicates a `66' prefix in `BITS 32' state,
+     but generates no code in `BITS 16' state; and `o32' indicates a
+     `66' prefix in `BITS 16' state but generates nothing in `BITS 32'.
+
+   * The codes `a16' and `a32', similarly to `o16' and `o32', indicate
+     the address size of the given form of the instruction.  Where this
+     does not match the `BITS' setting, a `67' prefix is required.
+
+* Menu:
+
+* Section B.2.1:: Register Values
+* Section B.2.2:: Condition Codes
+* Section B.2.3:: SSE Condition Predicates
+* Section B.2.4:: Status Flags
+* Section B.2.5:: Effective Address Encoding: ModR/M and SIB
+
+
+File: nasm.info,  Node: Section B.2.1,  Next: Section B.2.2,  Prev: Section B.2,  Up: Section B.2
+
+B.2.1. Register Values
+----------------------
+
+   Where an instruction requires a register value, it is already
+implicit in the encoding of the rest of the instruction what type of
+register is intended: an 8-bit general-purpose register, a segment
+register, a debug register, an MMX register, or whatever. Therefore
+there is no problem with registers of different types sharing an
+encoding value.
+
+   The encodings for the various classes of register are:
+
+   * 8-bit general registers: `AL' is 0, `CL' is 1, `DL' is 2, `BL' is
+     3, `AH' is 4, `CH' is 5, `DH' is 6, and `BH' is 7.
+
+   * 16-bit general registers: `AX' is 0, `CX' is 1, `DX' is 2, `BX' is
+     3, `SP' is 4, `BP' is 5, `SI' is 6, and `DI' is 7.
+
+   * 32-bit general registers: `EAX' is 0, `ECX' is 1, `EDX' is 2,
+     `EBX' is 3, `ESP' is 4, `EBP' is 5, `ESI' is 6, and `EDI' is 7.
+
+   * Segment registers: `ES' is 0, `CS' is 1, `SS' is 2, `DS' is 3,
+     `FS' is 4, and `GS' is 5.
+
+   * Floating-point registers: `ST0' is 0, `ST1' is 1, `ST2' is 2,
+     `ST3' is 3, `ST4' is 4, `ST5' is 5, `ST6' is 6, and `ST7' is 7.
+
+   * 64-bit MMX registers: `MM0' is 0, `MM1' is 1, `MM2' is 2, `MM3' is
+     3, `MM4' is 4, `MM5' is 5, `MM6' is 6, and `MM7' is 7.
+
+   * Control registers: `CR0' is 0, `CR2' is 2, `CR3' is 3, and `CR4'
+     is 4.
+
+   * Debug registers: `DR0' is 0, `DR1' is 1, `DR2' is 2, `DR3' is 3,
+     `DR6' is 6, and `DR7' is 7.
+
+   * Test registers: `TR3' is 3, `TR4' is 4, `TR5' is 5, `TR6' is 6,
+     and `TR7' is 7.
+
+   (Note that wherever a register name contains a number, that number
+is also the register value for that register.)
+

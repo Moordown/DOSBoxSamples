@@ -1,0 +1,6 @@
+[OPTIONS]
+INDEX=CommonDialogs
+TITLE=Common Dialogs
+WARNING=1  
+[FILES]
+Dlgdemo.rtf  ; main topics
