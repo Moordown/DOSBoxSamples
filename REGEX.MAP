@@ -1,2 +1,7 @@
-Fatal: Unable to open file 'regex.obj'
+
+ Start  Stop   Length Name               Class
+
+ 00000H 014E3H 014E4H _TEXT              CODE
+ 014E4H 014E4H 00000H _DATA              DATA
+
 

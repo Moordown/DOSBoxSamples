@@ -43,7 +43,6 @@ l1:
     jmp eloop
 l2:
     print_range <prmes, pr, newline>
-    inc [state]
     jmp eloop
 l3:
     put si, dom, domad
@@ -53,18 +52,15 @@ l3:
     jmp eloop
 l4:
     print_range <dommes, dom, newline>
-    inc [state]
     jmp eloop
 l5:
+    put si, pat, patad
     mov al, byte ptr [state]
     cmp al, byte ptr [termC]
     je l6
-    put si, pat, patad
     jmp eloop
 l6:
     print_range <pathmes, pat, newline>
-    put si, que, quead
-    inc [state]
     jmp eloop
 l7:
     put si, que, quead
@@ -74,7 +70,6 @@ l7:
     jmp eloop
 l8:
     print_range <querymes, que, newline>
-    inc [state]
     jmp eall
 l9:
     print_range <errormes, newline>
@@ -88,7 +83,7 @@ create_D_table:
     set_transition_for_all buf 11 11
     ret
 create_C_table:
-    set_transition buf_all buf 10 10
+    set_transition_for_all buf 10 10
     set_transition buf 10 11 '?'
     ret
 create_B_table:
@@ -96,7 +91,7 @@ create_B_table:
     set_transition_for_letters buf 9 9
     set_transition buf 9 9 '.'
     set_transition buf 9 10 '/'
-    set_transition buf 9 11 '/'
+    set_transition buf 9 11 '?'
     ret
 create_A_table:
     set_transition buf 0 1 'h'
