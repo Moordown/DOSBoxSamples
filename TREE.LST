@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    12/07/19 01:38:46	    Page 1
+Turbo Assembler	 Version 4.1	    12/07/19 02:07:54	    Page 1
 tree.ASM
 
 
@@ -60,7 +60,7 @@ tree.ASM
 1    55						 push d
 1    56					     endm
 1    57					 endm
-Turbo Assembler	 Version 4.1	    12/07/19 01:38:46	    Page 2
+Turbo Assembler	 Version 4.1	    12/07/19 02:07:54	    Page 2
 tree.ASM
 
 
@@ -100,7 +100,7 @@ tree.ASM
      90					     cd	root_addr
 1    91	    0103  33 C0			     xor ax, ax
 1    92	    0105  B4 3B			     mov ah, 3Bh
-1    93	    0107  8B 16	025Dr		     mov dx, root_addr
+1    93	    0107  8B 16	0266r		     mov dx, root_addr
 1    94	    010B  CD 21			     int 21h
      95	    010D  3C 03			     cmp al, 3
      96	    010F  0F 84	0100		     je	cd_error
@@ -108,27 +108,27 @@ tree.ASM
 1    98	    0113  33 C0			     xor ax, ax
 1    99	    0115  B4 47			     mov ah, 47h
 1   100	    0117  B2 03			     mov dl, 3
-1   101	    0119  BE 025Fr		     mov si, offset cwd_name
+1   101	    0119  BE 0268r		     mov si, offset cwd_name
 1   102	    011C  CD 21			     int 21h
     103					     set_dta fcb
 1   104	    011E  33 C0			     xor ax, ax
 1   105	    0120  B4 1A			     mov ah, 1Ah
-1   106	    0122  BA 029Fr		     mov dx, offset fcb
+1   106	    0122  BA 02A8r		     mov dx, offset fcb
 1   107	    0125  CD 21			     int 21h
     108					     parse_filename fcb, filename
 1   109	    0127  33 C0			     xor ax, ax
 1   110	    0129  B4 29			     mov ah, 29h
-1   111	    012B  BE 025Ar		     mov si, offset filename
-1   112	    012E  BF 029Fr		     mov di, offset fcb
+1   111	    012B  BE 0263r		     mov si, offset filename
+1   112	    012E  BF 02A8r		     mov di, offset fcb
 1   113	    0131  CD 21			     int 21h
-    114	    0133  3A 06	022Cr		     cmp al, byte ptr [parse_filename_function_falls]
-Turbo Assembler	 Version 4.1	    12/07/19 01:38:46	    Page 3
+    114	    0133  3A 06	0235r		     cmp al, byte ptr [parse_filename_function_falls]
+Turbo Assembler	 Version 4.1	    12/07/19 02:07:54	    Page 3
 tree.ASM
 
 
 
     115	    0137  74 2D			     je	parsing_error
-    116	    0139  3A 06	022Er		     cmp al, byte ptr [parse_filename_function_with_wildcards]
+    116	    0139  3A 06	0237r		     cmp al, byte ptr [parse_filename_function_with_wildcards]
     117	    013D  74 3C			     je	parsing_wildcards
     118	    013F			 parse_root_from_command_line:
     119	    013F  BE 0080		     mov si, 80h
@@ -139,42 +139,42 @@ tree.ASM
     124	    014A  05 0080		     add ax, 80h
     125	    014D  50			     push ax
     126	    014E  E8 0098		     call skip_spaces
-    127	    0151  A3 025Dr		     mov word ptr [root_addr], ax ; root addr here
+    127	    0151  A3 0266r		     mov word ptr [root_addr], ax ; root addr here
     128	    0154  B9 0040		     mov cx, 64
     129	    0157  51			     push cx
     130	    0158  50			     push ax
     131	    0159  E8 009D		     call count_letters_from_command_line
-    132	    015C  03 06	025Dr		     add ax, word ptr root_addr
+    132	    015C  03 06	0266r		     add ax, word ptr root_addr
     133	    0160  8B D8			     mov bx, ax
-    134	    0162  C6 07	24		     mov byte ptr [bx],	'$' ; set end of root
+    134	    0162  C6 07	00		     mov byte ptr [bx],	00h ; set end of root
     135	    0165  C3			     ret
     136	    0166			 parsing_error:
     137					     print_range <parse_fails, newline>
 2   138						 print <offset parse_fails>
 3   139	    0166  33 C0			     xor ax, ax
 3   140	    0168  B4 09				 mov ah, 09h
-3   141	    016A  BA 0231r			 mov dx, offset	parse_fails
+3   141	    016A  BA 023Ar			 mov dx, offset	parse_fails
 3   142	    016D  CD 21				 int 21h
 2   143						 print <offset newline>
 3   144	    016F  33 C0			     xor ax, ax
 3   145	    0171  B4 09				 mov ah, 09h
-3   146	    0173  BA 0256r			 mov dx, offset	newline
+3   146	    0173  BA 025Fr			 mov dx, offset	newline
 3   147	    0176  CD 21				 int 21h
-    148	    0178  E9 00AC		     jmp program_end
+    148	    0178  E9 00B5		     jmp program_end
     149	    017B			 parsing_wildcards:
     150					     parse_first fcb
 1   151	    017B  33 C0			     xor ax, ax
 1   152	    017D  B4 11			     mov ah, 11h
-1   153	    017F  BA 029Fr		     mov dx, offset fcb
+1   153	    017F  BA 02A8r		     mov dx, offset fcb
 1   154	    0182  CD 21			     int 21h
     155	    0184			 parsing_wildcards_loop:
-    156	    0184  3A 06	022Fr		     cmp al, byte ptr [parse_iter_filename_found_code]
-    157	    0188  0F 85	009B		     jne program_end
+    156	    0184  3A 06	0238r		     cmp al, byte ptr [parse_iter_filename_found_code]
+    157	    0188  0F 85	00A4		     jne program_end
     158	    018C  E8 000B		     call print_fname_from_fcb
     159					     parse_next	fcb
 1   160	    018F  33 C0			     xor ax, ax
 1   161	    0191  B4 12			     mov ah, 12h
-1   162	    0193  BA 029Fr		     mov dx, offset fcb
+1   162	    0193  BA 02A8r		     mov dx, offset fcb
 1   163	    0196  CD 21			     int 21h
     164	    0198  EB EA			     jmp parsing_wildcards_loop
     165
@@ -182,9 +182,9 @@ tree.ASM
     167					     ;
     168					     ; fname
     169					     ;
-    170	    019A  BB 02A0r		     mov bx, offset fcb	+ 01h
+    170	    019A  BB 02A9r		     mov bx, offset fcb	+ 01h
     171	    019D  B9 0008		     mov cx, 8
-Turbo Assembler	 Version 4.1	    12/07/19 01:38:46	    Page 4
+Turbo Assembler	 Version 4.1	    12/07/19 02:07:54	    Page 4
 tree.ASM
 
 
@@ -192,7 +192,7 @@ tree.ASM
     172	    01A0  51			     push cx
     173	    01A1  53			     push bx
     174	    01A2  E8 0054		     call count_letters_from_command_line
-    175	    01A5  BB 02A0r		     mov bx, offset fcb	+ 01h
+    175	    01A5  BB 02A9r		     mov bx, offset fcb	+ 01h
     176	    01A8  50			     push ax
     177	    01A9  53			     push bx
     178	    01AA  E8 0026		     call print_string_with_length
@@ -201,17 +201,17 @@ tree.ASM
 2   181						 print <offset dot>
 3   182	    01AD  33 C0			     xor ax, ax
 3   183	    01AF  B4 09				 mov ah, 09h
-3   184	    01B1  BA 0258r			 mov dx, offset	dot
+3   184	    01B1  BA 0261r			 mov dx, offset	dot
 3   185	    01B4  CD 21				 int 21h
     186					     ;
     187					     ; ext
     188					     ;
-    189	    01B6  BB 02A8r		     mov bx, offset fcb	+ 09h
+    189	    01B6  BB 02B1r		     mov bx, offset fcb	+ 09h
     190	    01B9  B9 0003		     mov cx, 3
     191	    01BC  51			     push cx
     192	    01BD  53			     push bx
     193	    01BE  E8 0038		     call count_letters_from_command_line
-    194	    01C1  BB 02A8r		     mov bx, offset fcb	+ 09h
+    194	    01C1  BB 02B1r		     mov bx, offset fcb	+ 09h
     195	    01C4  50			     push ax
     196	    01C5  53			     push bx
     197	    01C6  E8 000A		     call print_string_with_length
@@ -219,7 +219,7 @@ tree.ASM
 2   199						 print <offset newline>
 3   200	    01C9  33 C0			     xor ax, ax
 3   201	    01CB  B4 09				 mov ah, 09h
-3   202	    01CD  BA 0256r			 mov dx, offset	newline
+3   202	    01CD  BA 025Fr			 mov dx, offset	newline
 3   203	    01D0  CD 21				 int 21h
     204	    01D2  C3			     ret
     205
@@ -246,7 +246,7 @@ tree.ASM
     226	    01EC  5E			     pop si ; str addr
     227	    01ED  53			     push bx ; ret addr
     228	    01EE			 _skip_spaces_loop:
-Turbo Assembler	 Version 4.1	    12/07/19 01:38:46	    Page 5
+Turbo Assembler	 Version 4.1	    12/07/19 02:07:54	    Page 5
 tree.ASM
 
 
@@ -281,46 +281,54 @@ tree.ASM
 2   256						 print <offset cd_fails>
 3   257	    0213  33 C0			     xor ax, ax
 3   258	    0215  B4 09				 mov ah, 09h
-3   259	    0217  BA 023Er			 mov dx, offset	cd_fails
+3   259	    0217  BA 0247r			 mov dx, offset	cd_fails
 3   260	    021A  CD 21				 int 21h
 2   261						 print <offset newline>
 3   262	    021C  33 C0			     xor ax, ax
 3   263	    021E  B4 09				 mov ah, 09h
-3   264	    0220  BA 0256r			 mov dx, offset	newline
+3   264	    0220  BA 025Fr			 mov dx, offset	newline
 3   265	    0223  CD 21				 int 21h
-    266	    0225  EB 00			     jmp program_end
-    267	    0227			 program_end:
-    268					     exit
-1   269	    0227  B8 0000		     mov ax, 0
-1   270	    022A  CD 21			     int 21h
-    271
+    266	    0225  EB 09			     jmp program_end
+    267	    0227			 save_cwd:
+    268	    0227  BE 0268r		     mov si, OFFSET cwd_name
+    269	    022A  32 D2			     xor dl, dl			 ; Actual drive
+    270	    022C  B4 47			     mov ah, 47h		 ; CWD - GET CURRENT DIRECTORY
+    271	    022E  CD 21			     int 21h
     272
-    273	    022C  7F			 parse_filename_function_falls db 127
-    274	    022D  00			 parse_filename_function_no_wildcards db 00h
-    275	    022E  01			 parse_filename_function_with_wildcards	db 01h
-    276
-    277	    022F  00			 parse_iter_filename_found_code	db 00h
-    278	    0230  7F			 parse_iter_no_filename_found_code db 127
+    273	    0230			 program_end:
+    274					     ; mov bx, offset cwd_name
+    275					     ; cd bx
+    276					     exit
+1   277	    0230  B8 0000		     mov ax, 0
+1   278	    0233  CD 21			     int 21h
     279
-    280	    0231  50 61	72 73 65 20 66+	 parse_fails db	'Parse fails.$'
-    281		  61 69	6C 73 2E 24
-    282	    023E  43 68	61 6E 67 65 20+	 cd_fails db 'Change directory fails.$'
-    283		  64 69	72 65 63 74 6F+
-    284		  72 79	20 66 61 69 6C+
-    285		  73 2E	24
-Turbo Assembler	 Version 4.1	    12/07/19 01:38:46	    Page 6
+    280
+    281	    0235  7F			 parse_filename_function_falls db 127
+    282	    0236  00			 parse_filename_function_no_wildcards db 00h
+    283	    0237  01			 parse_filename_function_with_wildcards	db 01h
+    284
+    285	    0238  00			 parse_iter_filename_found_code	db 00h
+Turbo Assembler	 Version 4.1	    12/07/19 02:07:54	    Page 6
 tree.ASM
 
 
 
-    286	    0256  0A 24			 newline db 0Ah, '$'
-    287	    0258  2E 24			 dot db	'.', '$'
-    288	    025A  2A 2E	2A		 filename db '*.*'
-    289	    025D  0000			 root_addr dw 0
-    290	    025F  40*(24)		 cwd_name db 64	dup('$')
-    291	    029F  80*(00)		 fcb db	128 dup(00h)
-    292					 end start
-Turbo Assembler	 Version 4.1	    12/07/19 01:38:46	    Page 7
+    286	    0239  7F			 parse_iter_no_filename_found_code db 127
+    287
+    288	    023A  50 61	72 73 65 20 66+	 parse_fails db	'Parse fails.$'
+    289		  61 69	6C 73 2E 24
+    290	    0247  43 68	61 6E 67 65 20+	 cd_fails db 'Change directory fails.$'
+    291		  64 69	72 65 63 74 6F+
+    292		  72 79	20 66 61 69 6C+
+    293		  73 2E	24
+    294	    025F  0A 24			 newline db 0Ah, '$'
+    295	    0261  2E 24			 dot db	'.', '$'
+    296	    0263  2A 2E	2A		 filename db '*.*'
+    297	    0266  0000			 root_addr dw 0
+    298	    0268  40*(24)		 cwd_name db 64	dup('$')
+    299	    02A8  80*(00)		 fcb db	128 dup(00h)
+    300					 end start
+Turbo Assembler	 Version 4.1	    12/07/19 02:07:54	    Page 7
 Symbol Table
 
 
@@ -330,7 +338,7 @@ Symbol Name			  Type	 Value
 
 ??DATE				  Text	 "12/07/19"
 ??FILENAME			  Text	 "tree	  "
-??TIME				  Text	 "01:38:46"
+??TIME				  Text	 "02:07:54"
 ??VERSION			  Number 040A
 @32BIT				  Text	 0
 @CODE				  Text	 DGROUP
@@ -345,21 +353,21 @@ Symbol Name			  Type	 Value
 @STACK				  Text	 DGROUP
 @WORDSIZE			  Text	 2
 CD_ERROR			  Near	 DGROUP:0213
-CD_FAILS			  Byte	 DGROUP:023E
+CD_FAILS			  Byte	 DGROUP:0247
 COUNT_LETTERS_FROM_COMMAND_LINE	  Near	 DGROUP:01F9
-CWD_NAME			  Byte	 DGROUP:025F
-DOT				  Byte	 DGROUP:0258
-FCB				  Byte	 DGROUP:029F
-FILENAME			  Byte	 DGROUP:025A
-NEWLINE				  Byte	 DGROUP:0256
-PARSE_FAILS			  Byte	 DGROUP:0231
-PARSE_FILENAME_FUNCTION_FALLS	  Byte	 DGROUP:022C
-PARSE_FILENAME_FUNCTION_NO_WILDC  Byte	 DGROUP:022D
+CWD_NAME			  Byte	 DGROUP:0268
+DOT				  Byte	 DGROUP:0261
+FCB				  Byte	 DGROUP:02A8
+FILENAME			  Byte	 DGROUP:0263
+NEWLINE				  Byte	 DGROUP:025F
+PARSE_FAILS			  Byte	 DGROUP:023A
+PARSE_FILENAME_FUNCTION_FALLS	  Byte	 DGROUP:0235
+PARSE_FILENAME_FUNCTION_NO_WILDC  Byte	 DGROUP:0236
 ARDS
-PARSE_FILENAME_FUNCTION_WITH_WIL  Byte	 DGROUP:022E
+PARSE_FILENAME_FUNCTION_WITH_WIL  Byte	 DGROUP:0237
 DCARDS
-PARSE_ITER_FILENAME_FOUND_CODE	  Byte	 DGROUP:022F
-PARSE_ITER_NO_FILENAME_FOUND_COD  Byte	 DGROUP:0230
+PARSE_ITER_FILENAME_FOUND_CODE	  Byte	 DGROUP:0238
+PARSE_ITER_NO_FILENAME_FOUND_COD  Byte	 DGROUP:0239
 E
 PARSE_ROOT_FROM_COMMAND_LINE	  Near	 DGROUP:013F
 PARSING_ERROR			  Near	 DGROUP:0166
@@ -367,8 +375,9 @@ PARSING_WILDCARDS		  Near	 DGROUP:017B
 PARSING_WILDCARDS_LOOP		  Near	 DGROUP:0184
 PRINT_FNAME_FROM_FCB		  Near	 DGROUP:019A
 PRINT_STRING_WITH_LENGTH	  Near	 DGROUP:01D3
-PROGRAM_END			  Near	 DGROUP:0227
-ROOT_ADDR			  Word	 DGROUP:025D
+PROGRAM_END			  Near	 DGROUP:0230
+ROOT_ADDR			  Word	 DGROUP:0266
+SAVE_CWD			  Near	 DGROUP:0227
 SKIP_SPACES			  Near	 DGROUP:01E9
 START				  Near	 DGROUP:0100
 _COUNT_NON_SPACE_SYMBOLS_END	  Near	 DGROUP:0212
@@ -377,7 +386,7 @@ _PRINT_STRING_WITH_LENGTH_END	  Near	 DGROUP:01E8
 _PRINT_STRING_WITH_LENGTH_LOOP	  Near	 DGROUP:01D9
 _SKIP_SPACES_END		  Near	 DGROUP:01F6
 _SKIP_SPACES_LOOP		  Near	 DGROUP:01EE
-Turbo Assembler	 Version 4.1	    12/07/19 01:38:46	    Page 8
+Turbo Assembler	 Version 4.1	    12/07/19 02:07:54	    Page 8
 Symbol Table
 
 
@@ -402,5 +411,5 @@ Groups & Segments		  Bit Size Align  Combine Class
 
 DGROUP				  Group
   _DATA				  16  0000 Word	  Public  DATA
-  _TEXT				  16  031F Word	  Public  CODE
+  _TEXT				  16  0328 Word	  Public  CODE
 

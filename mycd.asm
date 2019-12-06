@@ -5,8 +5,8 @@ model tiny
 .code
 org 100h
 start:
-    mov ah, 3Bh
     mov dx, offset root
+    mov ah, 3Bh
     int 21h
 
     cmp al, 3
@@ -24,7 +24,7 @@ l1:
     mov ah, 00h
     int 21h
 error_with_cd db 'Fails chande dirrectory$'
-root db '.'
+root db 'c:\test1\', 00h
 current db 64 dup('$')
 newline db 0Ah, '$'
 end start

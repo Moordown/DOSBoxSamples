@@ -32,7 +32,7 @@ parse_root_from_command_line:
     call count_letters_from_command_line
     add ax, word ptr root_addr
     mov bx, ax
-    mov byte ptr [bx], '$' ; set end of root 
+    mov byte ptr [bx], 00h ; set end of root 
     ret
 parsing_error:
     print_range <parse_fails, newline>
@@ -127,7 +127,15 @@ _count_non_space_symbols_end:
 cd_error:
     print_range <cd_fails, newline>
     jmp program_end
+save_cwd:
+    mov si, OFFSET cwd_name
+    xor dl, dl                  ; Actual drive
+    mov ah, 47h                 ; CWD - GET CURRENT DIRECTORY
+    int 21h
+
 program_end:
+    ; mov bx, offset cwd_name
+    ; cd bx
     exit
 
 
