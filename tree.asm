@@ -1,24 +1,107 @@
-include macrotree.asm
+include tmacro.asm
 
 model tiny
 .386
 .code
 org 100h
 start:
-    get_dta ; ES:BX
-    mov word ptr [fcb], bx
-    parse_filename filename
-    cmp al, byte ptr [fails_code]
-    jne end
-error:
-    print_range <parse_fails, new_line>
-    jmp end
-end:
+    set_dta fcb
+    parse_filename fcb, filename
+    cmp al, byte ptr [parse_filename_function_falls]
+    je parsing_error
+    cmp al, byte ptr [parse_filename_function_with_wildcards]
+    je parsing_wildcards 
+parsing_error:
+    print_range <parse_fails, newline>
+    jmp program_end
+parsing_wildcards:
+    parse_first fcb
+    mov cx, 10
+parsing_wildcards_loop:
+    load <cx>
+    cmp al, byte ptr [parse_iter_no_filename_found_code]
+    je program_end
+    call print_fname_from_fcb
+    parse_next fcb
+    restore <cx>
+    dec cx
+    cmp cx, 0
+    jne parsing_wildcards_loop
+    jmp program_end
+
+print_fname_from_fcb:
+    ;
+    ; fname
+    ;
+    mov bx, offset fcb + 01h
+    mov cx, 8
+    push cx
+    push bx
+    call count_non_space_symbols_with_length
+    mov bx, offset fcb + 01h
+    push ax
+    push bx
+    call print_string_with_length
+    ;
+    ; ext
+    ;
+    mov bx, offset fcb + 09h
+    mov cx, 3
+    push cx
+    push bx
+    call count_non_space_symbols_with_length
+    mov bx, offset fcb + 09h
+    push ax
+    push bx
+    call print_string_with_length
+    print_range <newline>
+    ret
+
+print_string_with_length: 
+    pop bx ; ret address
+    pop si ; string offset
+    pop cx ; string length
+    push bx; ret address
+    xor ax, ax
+_print_string_with_length_loop:
+    mov ah, 02h
+    mov dl, byte ptr [si]
+    int 21h
+    dec cx
+    inc si
+    cmp cx, 00h
+    je _print_string_with_length_end
+    jmp _print_string_with_length_loop
+_print_string_with_length_end:
+    ret
+
+count_non_space_symbols_with_length:
+    pop bx ; ret address
+    pop si ; string offset
+    pop cx ; string length
+    push bx ; ret address
+    mov ax, 0
+_count_non_space_symbols_loop:    
+    cmp byte ptr [si], 20h
+    je _count_non_space_symbols_end
+    cmp ax, cx
+    je _count_non_space_symbols_end
+    inc ax
+    jmp _count_non_space_symbols_loop 
+_count_non_space_symbols_end:
+    ret
+program_end:
     exit
 
-fcb dw addr
-fails_code db ffh
-parse_fails db 'Parse fails', '$'
-new_line db 0Ah, '$'
-filename db '*'
+parse_filename_function_falls db 127
+parse_filename_function_no_wildcards db 00h
+parse_filename_function_with_wildcards db 01h
+
+parse_itet_filename_found_code db 00h
+parse_iter_no_filename_found_code db 127
+
+parse_fails db 'Parse fails.$'
+newline db 0Ah, '$'
+filename db '*.*'
+fcb db 128 dup(00h)
 end start
