@@ -5,23 +5,34 @@ model tiny
 .code
 org 100h
 start:
+    call parse_root_from_command_line
+    cd root_addr
+    cmp al, 3
+    je cd_error
+    mcwd 3, cwd_name
     set_dta fcb
-    call parse_command_line
-    mov si, word ptr [filename_addr] ; root address string
-    push si
-    call parse_filename
+    parse_filename fcb, filename
     cmp al, byte ptr [parse_filename_function_falls]
     je parsing_error
     cmp al, byte ptr [parse_filename_function_with_wildcards]
     je parsing_wildcards
-parse_command_line:
+parse_root_from_command_line:
     mov si, 80h
-    mov cx, 10
+    mov cx, 64
     push cx
     push si
-    call count_non_space_symbols_with_length
+    call count_letters_from_command_line
     add ax, 80h
-    mov word ptr [filename_addr], ax
+    push ax
+    call skip_spaces
+    mov word ptr [root_addr], ax ; root addr here
+    mov cx, 64
+    push cx
+    push ax
+    call count_letters_from_command_line
+    add ax, word ptr root_addr
+    mov bx, ax
+    mov byte ptr [bx], '$' ; set end of root 
     ret
 parsing_error:
     print_range <parse_fails, newline>
@@ -43,7 +54,7 @@ print_fname_from_fcb:
     mov cx, 8
     push cx
     push bx
-    call count_non_space_symbols_with_length
+    call count_letters_from_command_line
     mov bx, offset fcb + 01h
     push ax
     push bx
@@ -57,7 +68,7 @@ print_fname_from_fcb:
     mov cx, 3
     push cx
     push bx
-    call count_non_space_symbols_with_length
+    call count_letters_from_command_line
     mov bx, offset fcb + 09h
     push ax
     push bx
@@ -82,8 +93,20 @@ _print_string_with_length_loop:
     jmp _print_string_with_length_loop
 _print_string_with_length_end:
     ret
-
-count_non_space_symbols_with_length:
+skip_spaces:
+    xor ax, ax
+    pop bx ; ret addr
+    pop si ; str addr
+    push bx ; ret addr
+_skip_spaces_loop:
+    cmp byte ptr [si], 20h
+    jne _skip_spaces_end
+    inc si
+    jmp _skip_spaces_loop
+_skip_spaces_end:
+    mov ax, si
+    ret
+count_letters_from_command_line:
     pop bx ; ret address
     pop si ; string offset
     pop cx ; string length
@@ -92,6 +115,8 @@ count_non_space_symbols_with_length:
 _count_non_space_symbols_loop:    
     cmp byte ptr [si], 20h
     je _count_non_space_symbols_end
+    cmp byte ptr [si], 0Dh
+    je _count_non_space_symbols_end
     cmp ax, cx
     je _count_non_space_symbols_end
     inc ax
@@ -99,16 +124,9 @@ _count_non_space_symbols_loop:
     jmp _count_non_space_symbols_loop 
 _count_non_space_symbols_end:
     ret
-parse_filename:
-    pop bx ; ret addr
-    pop si ; filename offset
-    push bx; ret addr
-    xor ax, ax
-    mov ah, 29h
-    mov di, offset fcb
-
-    int 21h
-    ret
+cd_error:
+    print_range <cd_fails, newline>
+    jmp program_end
 program_end:
     exit
 
@@ -121,9 +139,11 @@ parse_iter_filename_found_code db 00h
 parse_iter_no_filename_found_code db 127
 
 parse_fails db 'Parse fails.$'
+cd_fails db 'Change directory fails.$'
 newline db 0Ah, '$'
 dot db '.', '$'
 filename db '*.*'
-filename_addr dw 0 
+root_addr dw 0
+cwd_name db 64 dup('$') 
 fcb db 128 dup(00h)
 end start

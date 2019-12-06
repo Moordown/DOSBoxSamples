@@ -1,0 +1,290 @@
+Turbo Assembler	 Version 4.1	    12/07/19 01:59:24	    Page 1
+mycd.ASM
+
+
+
+      1					 include tmacro.asm
+1     2					 cd macro root_addr
+1     3					     xor ax, ax
+1     4					     mov ah, 3Bh
+1     5					     mov dx, root_addr
+1     6					     int 21h
+1     7					 endm
+1     8
+1     9					 mcwd macro deviceid, buf
+1    10					     xor ax, ax
+1    11					     mov ah, 47h
+1    12					     mov dl, deviceid
+1    13					     mov si, offset buf
+1    14					     int 21h
+1    15					 endm
+1    16
+1    17					 parse_filename	macro fcb, filename
+1    18					     xor ax, ax
+1    19					     mov ah, 29h
+1    20					     mov si, offset filename
+1    21					     mov di, offset fcb
+1    22
+1    23					     int 21h
+1    24					 endm
+1    25
+1    26					 parse_first macro fcb
+1    27					     xor ax, ax
+1    28					     mov ah, 11h
+1    29					     mov dx, offset fcb
+1    30					     int 21h
+1    31					 endm
+1    32
+1    33					 parse_next macro fcb
+1    34					     xor ax, ax
+1    35					     mov ah, 12h
+1    36					     mov dx, offset fcb
+1    37					     int 21h
+1    38					 endm
+1    39
+1    40
+1    41					 set_dta macro addr
+1    42					     xor ax, ax
+1    43					     mov ah, 1Ah
+1    44					     mov dx, offset addr
+1    45					     int 21h
+1    46					 endm
+1    47
+1    48					 get_dta macro
+1    49					     mov ah, 2fh
+1    50					     int 21h
+1    51					 endm
+1    52
+1    53					 load macro args
+1    54					     irp d,<args>
+1    55						 push d
+1    56					     endm
+1    57					 endm
+Turbo Assembler	 Version 4.1	    12/07/19 01:59:24	    Page 2
+mycd.ASM
+
+
+
+1    58
+1    59					 restore macro args
+1    60					     irp d,<args>
+1    61						 pop d
+1    62					     endm
+1    63					 endm
+1    64
+1    65					 exit macro
+1    66					     mov ax, 0
+1    67					     int 21h
+1    68					 endm
+1    69
+1    70					 print_range macro args
+1    71					     irp d,<args>
+1    72						 print <offset d>
+1    73					     endm
+1    74					 endm
+1    75
+1    76					 print macro buf
+1    77					     xor ax, ax
+1    78						 mov ah, 09h
+1    79						 mov dx, buf
+1    80						 int 21h
+1    81					 endm
+1    82
+     83
+     84	    0000			 model tiny
+     85					 .386
+     86	    0000			 .code
+     87					 org 100h
+     88	    0100			 start:
+     89	    0100  E8 0062		     call show_drive
+     90	    0103  E8 0074		     call show_cwd
+     91
+     92	    0106  BA 01A4r		     mov dx,offset _cd		  ; DS:DX -> ASCIZ pathname to become current directory	(max+
+     93					 64 bytes)
+     94	    0109  B4 3B			     mov ah,3Bh			 ; CHDIR - SET CURRENT DIRECTORY
+     95	    010B  CD 21			     int 21h
+     96	    010D  72 20			     jc	err_chdir
+     97	    010F  E8 0053		     call show_drive
+     98	    0112  E8 0065		     call show_cwd
+     99
+    100	    0115  BA 01AEr		     mov dx, offset dir		 ; DS:DX -> ASCIZ pathname
+    101	    0118  B4 39			     mov ah, 39h		 ; MKDIR - CREATE SUBDIRECTORY
+    102	    011A  CD 21			     int 21h
+    103	    011C  72 2C			     jc	err_mkdir
+    104
+    105	    011E  BA 01AEr		     mov dx,offset dir		 ; DS:DX -> ASCIZ pathname to become current directory
+    106	    0121  B4 3B			     mov ah,3Bh			 ; CHDIR - SET CURRENT DIRECTORY
+    107	    0123  CD 21			     int 21h
+    108	    0125  72 08			     jc	err_chdir
+    109	    0127  E8 0050		     call show_cwd
+    110
+    111	    012A  B8 4C00		     mov ax,4c00h
+    112	    012D  CD 21			     int 21h
+    113
+    114	    012F			 err_chdir:
+Turbo Assembler	 Version 4.1	    12/07/19 01:59:24	    Page 3
+mycd.ASM
+
+
+
+    115	    012F  A3 01A2r		     mov [temp], ax
+    116	    0132  BA 01FDr		     mov dx, OFFSET errchdir
+    117	    0135  B4 09			     mov ah, 09h
+    118	    0137  CD 21			     int 21h
+    119	    0139  A1 01A2r		     mov ax, [temp]
+    120	    013C  8A D0			     mov dl, al
+    121	    013E  80 CA	30		     or	dl, 30h
+    122	    0141  B4 02			     mov ah, 02
+    123	    0143  CD 21			     int 21h
+    124	    0145  B8 4C01		     mov ax,4c01h
+    125	    0148  CD 21			     int 21h
+    126
+    127
+    128	    014A			 err_mkdir:
+    129	    014A  A3 01A2r		     mov [temp], ax
+    130	    014D  BA 020Ar		     mov dx, OFFSET errmkdir
+    131	    0150  B4 09			     mov ah, 09h
+    132	    0152  CD 21			     int 21h
+    133
+    134	    0154  A1 01A2r		     mov ax, [temp]
+    135	    0157  8A D0			     mov dl, al
+    136	    0159  80 CA	30		     or	dl, 30h
+    137	    015C  B4 02			     mov ah, 02
+    138	    015E  CD 21			     int 21h
+    139
+    140	    0160  B8 4C02		     mov ax,4c02h
+    141	    0163  CD 21			     int 21h
+    142
+    143	    0165			 show_drive:
+    144	    0165  B4 19			     mov ah, 19h		 ; GET CURRENT DEFAULT DRIVE
+    145	    0167  CD 21			     int 21h
+    146	    0169  8A D0			     mov dl, al
+    147	    016B  80 C2	41		     add dl, 41h
+    148	    016E  B4 02			     mov ah, 02h
+    149	    0170  CD 21			     int 21h
+    150	    0172  B2 3A			     mov dl, ':'
+    151	    0174  CD 21			     int 21h
+    152
+    153	    0176  E8 001E		     call crlf
+    154	    0179  C3			     ret
+    155	    017A			 show_cwd:
+    156	    017A  BE 01BDr		     mov si, OFFSET buf
+    157	    017D  32 D2			     xor dl, dl			 ; Actual drive
+    158	    017F  B4 47			     mov ah, 47h		 ; CWD - GET CURRENT DIRECTORY
+    159	    0181  CD 21			     int 21h
+    160
+    161	    0183  BE 01BDr		     mov si, OFFSET buf		 ; Print buf until '\0'
+    162	    0186			 L1:
+    163	    0186  AC			     lodsb
+    164	    0187  84 C0			     test al, al
+    165	    0189  74 08			     jz	L2
+    166	    018B  8A D0			     mov dl, al
+    167	    018D  B4 02			     mov ah, 02h
+    168	    018F  CD 21			     int 21h
+    169	    0191  EB F3			     jmp L1
+    170
+    171	    0193			 L2:
+Turbo Assembler	 Version 4.1	    12/07/19 01:59:24	    Page 4
+mycd.ASM
+
+
+
+    172	    0193  E8 0001		     call crlf
+    173
+    174	    0196  C3			     ret
+    175	    0197			 crlf:
+    176	    0197  B4 02			     mov ah, 02h
+    177	    0199  B2 0D			     mov dl, 13
+    178	    019B  CD 21			     int 21h
+    179	    019D  B2 0A			     mov dl, 10
+    180	    019F  CD 21			     int 21h
+    181	    01A1  C3			     ret
+    182
+    183	    01A2  ????			 temp dw ?
+    184	    01A4  63 3A	5C 74 65 73 74+	 _cd db	'c:\test1\', 00h
+    185		  31 5C	00
+    186	    01AE  63 3A	5C 74 65 73 74+	 dir db	'c:\test1\test2', 00h
+    187		  31 5C	74 65 73 74 32+
+    188		  00
+    189	    01BD  40*(24)		 buf db	64 DUP ('$')
+    190	    01FD  45 52	52 4F 52 20 43+	 errchdir db 'ERROR CHDIR $'
+    191		  48 44	49 52 20 24
+    192	    020A  45 52	52 4F 52 20 4D+	 errmkdir db 'ERROR MKDIR $'
+    193		  4B 44	49 52 20 24
+    194	    0217  46 61	69 6C 73 20 63+	 error_with_cd db 'Fails chande	dirrectory$'
+    195		  68 61	6E 64 65 20 64+
+    196		  69 72	72 65 63 74 6F+
+    197		  72 79	24
+    198	    022F  43 3A			 root db 'C:'
+    199	    0231  40*(24)		 current db 64 dup('$')
+    200	    0271  0A 24			 newline db 0Ah, '$'
+    201					 end start
+Turbo Assembler	 Version 4.1	    12/07/19 01:59:24	    Page 5
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "12/07/19"
+??FILENAME			  Text	 "mycd	  "
+??TIME				  Text	 "01:59:24"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0F0FH
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 MYCD
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+BUF				  Byte	 DGROUP:01BD
+CRLF				  Near	 DGROUP:0197
+CURRENT				  Byte	 DGROUP:0231
+DIR				  Byte	 DGROUP:01AE
+ERRCHDIR			  Byte	 DGROUP:01FD
+ERRMKDIR			  Byte	 DGROUP:020A
+ERROR_WITH_CD			  Byte	 DGROUP:0217
+ERR_CHDIR			  Near	 DGROUP:012F
+ERR_MKDIR			  Near	 DGROUP:014A
+L1				  Near	 DGROUP:0186
+L2				  Near	 DGROUP:0193
+NEWLINE				  Byte	 DGROUP:0271
+ROOT				  Byte	 DGROUP:022F
+SHOW_CWD			  Near	 DGROUP:017A
+SHOW_DRIVE			  Near	 DGROUP:0165
+START				  Near	 DGROUP:0100
+TEMP				  Word	 DGROUP:01A2
+_CD				  Byte	 DGROUP:01A4
+
+Macro Name
+
+CD
+EXIT
+GET_DTA
+LOAD
+MCWD
+PARSE_FILENAME
+PARSE_FIRST
+PARSE_NEXT
+PRINT
+PRINT_RANGE
+RESTORE
+SET_DTA
+Turbo Assembler	 Version 4.1	    12/07/19 01:59:24	    Page 6
+Symbol Table
+
+
+
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  0273 Word	  Public  CODE
+
