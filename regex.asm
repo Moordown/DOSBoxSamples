@@ -190,5 +190,5 @@ newline db 0Ah, '$'
 domain_was db 0
 query_was db 0
 
-buf db 3600 dup(0) ; memory for table
+buf db 4100 dup(0) ; memory for table
 end start
