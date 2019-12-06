@@ -6,28 +6,34 @@ model tiny
 org 100h
 start:
     set_dta fcb
-    parse_filename fcb, filename
+    call parse_command_line
+    mov si, word ptr [filename_addr] ; root address string
+    push si
+    call parse_filename
     cmp al, byte ptr [parse_filename_function_falls]
     je parsing_error
     cmp al, byte ptr [parse_filename_function_with_wildcards]
-    je parsing_wildcards 
+    je parsing_wildcards
+parse_command_line:
+    mov si, 80h
+    mov cx, 10
+    push cx
+    push si
+    call count_non_space_symbols_with_length
+    add ax, 80h
+    mov word ptr [filename_addr], ax
+    ret
 parsing_error:
     print_range <parse_fails, newline>
     jmp program_end
 parsing_wildcards:
     parse_first fcb
-    mov cx, 10
 parsing_wildcards_loop:
-    load <cx>
-    cmp al, byte ptr [parse_iter_no_filename_found_code]
-    je program_end
+    cmp al, byte ptr [parse_iter_filename_found_code]
+    jne program_end
     call print_fname_from_fcb
     parse_next fcb
-    restore <cx>
-    dec cx
-    cmp cx, 0
-    jne parsing_wildcards_loop
-    jmp program_end
+    jmp parsing_wildcards_loop
 
 print_fname_from_fcb:
     ;
@@ -42,6 +48,8 @@ print_fname_from_fcb:
     push ax
     push bx
     call print_string_with_length
+
+    print_range <dot>
     ;
     ; ext
     ;
@@ -87,21 +95,35 @@ _count_non_space_symbols_loop:
     cmp ax, cx
     je _count_non_space_symbols_end
     inc ax
+    inc si
     jmp _count_non_space_symbols_loop 
 _count_non_space_symbols_end:
     ret
+parse_filename:
+    pop bx ; ret addr
+    pop si ; filename offset
+    push bx; ret addr
+    xor ax, ax
+    mov ah, 29h
+    mov di, offset fcb
+
+    int 21h
+    ret
 program_end:
     exit
+
 
 parse_filename_function_falls db 127
 parse_filename_function_no_wildcards db 00h
 parse_filename_function_with_wildcards db 01h
 
-parse_itet_filename_found_code db 00h
+parse_iter_filename_found_code db 00h
 parse_iter_no_filename_found_code db 127
 
 parse_fails db 'Parse fails.$'
 newline db 0Ah, '$'
+dot db '.', '$'
 filename db '*.*'
+filename_addr dw 0 
 fcb db 128 dup(00h)
 end start

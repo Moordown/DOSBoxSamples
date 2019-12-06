@@ -1,14 +1,4 @@
-parse_filename macro fcb, fname
-    xor ax, ax
-    mov ah, 29h
-    mov si, offset fname
-    
-    mov dx, ds
-    mov es, dx
-    mov di, offset fcb
 
-    int 21h
-endm
 
 parse_first macro fcb
     xor ax, ax
