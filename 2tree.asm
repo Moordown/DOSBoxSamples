@@ -9,6 +9,9 @@ start:
     push ax
     call set_dta
     call parse_command_line
+    mov ax, offset root_folder
+    push ax
+    call cd
     ; call copy_root_from_comand_line
     mov ax, offset file_mask
     push ax
@@ -29,6 +32,18 @@ find_next_error:
     print_range <find_next_fails, newline>
     exit
 parse_command_line:
+    ;
+    ; prepare root folder
+    ;
+    mov si, 82h
+    mov cx, 64
+    push cx
+    push si
+    call count_no_space_no_zero_letters
+    mov cx, ax
+    mov si, 82h
+    mov di, offset root_folder
+    rep movsb
     ret
 find_next:
     mov ah, 4Fh
@@ -188,9 +203,12 @@ find_next_fails db  'find_next filenames fails.$'
 ;
 ; strings
 ;
+working_folder db 64 dup(00h)
+root_folder db 64 dup(00h)
 start_mask db 64 dup(00h)
+folder_mask db '*', 00h
 file_mask db '*.'
-file_ext db 'asm', 00h
+file_ext db 'txt', 00h
 
 newline db 0Ah, '$'
 dta db 48 dup(0)
