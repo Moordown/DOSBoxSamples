@@ -5,11 +5,13 @@ model tiny
 .code
 org 100h
 start:
+    call save_drive
+    call save_cwd
     call parse_root_from_command_line
     cd root_addr
     cmp al, 3
     je cd_error
-    mcwd 3, cwd_name
+    ; mcwd 3, cwd_name
     set_dta fcb
     parse_filename fcb, filename
     cmp al, byte ptr [parse_filename_function_falls]
@@ -45,7 +47,9 @@ parsing_wildcards_loop:
     call print_fname_from_fcb
     parse_next fcb
     jmp parsing_wildcards_loop
-
+program_end:
+    cd <offset cwd_full_name>
+    exit
 print_fname_from_fcb:
     ;
     ; fname
@@ -128,16 +132,20 @@ cd_error:
     print_range <cd_fails, newline>
     jmp program_end
 save_cwd:
-    mov si, OFFSET cwd_name
+    mov si, offset cwd_dir_name
     xor dl, dl                  ; Actual drive
     mov ah, 47h                 ; CWD - GET CURRENT DIRECTORY
     int 21h
+    ret
+save_drive:
+    mov ah, 19h                 ; GET CURRENT DEFAULT DRIVE
+    int 21h
+    
+    mov dl, al
+    add dl, 41h                 ; SAVE AS CHARACTER
 
-program_end:
-    ; mov bx, offset cwd_name
-    ; cd bx
-    exit
-
+    mov byte ptr [cwd_full_name], dl
+    ret
 
 parse_filename_function_falls db 127
 parse_filename_function_no_wildcards db 00h
@@ -152,6 +160,7 @@ newline db 0Ah, '$'
 dot db '.', '$'
 filename db '*.*'
 root_addr dw 0
-cwd_name db 64 dup('$') 
+cwd_full_name db 'c:\'
+cwd_dir_name db 64 dup(00h) 
 fcb db 128 dup(00h)
 end start
