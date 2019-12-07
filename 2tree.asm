@@ -5,6 +5,7 @@ model tiny
 .code
 org 100h
 start:
+    call save_cwd
     mov ax, offset dta
     push ax
     call set_dta
@@ -12,7 +13,6 @@ start:
     mov ax, offset root_folder
     push ax
     call cd
-    ; call copy_root_from_comand_line
     mov ax, offset file_mask
     push ax
     call find_first
@@ -23,6 +23,10 @@ find_loop:
     jnc find_loop
     cmp al, byte ptr [no_more_files]
     jne find_next_error
+program_end:
+    mov ax, offset working_folder
+    push ax
+    call cd
     exit
 
 find_first_error:
@@ -101,10 +105,25 @@ set_dta:
     ret
 
 save_cwd:
-    pop bx
-    pop si
-    push bx
+    mov si, offset working_folder
 
+    ;
+    ; save driver
+    ;
+    mov ah, 19h                 ; GET CURRENT DEFAULT DRIVE
+    int 21h
+    mov dl, al
+    add dl, 41h
+    mov byte ptr [si], dl
+    inc si
+    mov byte ptr [si], ':'
+    inc si
+    mov byte ptr [si], '\'
+    inc si
+
+    ;
+    ; save folder
+    ;
     xor dl, dl                  ; Actual drive
     mov ah, 47h                 ; CWD - GET CURRENT DIRECTORY
     int 21h
