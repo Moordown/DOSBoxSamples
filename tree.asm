@@ -28,11 +28,11 @@ parse_root_from_command_line:
     push cx
     push ax
     call count_letters_from_command_line
-    pop bx
+    pop bx                      ; root start
     push bx
     add bx, ax
     mov byte ptr [bx], 00h      ; set end of root 
-    pop ax
+    pop ax                      ; root start
     ret
 parsing_error:
     print_range <parse_fails, newline>

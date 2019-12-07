@@ -21,6 +21,12 @@ print macro buf
 	int 21h
 endm
 
+print_range macro args
+    irp d,<args>
+        print <offset d>
+    endm
+endm
+
 get_offset macro state
     xor dx, dx
     xor ax, ax
@@ -77,12 +83,6 @@ endm
 set_zero macro state
     mov al, 0
     mov byte ptr [state], al
-endm
-
-print_range macro args
-    irp d,<args>
-        print <offset d>
-    endm
 endm
 
 set_transition_for_all macro buf, from, to
