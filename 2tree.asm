@@ -48,6 +48,36 @@ parse_command_line:
     mov si, 82h
     mov di, offset root_folder
     rep movsb
+
+parse_args:
+    inc si
+    inc si
+    cmp byte ptr [si], 'd'
+    je parse_d
+    cmp byte ptr [si], 'f'
+    je parse_f
+    jmp parse_end
+parse_d:
+    ;
+    ; parse_deep level
+    ;
+    inc si
+    inc si
+    mov bl, byte ptr [si]
+    sub bl, 30h             ; to number
+    mov byte ptr [deep_level], bl
+    jmp parse_args
+parse_f:
+    inc si
+    inc si
+    mov di, offset file_ext
+    mov cx, 4
+    rep movsb
+    jmp parse_args
+    ;
+    ; parse file extension
+    ;
+parse_end:
     ret
 find_next:
     mov ah, 4Fh
@@ -128,50 +158,6 @@ save_cwd:
     mov ah, 47h                 ; CWD - GET CURRENT DIRECTORY
     int 21h
     ret
-copy_root_from_comand_line:
-    ;
-    ;   copy root folder 
-    ;
-    xor ax, ax
-    mov si, 80h
-    mov al, byte ptr [si]
-    dec ax                  ; remove last 0Dh byte
-
-    mov di, offset start_mask
-    mov si, 82h             ; start non space root dir
-    xor cx, cx
-    mov cl, al
-    cld
-    rep movsb
-
-    ;
-    ;   add mask for search to path
-    ;
-    mov ax, offset start_mask
-    mov cx, 13
-    push cx
-    push ax
-    call count_no_space_no_zero_letters
-    mov si, offset start_mask
-    add si, ax
-    mov di, offset file_mask
-    mov cx, 5
-    rep movsb
-
-    ret
-skip_spaces:
-    xor ax, ax
-    pop bx ; ret addr
-    pop si ; str addr
-    push bx ; ret addr
-_skip_spaces_loop:
-    cmp byte ptr [si], 20h
-    jne _skip_spaces_end
-    inc si
-    jmp _skip_spaces_loop
-_skip_spaces_end:
-    mov ax, si
-    ret
 print_string_with_length: 
     pop bx ; ret address
     pop si ; string offset
@@ -220,15 +206,18 @@ cd_fails db 'Change directory fails.$'
 find_first_fails db 'find_first filenames fails.$'
 find_next_fails db  'find_next filenames fails.$'
 ;
+;   parse arguments
+;
+deep_level db 0
+file_mask db '*'
+file_ext db '.txt', 00h
+folder_mask db '*', 00h
+;
 ; strings
 ;
 working_folder db 64 dup(00h)
 root_folder db 64 dup(00h)
 start_mask db 64 dup(00h)
-folder_mask db '*', 00h
-file_mask db '*.'
-file_ext db 'txt', 00h
-
+dta db 43 dup(0)
 newline db 0Ah, '$'
-dta db 48 dup(0)
 end start
