@@ -8,18 +8,12 @@ start:
     call save_drive
     call save_cwd
     call parse_root_from_command_line
-    push ax
-    call cd
-    jC cd_error
-    
+    push ax         ; root address
     mov ax, offset fcb
     push ax
-    call set_dta
-    parse_filename fcb, filename
-    cmp al, byte ptr [parse_filename_function_falls]
-    je parsing_error
-    cmp al, byte ptr [parse_filename_function_with_wildcards]
-    je parsing_wildcards
+
+    call list_files_from
+
 parse_root_from_command_line:
     mov si, 80h
     mov cx, 64
@@ -142,7 +136,37 @@ list_files_from:
     pop dx ; abs root filename address
     push bx ; ret addr
 
-    
+    load <ax, dx>
+    push dx
+    call cd
+    restore <ax, dx>
+
+    load <ax, dx>
+    push ax
+    call set_dta
+    restore <ax, dx>
+
+    load <ax, dx>
+    push ax
+    push dx
+    call parse_filename
+    restore <ax, dx>
+
+    cmp al, byte ptr [parse_filename_function_falls]
+    je parsing_error
+    cmp al, byte ptr [parse_filename_function_with_wildcards]
+    je parsing_wildcards
+
+    ret
+parse_filename:
+    xor ax, ax
+    mov ah, 29h
+    pop bx
+    pop si ; offset filename
+    pop di ; offset fcb
+    push bx
+
+    int 21h
     ret
 cd:
     pop bx ; ret addr

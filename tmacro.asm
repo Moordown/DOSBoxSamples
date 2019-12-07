@@ -13,7 +13,7 @@ mcwd macro deviceid, buf
     int 21h
 endm 
 
-parse_filename macro fcb, filename
+_parse_filename macro fcb, filename
     xor ax, ax
     mov ah, 29h
     mov si, offset filename
