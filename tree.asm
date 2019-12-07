@@ -8,7 +8,8 @@ start:
     call save_drive
     call save_cwd
     call parse_root_from_command_line
-    cd root_addr
+    push ax
+    call cd
     cmp al, 3
     je cd_error
     ; mcwd 3, cwd_name
@@ -35,6 +36,7 @@ parse_root_from_command_line:
     add ax, word ptr root_addr
     mov bx, ax
     mov byte ptr [bx], 00h ; set end of root 
+    mov ax, root_addr
     ret
 parsing_error:
     print_range <parse_fails, newline>
@@ -48,7 +50,9 @@ parsing_wildcards_loop:
     parse_next fcb
     jmp parsing_wildcards_loop
 program_end:
-    cd <offset cwd_full_name>
+    mov ax, offset cwd_full_name
+    push ax
+    call cd
     exit
 print_fname_from_fcb:
     ;
@@ -128,9 +132,21 @@ _count_non_space_symbols_loop:
     jmp _count_non_space_symbols_loop 
 _count_non_space_symbols_end:
     ret
+
+cd:
+    pop bx ; ret addr
+    pop dx ; root address
+    push bx ; ret addr
+
+    xor ax, ax
+    mov ah, 3Bh
+    int 21h
+
+    jc cd_error
+    ret
 cd_error:
     print_range <cd_fails, newline>
-    jmp program_end
+    exit
 save_cwd:
     mov si, offset cwd_dir_name
     xor dl, dl                  ; Actual drive

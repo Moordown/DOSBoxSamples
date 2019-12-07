@@ -1,4 +1,4 @@
-cd macro root_addr
+_cd macro root_addr
     xor ax, ax
     mov ah, 3Bh
     mov dx, root_addr
