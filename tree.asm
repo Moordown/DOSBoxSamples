@@ -11,7 +11,10 @@ start:
     push ax
     call cd
     jC cd_error
-    set_dta fcb
+    
+    mov ax, offset fcb
+    push ax
+    call set_dta
     parse_filename fcb, filename
     cmp al, byte ptr [parse_filename_function_falls]
     je parsing_error
@@ -155,6 +158,16 @@ cd:
 cd_error:
     print_range <cd_fails, newline>
     exit
+set_dta:
+    pop bx
+    pop dx                      ; dta address offset
+    push bx
+
+    xor ax, ax 
+    mov ah, 1Ah
+    int 21h
+    
+    ret
 save_cwd:
     mov si, offset cwd_dir_name
     xor dl, dl                  ; Actual drive
