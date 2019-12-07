@@ -37,7 +37,7 @@ parse_next macro fcb
 endm
 
 
-set_dta macro addr
+_set_dta macro addr
     xor ax, ax 
     mov ah, 1Ah
     mov dx, offset addr

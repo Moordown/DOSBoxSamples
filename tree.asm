@@ -10,9 +10,7 @@ start:
     call parse_root_from_command_line
     push ax
     call cd
-    cmp al, 3
-    je cd_error
-    ; mcwd 3, cwd_name
+    jC cd_error
     set_dta fcb
     parse_filename fcb, filename
     cmp al, byte ptr [parse_filename_function_falls]
@@ -28,15 +26,16 @@ parse_root_from_command_line:
     add ax, 80h
     push ax
     call skip_spaces
-    mov word ptr [root_addr], ax ; root addr here
+    push ax                     ; save root_start
     mov cx, 64
     push cx
     push ax
     call count_letters_from_command_line
-    add ax, word ptr root_addr
-    mov bx, ax
-    mov byte ptr [bx], 00h ; set end of root 
-    mov ax, root_addr
+    pop bx
+    push bx
+    add bx, ax
+    mov byte ptr [bx], 00h      ; set end of root 
+    pop ax
     ret
 parsing_error:
     print_range <parse_fails, newline>
@@ -133,6 +132,15 @@ _count_non_space_symbols_loop:
 _count_non_space_symbols_end:
     ret
 
+
+list_files_from:
+    pop bx ; ret addr
+    pop ax ; fcb address
+    pop dx ; abs root filename address
+    push bx ; ret addr
+
+    
+    ret
 cd:
     pop bx ; ret addr
     pop dx ; root address
