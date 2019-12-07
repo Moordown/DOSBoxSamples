@@ -15,6 +15,17 @@ start:
     call cd
     mov ax, offset file_mask
     push ax
+    call list_subfiles
+    mov ax, offset folder_mask
+    push ax
+    call list_subfiles
+
+list_subfiles:
+    pop bx
+    pop ax ; filemask offset
+    push bx
+    ; mov ax, offset file_mask
+    push ax
     call find_first
     jc find_first_error
 find_loop:
@@ -27,7 +38,7 @@ program_end:
     mov ax, offset working_folder
     push ax
     call cd
-    exit
+    ret
 
 find_first_error:
     print_range <find_first_fails, newline>
@@ -35,6 +46,7 @@ find_first_error:
 find_next_error:
     print_range <find_next_fails, newline>
     exit
+
 parse_command_line:
     ;
     ; prepare root folder
