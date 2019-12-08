@@ -172,15 +172,6 @@ move_dta:
     add bx, ax
     mov ax, bx
     ret
-zeros:
-    pop bx
-    pop cx ; length
-    pop di ; address
-    push bx
-    mov al, 0
-    cld
-    rep stosb
-    ret
 is_folder:
     mov bx, offset dta + 15h
     mov bl, byte ptr [bx]
@@ -276,11 +267,6 @@ show_filename_from_dta:
     restore <cx>
     
     add ax, 1Eh
-    ; xor ax, ax
-    ; mov al, byte ptr [dta_len]
-    ; mul cx
-    ; mov bx, offset dta + 1Eh
-    ; add bx, ax
 
     mov bx, ax
     load <bx, cx>
