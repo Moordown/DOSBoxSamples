@@ -102,6 +102,7 @@ _list_subfiles_recursive_loop:
     load <bx, cx>
     push bx
     push cx
+    ; break_point <ax>
     call show_filename_from_dta
     ; cmp ax, 1
     ; jne _list_subfiles_recursive_next 
@@ -145,11 +146,11 @@ _list_subfiles_recursive_loop:
     ;   list subfiles from subfolder
     ;
     load <cx>
-    mov bx, sp
-    sub bx, 0Bh
-    mov bx, word ptr [bx]
+    mov bx, 0
+    ; sub bx, 0Bh
+    ; mov bx, word ptr [bx]
     mov ax, offset folder_mask
-    break_point <bx>
+    ; break_point <bx>
     push bx
     push ax
     push cx
@@ -161,9 +162,9 @@ _list_subfiles_recursive_loop:
     ;   list subfolders from subfolder
     ;
     load <cx>
-    mov bx, sp
-    sub bx, 0Bh
-    mov bx, word ptr [bx]
+    mov bx, ax
+    ; sub bx, 0Bh
+    ; mov bx, word ptr [bx]
     mov ax, offset file_mask
     push bx
     push ax
@@ -222,8 +223,6 @@ _is_folder_false:
     jmp _is_folder_end
 _is_folder_end:
     ret
-
-
 
 find_first_error:
     print_range <find_first_fails, newline>
@@ -335,7 +334,7 @@ _show_filename_from_dta_valid_name:
     add ax, 1Eh
     mov bx, ax
     restore <ax>
-    break_point <dx>
+    ; break_point <dx>
     ; restore <cx, ax>
 
     load <cx, bx>
@@ -376,6 +375,7 @@ _print_pseudographic_prefix_loop:
     jnz _print_string_with_length_loop
 _print_pseudographic_prefix_zero_level:
     cmp ax, word ptr [current_max_entities]
+    break_point <dx>
     je _print_pseudographic_prefix_zero_level_end
     cmp ax, 1
     je _print_pseudographic_prefix_zero_level_first
@@ -565,15 +565,15 @@ all_files db '*.*', 00h
 ;
 ;   pseudographic
 ;
-level_shift db '|', '$'
-space db, ' ', '$'
+level_shift db 179, '$'
+space db, 32, '$'
 
 zero_first_file db 195, '$'
 zero_end_file db 192, '$'
 
-first_file_char db 192, '$'
+first_file_char db 194, '$'
 middle_file_char db 195, '$'
-end_file_char db 194, '$'
+end_file_char db 192, '$'
 ;
 ; strings
 ;
