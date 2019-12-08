@@ -325,7 +325,6 @@ _show_filename_from_dta_valid_name:
     load <cx, bx>
     push ax     ; entity count
     push cx     ; deep level
-    break_point <cx>
     call print_pseudographic_prefix
     restore <bx, cx>
 
