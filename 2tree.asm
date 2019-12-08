@@ -67,6 +67,14 @@ list_subfiles_recursive:
     pop ax ; filemask offset
     push bx
     ; mov ax, offset file_mask
+
+    ; load <cx, ax>
+    ; mov ax, offset dta
+    ; push ax
+    ; push cx
+    ; call set_dta
+    ; restore <ax, cx>
+
     load <cx>
     push ax
     call find_first
@@ -106,14 +114,28 @@ _list_subfiles_recursive_loop:
     call cd
     restore <cx>
 
+    inc cx
     ;
     ;   list subfiles from subfolder
     ;
-    inc cx
+    load <cx>
     mov ax, offset file_mask
     push ax
     push cx
     call list_subfiles_recursive
+    restore <cx>
+
+    
+    ;
+    ;   list subfolders from subfolder
+    ;
+    load <cx>
+    mov ax, offset folder_mask
+    push ax
+    push cx
+    call list_subfiles_recursive
+    restore <cx>
+
 
     ;
     ;   cd to this function
