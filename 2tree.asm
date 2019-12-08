@@ -114,7 +114,18 @@ _list_subfiles_recursive_loop:
     ;   cd to subfolder
     ;
     load <cx>
-    mov ax, offset dta + 1Eh
+    push cx
+    call move_dta
+    add ax, 1Eh
+
+
+    ; xor ax, ax
+    ; mov al, byte ptr [dta_len]
+    ; mul cx
+
+    ; mov bx, offset dta + 1Eh
+    ; add bx, ax
+    ; push bx
     push ax
     call cd
     restore <cx>
@@ -143,7 +154,7 @@ _list_subfiles_recursive_loop:
 
 
     ;
-    ;   cd to this function
+    ;   cd back to this function
     ;
     mov ax, offset parent_folder
     push ax
@@ -155,6 +166,19 @@ _list_subfiles_recursive_next:
     jne find_next_error
 _list_subfiles_recursive_end:
     restore <cx>
+    ret
+move_dta:
+    pop bx
+    pop cx
+    push bx
+
+    xor ax, ax
+    mov al, byte ptr [dta_len]
+    mul cx
+
+    mov bx, offset dta
+    add bx, ax
+    mov ax, bx
     ret
 zeros:
     pop bx
@@ -254,12 +278,16 @@ show_filename_from_dta:
     pop cx  ; deep level 
     push bx
 
-    xor ax, ax
-    mov al, byte ptr [dta_len]
-    mul cx
-    mov bx, offset dta + 1Eh
-    add bx, ax
+    push cx
+    call move_dta
+    add ax, 1Eh
+    ; xor ax, ax
+    ; mov al, byte ptr [dta_len]
+    ; mul cx
+    ; mov bx, offset dta + 1Eh
+    ; add bx, ax
 
+    mov bx, ax
     load <bx>
     cmp byte ptr [bx], '.'
     jne _show_filename_from_dta_valid_name
@@ -305,9 +333,14 @@ set_dta:
 
     ; shift to current dta
     ; mov cx, 0
+    ; load <dx>
+    ; push cx
+    ; call move_dta
+    ; restore <dx>
+    ; add dx, ax
+    load <dx>
     xor ax, ax
     mov al, byte ptr [dta_len]
-    load <dx>
     mul cx
     restore <dx>
     add dx, ax
