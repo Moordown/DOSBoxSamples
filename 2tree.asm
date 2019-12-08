@@ -270,8 +270,11 @@ show_filename_from_dta:
     pop cx  ; deep level 
     push bx
 
+    load <cx>
     push cx
     call move_dta
+    restore <cx>
+    
     add ax, 1Eh
     ; xor ax, ax
     ; mov al, byte ptr [dta_len]
@@ -280,16 +283,19 @@ show_filename_from_dta:
     ; add bx, ax
 
     mov bx, ax
-    load <bx>
+    load <bx, cx>
     cmp byte ptr [bx], '.'
     jne _show_filename_from_dta_valid_name
     mov ax, 0
-    restore <bx>
+    restore <cx, bx>
     ret
 _show_filename_from_dta_valid_name:
-    mov cx, 13
-    restore <bx>
+    ;
+    ;   pseudo graphic prefix
+    ;
+    restore <cx, bx>
     load <bx>
+    mov cx, 13
     push cx
     push bx
     call count_no_space_no_zero_letters
@@ -415,6 +421,11 @@ deep_level db 1
 file_mask db '*'
 file_ext db '.*', 00h, 00h, 00h
 folder_mask db '*', 00h
+;
+;   pseudographic
+;
+zero_level_folder db '├'
+no_zero_level_folder db '┬'
 ;
 ; strings
 ;
