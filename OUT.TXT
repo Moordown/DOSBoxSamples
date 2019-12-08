@@ -1,0 +1,34 @@
+ÃAAAAAAAA
+| ÃSDIR1
+| ÃSDIR2
+| ÃSDIR3
+| ÃSDIR1
+| ÃSDIR2
+| ÃSDIR3
+| ÃFROM_A.TXT
+ÃSDIR
+| Ã1.TXT
+| Ã2.TXT
+| Ã3.BMP
+| Ã4.EXE
+| Ã5.BIN
+| Ã6.OBJ
+ÃAAAAAAAA
+| ÃSDIR1
+| ÃSDIR2
+| ÃSDIR3
+| ÃSDIR1
+| ÃSDIR2
+| ÃSDIR3
+| ÃFROM_A.TXT
+ÃSDIR
+| Ã1.TXT
+| Ã2.TXT
+| Ã3.BMP
+| Ã4.EXE
+| Ã5.BIN
+| Ã6.OBJ
+ÃB.EXE
+ÃC.PDF
+ÃD.OBJ
+ÃINIT_A.TXT

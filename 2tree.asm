@@ -60,6 +60,12 @@ list_subfiles_recursive_from:
     ret
 
 list_subfiles_recursive:
+    ;
+    ;   save current files
+    ;
+    call count_subfiles_here
+    mov word ptr [current_max_entities], ax
+    
     pop bx
     pop cx ; deep level
     pop ax ; filemask offset
@@ -79,6 +85,8 @@ list_subfiles_recursive:
 _list_subfiles_recursive_loop:
     restore <cx>
     load <cx>
+    mov ax, 0
+    push ax
     push cx
     call show_filename_from_dta
     cmp ax, 1
@@ -259,30 +267,29 @@ find_first:
 show_filename_from_dta:
     pop bx
     pop cx  ; deep level 
+    pop ax  ; entity count
     push bx
 
-    load <cx>
+    load <ax, cx>
     push cx
     call move_dta
-    restore <cx>
     
     add ax, 1Eh
-
     mov bx, ax
-    load <bx, cx>
     cmp byte ptr [bx], '.'
     jne _show_filename_from_dta_valid_name
+    restore <cx, ax>
     mov ax, 0
-    restore <cx, bx>
     ret
 _show_filename_from_dta_valid_name:
     ;
     ;   pseudo graphic prefix
     ;
-    restore <cx, bx>
+    restore <cx, ax>
 
     load <cx, bx>
-    push cx
+    push ax     ; entity count
+    push cx     ; deep level
     call print_pseudographic_prefix
     restore <bx, cx>
 
@@ -302,7 +309,8 @@ _show_filename_from_dta_valid_name:
     ret
 print_pseudographic_prefix:
     pop bx
-    pop cx
+    pop cx      ; deep level
+    pop ax      ; entity count
     push bx
 
     cmp cx, 0
@@ -311,12 +319,20 @@ _print_pseudographic_prefix_loop:
     print_range <level_shift>
     dec cx
     jnz _print_string_with_length_loop
-    print_range <no_zero_level_middle_file>
-
-    jmp _print_pseudographic_prefix_end
 _print_pseudographic_prefix_zero_level:
-    print_range <zero_level_middle_file>
-
+    cmp ax, word ptr [current_max_entities]
+    je _print_pseudographic_prefix_zero_level_end
+    cmp ax, 0
+    je _print_pseudographic_prefix_zero_level_first
+    jmp _print_pseudographic_prefix_zero_level_middle
+_print_pseudographic_prefix_zero_level_first:
+    print_range <no_zero_level_first_file>
+    jmp _print_pseudographic_prefix_end
+_print_pseudographic_prefix_zero_level_middle:
+    print_range <no_zero_level_middle_file>
+    jmp _print_pseudographic_prefix_end
+_print_pseudographic_prefix_zero_level_end:
+    print_range <no_zero_level_end_file>
     jmp _print_pseudographic_prefix_end
 _print_pseudographic_prefix_end:
     ret
@@ -415,6 +431,28 @@ _count_non_space_symbols_loop:
     jmp _count_non_space_symbols_loop 
 _count_non_space_symbols_end:
     ret
+count_subfiles_here:
+    mov cx, 11          ; set pointer to count_dta 
+    push cx
+    call set_dta
+
+    mov cx, 0
+    load <cx>
+    mov ax, offset all_files
+    push ax
+    call find_first
+    jc _count_subfiles_from_end
+_count_subfiles_from_loop:
+    restore <cx>
+    inc cx
+    load <cx>
+    call find_next
+    jc _count_subfiles_from_end
+    jmp _count_subfiles_from_loop
+_count_subfiles_from_end:
+    restore <cx>
+    mov ax, cx
+    ret
 ;
 ; error codes
 ;
@@ -427,12 +465,17 @@ cd_fails db 'Change directory fails.$'
 find_first_fails db 'find_first filenames fails.$'
 find_next_fails db  'find_next filenames fails.$'
 ;
+; int variables
+;
+current_max_entities dw 0
+;
 ;   parse arguments
 ;
 deep_level db 1
 file_mask db '*'
 file_ext db '.*', 00h, 00h, 00h
 folder_mask db '*', 00h
+all_files db '*.*', 00h
 ;
 ;   pseudographic
 ;
@@ -442,7 +485,6 @@ zero_level_subfile db '|', '$'
 no_zero_level_first_file db 194, '$'
 no_zero_level_middle_file db 195, '$'
 no_zero_level_end_file db 192, '$'
-
 ;
 ; strings
 ;
