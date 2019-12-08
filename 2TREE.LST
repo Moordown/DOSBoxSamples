@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    12/08/19 21:52:25	    Page 1
+Turbo Assembler	 Version 4.1	    12/08/19 21:55:34	    Page 1
 2tree.ASM
 
 
@@ -60,7 +60,7 @@ Turbo Assembler	 Version 4.1	    12/08/19 21:52:25	    Page 1
 1    55					     load<bx, dx>
 1    56					     get_offset	from
 1    57
-Turbo Assembler	 Version 4.1	    12/08/19 21:52:25	    Page 2
+Turbo Assembler	 Version 4.1	    12/08/19 21:55:34	    Page 2
 2tree.ASM
 
 
@@ -122,7 +122,7 @@ Turbo Assembler	 Version 4.1	    12/08/19 21:52:25	    Page 1
 1   112					     mov al, byte ptr [bx]
 1   113					 endm
 1   114
-Turbo Assembler	 Version 4.1	    12/08/19 21:52:25	    Page 3
+Turbo Assembler	 Version 4.1	    12/08/19 21:55:34	    Page 3
 2tree.ASM
 
 
@@ -163,132 +163,132 @@ Turbo Assembler	 Version 4.1	    12/08/19 21:52:25	    Page 1
     148					 org 100h
     149	    0100			 start:
     150	    0100  E8 01BC		     call save_cwd
-    151	    0103  B8 0431r		     mov ax, offset dta
-    152	    0106  50			     push ax
-    153	    0107  B9 0000		     mov cx, 0
-    154	    010A  51			     push cx
-    155	    010B  E8 019B		     call set_dta
-    156	    010E  E8 00FA		     call parse_command_line
+    151					     ; mov ax, offset dta
+    152					     ; push ax
+    153	    0103  B9 0000		     mov cx, 0
+    154	    0106  51			     push cx
+    155	    0107  E8 019D		     call set_dta
+    156	    010A  E8 00FC		     call parse_command_line
     157
     158					     ;
     159					     ;	 start tree
     160					     ;
-    161	    0111  B8 03AFr		     mov ax, offset root_folder
-    162	    0114  B9 0000		     mov cx, 0
-    163	    0117  51			     push cx
-    164	    0118  50			     push ax
-    165	    0119  E8 000B		     call list_subfiles_recursive_from
+    161	    010D  B8 03AFr		     mov ax, offset root_folder
+    162	    0110  B9 0000		     mov cx, 0
+    163	    0113  51			     push cx
+    164	    0114  50			     push ax
+    165	    0115  E8 000B		     call list_subfiles_recursive_from
     166
     167					     ;
     168					     ;	 cd to start folder
     169					     ;
-    170	    011C  B8 036Fr		     mov ax, offset working_folder
-    171	    011F  50			     push ax
-Turbo Assembler	 Version 4.1	    12/08/19 21:52:25	    Page 4
+    170	    0118  B8 036Fr		     mov ax, offset working_folder
+    171	    011B  50			     push ax
+Turbo Assembler	 Version 4.1	    12/08/19 21:55:34	    Page 4
 2tree.ASM
 
 
 
-    172	    0120  E8 016B		     call cd
+    172	    011C  E8 016D		     call cd
     173					     exit
-1   174	    0123  B4 00			     mov ah, 00h
-1   175	    0125  CD 21			     int 21h
+1   174	    011F  B4 00			     mov ah, 00h
+1   175	    0121  CD 21			     int 21h
     176
-    177	    0127			 list_subfiles_recursive_from:
-    178	    0127  5B			     pop bx	 ; ret address
-    179	    0128  58			     pop ax	 ; deep	level
-    180	    0129  59			     pop cx	 ; root	folder offset
-    181	    012A  53			     push bx
+    177	    0123			 list_subfiles_recursive_from:
+    178	    0123  5B			     pop bx	 ; ret address
+    179	    0124  58			     pop ax	 ; deep	level
+    180	    0125  59			     pop cx	 ; root	folder offset
+    181	    0126  53			     push bx
     182					     load <cx>
-2   183	    012B  51				 push cx
-    184	    012C  50			     push ax
-    185	    012D  E8 015E		     call cd
+2   183	    0127  51				 push cx
+    184	    0128  50			     push ax
+    185	    0129  E8 0160		     call cd
     186					     restore <cx>
-2   187	    0130  59				 pop cx
+2   187	    012C  59				 pop cx
     188
     189					     ;
     190					     ; list subfolder
     191					     ;
-    192	    0131  B8 036Ar		     mov ax, offset folder_mask
+    192	    012D  B8 036Ar		     mov ax, offset folder_mask
     193					     load <cx>
-2   194	    0134  51				 push cx
-    195	    0135  50			     push ax
-    196	    0136  51			     push cx
-    197	    0137  E8 000C		     call list_subfiles_recursive
+2   194	    0130  51				 push cx
+    195	    0131  50			     push ax
+    196	    0132  51			     push cx
+    197	    0133  E8 000C		     call list_subfiles_recursive
     198					     restore <cx>
-2   199	    013A  59				 pop cx
+2   199	    0136  59				 pop cx
     200
     201					     ;
     202					     ; list files
     203					     ;
-    204	    013B  B8 0364r		     mov ax, offset file_mask
+    204	    0137  B8 0364r		     mov ax, offset file_mask
     205					     load <cx>
-2   206	    013E  51				 push cx
-    207	    013F  50			     push ax
-    208	    0140  51			     push cx
-    209	    0141  E8 0002		     call list_subfiles_recursive
+2   206	    013A  51				 push cx
+    207	    013B  50			     push ax
+    208	    013C  51			     push cx
+    209	    013D  E8 0002		     call list_subfiles_recursive
     210					     restore <cx>
-2   211	    0144  59				 pop cx
-    212	    0145  C3			     ret
+2   211	    0140  59				 pop cx
+    212	    0141  C3			     ret
     213
-    214	    0146			 list_subfiles_recursive:
-    215	    0146  5B			     pop bx
-    216	    0147  59			     pop cx ; deep level
-    217	    0148  58			     pop ax ; filemask offset
-    218	    0149  53			     push bx
+    214	    0142			 list_subfiles_recursive:
+    215	    0142  5B			     pop bx
+    216	    0143  59			     pop cx ; deep level
+    217	    0144  58			     pop ax ; filemask offset
+    218	    0145  53			     push bx
     219					     ; mov ax, offset file_mask
     220
     221					     load <cx, ax>
-2   222	    014A  51				 push cx
-2   223	    014B  50				 push ax
-    224	    014C  B8 0431r		     mov ax, offset dta
-    225	    014F  50			     push ax
+2   222	    0146  51				 push cx
+2   223	    0147  50				 push ax
+    224					     ; mov ax, offset dta
+    225					     ; push ax
     226					     ; mov cx, 0
-    227	    0150  51			     push cx
-    228	    0151  E8 0155		     call set_dta
-Turbo Assembler	 Version 4.1	    12/08/19 21:52:25	    Page 5
+    227	    0148  51			     push cx
+    228	    0149  E8 015B		     call set_dta
+Turbo Assembler	 Version 4.1	    12/08/19 21:55:34	    Page 5
 2tree.ASM
 
 
 
     229					     restore <ax, cx>
-2   230	    0154  58				 pop ax
-2   231	    0155  59				 pop cx
+2   230	    014C  58				 pop ax
+2   231	    014D  59				 pop cx
     232
     233					     load <cx>
-2   234	    0156  51				 push cx
-    235	    0157  50			     push ax
-    236	    0158  E8 00F2		     call find_first
-    237	    015B  0F 82	0088		     jc	find_first_error
-    238	    015F			 _list_subfiles_recursive_loop:
+2   234	    014E  51				 push cx
+    235	    014F  50			     push ax
+    236	    0150  E8 00F8		     call find_first
+    237	    0153  0F 82	008E		     jc	find_first_error
+    238	    0157			 _list_subfiles_recursive_loop:
     239					     restore <cx>
-2   240	    015F  59				 pop cx
+2   240	    0157  59				 pop cx
     241					     load <cx>
-2   242	    0160  51				 push cx
+2   242	    0158  51				 push cx
     243					     ; mov cx, 0
-    244	    0161  51			     push cx
-    245	    0162  E8 00F5		     call show_filename_from_dta
-    246	    0165  3D 0001		     cmp ax, 1
-    247	    0168  75 3D			     jne _list_subfiles_recursive_next
+    244	    0159  51			     push cx
+    245	    015A  E8 00FB		     call show_filename_from_dta
+    246	    015D  3D 0001		     cmp ax, 1
+    247	    0160  75 43			     jne _list_subfiles_recursive_next
     248
     249					     ;
     250					     ;	 check if folder
     251					     ;
-    252	    016A  E8 0063		     call is_folder
-    253	    016D  3D 0001		     cmp ax, 1
-    254	    0170  75 35			     jne _list_subfiles_recursive_next
+    252	    0162  E8 0069		     call is_folder
+    253	    0165  3D 0001		     cmp ax, 1
+    254	    0168  75 3B			     jne _list_subfiles_recursive_next
     255
     256					     ;
     257					     ;	 check deep level
     258					     ;
     259					     restore <cx>
-2   260	    0172  59				 pop cx
+2   260	    016A  59				 pop cx
     261					     load <cx>
-2   262	    0173  51				 push cx
-    263	    0174  33 DB			     xor bx, bx
-    264	    0176  8A 1E	0363r		     mov bl, byte ptr [deep_level]
-    265	    017A  3B CB			     cmp cx, bx
-    266	    017C  7D 29			     jge _list_subfiles_recursive_next
+2   262	    016B  51				 push cx
+    263	    016C  33 DB			     xor bx, bx
+    264	    016E  8A 1E	0363r		     mov bl, byte ptr [deep_level]
+    265	    0172  3B CB			     cmp cx, bx
+    266	    0174  7D 2F			     jge _list_subfiles_recursive_next
     267
     268					     ;
     269					     ; start new search
@@ -298,17 +298,17 @@ Turbo Assembler	 Version 4.1	    12/08/19 21:52:25	    Page 1
     273					     ;	 cd to subfolder
     274					     ;
     275					     load <cx>
-2   276	    017E  51				 push cx
-    277	    017F  51			     push cx
-    278	    0180  E8 0031		     call move_dta
-    279	    0183  05 001E		     add ax, 1Eh
+2   276	    0176  51				 push cx
+    277	    0177  51			     push cx
+    278	    0178  E8 0037		     call move_dta
+    279	    017B  05 001E		     add ax, 1Eh
     280
     281
     282					     ; xor ax, ax
     283					     ; mov al, byte ptr	[dta_len]
     284					     ; mul cx
     285
-Turbo Assembler	 Version 4.1	    12/08/19 21:52:25	    Page 6
+Turbo Assembler	 Version 4.1	    12/08/19 21:55:34	    Page 6
 2tree.ASM
 
 
@@ -316,405 +316,415 @@ Turbo Assembler	 Version 4.1	    12/08/19 21:52:25	    Page 1
     286					     ; mov bx, offset dta + 1Eh
     287					     ; add bx, ax
     288					     ; push bx
-    289	    0186  50			     push ax
-    290	    0187  E8 0104		     call cd
+    289	    017E  50			     push ax
+    290	    017F  E8 010A		     call cd
     291					     restore <cx>
-2   292	    018A  59				 pop cx
+2   292	    0182  59				 pop cx
     293
-    294	    018B  41			     inc cx
+    294	    0183  41			     inc cx
     295					     ;
     296					     ;	 list subfiles from subfolder
     297					     ;
     298					     load <cx>
-2   299	    018C  51				 push cx
-    300	    018D  B8 036Ar		     mov ax, offset folder_mask
-    301	    0190  50			     push ax
-    302	    0191  51			     push cx
-    303	    0192  E8 FFB1		     call list_subfiles_recursive
+2   299	    0184  51				 push cx
+    300	    0185  B8 036Ar		     mov ax, offset folder_mask
+    301	    0188  50			     push ax
+    302	    0189  51			     push cx
+    303	    018A  E8 FFB5		     call list_subfiles_recursive
     304					     restore <cx>
-2   305	    0195  59				 pop cx
+2   305	    018D  59				 pop cx
     306
     307
     308					     ;
     309					     ;	 list subfolders from subfolder
     310					     ;
     311					     load <cx>
-2   312	    0196  51				 push cx
-    313	    0197  B8 0364r		     mov ax, offset file_mask
-    314	    019A  50			     push ax
-    315	    019B  51			     push cx
-    316	    019C  E8 FFA7		     call list_subfiles_recursive
+2   312	    018E  51				 push cx
+    313	    018F  B8 0364r		     mov ax, offset file_mask
+    314	    0192  50			     push ax
+    315	    0193  51			     push cx
+    316	    0194  E8 FFAB		     call list_subfiles_recursive
     317					     restore <cx>
-2   318	    019F  59				 pop cx
+2   318	    0197  59				 pop cx
     319
     320
     321					     ;
     322					     ;	 cd back to this function
     323					     ;
-    324	    01A0  B8 036Cr		     mov ax, offset parent_folder
-    325	    01A3  50			     push ax
-    326	    01A4  E8 00E7		     call cd
-    327	    01A7			 _list_subfiles_recursive_next:
-    328	    01A7  E8 009E		     call find_next
-    329	    01AA  73 B3			     jnc _list_subfiles_recursive_loop
-    330	    01AC  3A 06	0312r		     cmp al, byte ptr [no_more_files]
-    331	    01B0  75 47			     jne find_next_error
-    332	    01B2			 _list_subfiles_recursive_end:
-    333					     restore <cx>
-2   334	    01B2  59				 pop cx
-    335	    01B3  C3			     ret
-    336	    01B4			 move_dta:
-    337	    01B4  5B			     pop bx
-    338	    01B5  59			     pop cx
-    339	    01B6  53			     push bx
-    340
-    341	    01B7  33 C0			     xor ax, ax
-    342	    01B9  A0 0313r		     mov al, byte ptr [dta_len]
-Turbo Assembler	 Version 4.1	    12/08/19 21:52:25	    Page 7
+    324	    0198  B8 036Cr		     mov ax, offset parent_folder
+    325	    019B  50			     push ax
+    326	    019C  E8 00ED		     call cd
+    327
+    328					     restore <cx>
+2   329	    019F  59				 pop cx
+    330					     load <cx>
+2   331	    01A0  51				 push cx
+    332					     ; mov ax, offset dta
+    333	    01A1  51			     push cx
+    334					     ; push ax
+    335	    01A2  E8 0102		     call set_dta
+    336	    01A5			 _list_subfiles_recursive_next:
+    337	    01A5  E8 009E		     call find_next
+    338	    01A8  73 AD			     jnc _list_subfiles_recursive_loop
+    339	    01AA  3A 06	0312r		     cmp al, byte ptr [no_more_files]
+    340	    01AE  75 47			     jne find_next_error
+    341	    01B0			 _list_subfiles_recursive_end:
+    342					     restore <cx>
+Turbo Assembler	 Version 4.1	    12/08/19 21:55:34	    Page 7
 2tree.ASM
 
 
 
-    343	    01BC  F7 E1			     mul cx
-    344
-    345	    01BE  BB 0431r		     mov bx, offset dta
-    346	    01C1  03 D8			     add bx, ax
-    347	    01C3  8B C3			     mov ax, bx
-    348	    01C5  C3			     ret
-    349	    01C6			 zeros:
-    350	    01C6  5B			     pop bx
-    351	    01C7  59			     pop cx ; length
-    352	    01C8  5F			     pop di ; address
-    353	    01C9  53			     push bx
-    354	    01CA  B0 00			     mov al, 0
-    355	    01CC  FC			     cld
-    356	    01CD  F3> AA		     rep stosb
-    357	    01CF  C3			     ret
-    358	    01D0			 is_folder:
-    359	    01D0  BB 0446r		     mov bx, offset dta	+ 15h
-    360	    01D3  8A 1F			     mov bl, byte ptr [bx]
-    361	    01D5  80 FB	10		     cmp bl, 10h
-    362	    01D8  74 02			     je	_is_folder_true
-    363	    01DA  75 05			     jne _is_folder_false
-    364	    01DC			 _is_folder_true:
-    365	    01DC  B8 0001		     mov ax, 1
-    366	    01DF  EB 05			     jmp _is_folder_end
-    367	    01E1			 _is_folder_false:
-    368	    01E1  B8 0000		     mov ax, 0
-    369	    01E4  EB 00			     jmp _is_folder_end
-    370	    01E6			 _is_folder_end:
-    371	    01E6  C3			     ret
-    372
-    373
-    374
-    375	    01E7			 find_first_error:
-    376					     print_range <find_first_fails, newline>
-2   377						 print <offset find_first_fails>
-3   378	    01E7  B4 09				 mov ah, 09h
-3   379	    01E9  BA 032Cr			 mov dx, offset	find_first_fails
-3   380	    01EC  CD 21				 int 21h
-2   381						 print <offset newline>
-3   382	    01EE  B4 09				 mov ah, 09h
-3   383	    01F0  BA 042Fr			 mov dx, offset	newline
-3   384	    01F3  CD 21				 int 21h
-    385					     exit
-1   386	    01F5  B4 00			     mov ah, 00h
-1   387	    01F7  CD 21			     int 21h
-    388	    01F9			 find_next_error:
-    389					     print_range <find_next_fails, newline>
-2   390						 print <offset find_next_fails>
-3   391	    01F9  B4 09				 mov ah, 09h
-3   392	    01FB  BA 0348r			 mov dx, offset	find_next_fails
-3   393	    01FE  CD 21				 int 21h
-2   394						 print <offset newline>
-3   395	    0200  B4 09				 mov ah, 09h
-3   396	    0202  BA 042Fr			 mov dx, offset	newline
-3   397	    0205  CD 21				 int 21h
-    398					     exit
-1   399	    0207  B4 00			     mov ah, 00h
-Turbo Assembler	 Version 4.1	    12/08/19 21:52:25	    Page 8
+2   343	    01B0  59				 pop cx
+    344	    01B1  C3			     ret
+    345	    01B2			 move_dta:
+    346	    01B2  5B			     pop bx
+    347	    01B3  59			     pop cx
+    348	    01B4  53			     push bx
+    349
+    350	    01B5  33 C0			     xor ax, ax
+    351	    01B7  A0 0313r		     mov al, byte ptr [dta_len]
+    352	    01BA  F7 E1			     mul cx
+    353
+    354	    01BC  BB 0431r		     mov bx, offset dta
+    355	    01BF  03 D8			     add bx, ax
+    356	    01C1  8B C3			     mov ax, bx
+    357	    01C3  C3			     ret
+    358	    01C4			 zeros:
+    359	    01C4  5B			     pop bx
+    360	    01C5  59			     pop cx ; length
+    361	    01C6  5F			     pop di ; address
+    362	    01C7  53			     push bx
+    363	    01C8  B0 00			     mov al, 0
+    364	    01CA  FC			     cld
+    365	    01CB  F3> AA		     rep stosb
+    366	    01CD  C3			     ret
+    367	    01CE			 is_folder:
+    368	    01CE  BB 0446r		     mov bx, offset dta	+ 15h
+    369	    01D1  8A 1F			     mov bl, byte ptr [bx]
+    370	    01D3  80 FB	10		     cmp bl, 10h
+    371	    01D6  74 02			     je	_is_folder_true
+    372	    01D8  75 05			     jne _is_folder_false
+    373	    01DA			 _is_folder_true:
+    374	    01DA  B8 0001		     mov ax, 1
+    375	    01DD  EB 05			     jmp _is_folder_end
+    376	    01DF			 _is_folder_false:
+    377	    01DF  B8 0000		     mov ax, 0
+    378	    01E2  EB 00			     jmp _is_folder_end
+    379	    01E4			 _is_folder_end:
+    380	    01E4  C3			     ret
+    381
+    382
+    383
+    384	    01E5			 find_first_error:
+    385					     print_range <find_first_fails, newline>
+2   386						 print <offset find_first_fails>
+3   387	    01E5  B4 09				 mov ah, 09h
+3   388	    01E7  BA 032Cr			 mov dx, offset	find_first_fails
+3   389	    01EA  CD 21				 int 21h
+2   390						 print <offset newline>
+3   391	    01EC  B4 09				 mov ah, 09h
+3   392	    01EE  BA 042Fr			 mov dx, offset	newline
+3   393	    01F1  CD 21				 int 21h
+    394					     exit
+1   395	    01F3  B4 00			     mov ah, 00h
+1   396	    01F5  CD 21			     int 21h
+    397	    01F7			 find_next_error:
+    398					     print_range <find_next_fails, newline>
+2   399						 print <offset find_next_fails>
+Turbo Assembler	 Version 4.1	    12/08/19 21:55:34	    Page 8
 2tree.ASM
 
 
 
-1   400	    0209  CD 21			     int 21h
-    401
-    402	    020B			 parse_command_line:
-    403					     ;
-    404					     ; prepare root folder
-    405					     ;
-    406	    020B  BE 0082		     mov si, 82h
-    407	    020E  B9 0040		     mov cx, 64
-    408	    0211  51			     push cx
-    409	    0212  56			     push si
-    410	    0213  E8 00DD		     call count_no_space_no_zero_letters
-    411	    0216  8B C8			     mov cx, ax
-    412	    0218  BE 0082		     mov si, 82h
-    413	    021B  BF 03AFr		     mov di, offset root_folder
-    414	    021E  F3> A4		     rep movsb
-    415
-    416	    0220			 parse_args:
-    417	    0220  46			     inc si
-    418	    0221  46			     inc si
-    419	    0222  80 3C	64		     cmp byte ptr [si],	'd'
-    420	    0225  74 07			     je	parse_d
-    421	    0227  80 3C	66		     cmp byte ptr [si],	'f'
-    422	    022A  74 0F			     je	parse_f
-    423	    022C  EB 19			     jmp parse_end
-    424	    022E			 parse_d:
-    425					     ;
-    426					     ; parse_deep level
-    427					     ;
-    428	    022E  46			     inc si
-    429	    022F  46			     inc si
-    430	    0230  8A 1C			     mov bl, byte ptr [si]
-    431	    0232  80 EB	30		     sub bl, 30h	     ; to number
-    432	    0235  88 1E	0363r		     mov byte ptr [deep_level],	bl
-    433	    0239  EB E5			     jmp parse_args
-    434	    023B			 parse_f:
-    435	    023B  46			     inc si
-    436	    023C  46			     inc si
-    437	    023D  BF 0365r		     mov di, offset file_ext
-    438	    0240  B9 0004		     mov cx, 4
-    439	    0243  F3> A4		     rep movsb
-    440	    0245  EB D9			     jmp parse_args
-    441					     ;
-    442					     ; parse file extension
-    443					     ;
-    444	    0247			 parse_end:
-    445	    0247  C3			     ret
-    446	    0248			 find_next:
-    447	    0248  B4 4F			     mov ah, 4Fh
-    448	    024A  CD 21			     int 21h
-    449
-    450	    024C  C3			     ret
-    451
-    452	    024D			 find_first:
-    453	    024D  5B			     pop bx
-    454	    024E  5A			     pop dx		 ; filename spec
-    455	    024F  B9 0010		     mov cx, 10h	 ; include directories
-    456	    0252  53			     push bx
-Turbo Assembler	 Version 4.1	    12/08/19 21:52:25	    Page 9
+3   400	    01F7  B4 09				 mov ah, 09h
+3   401	    01F9  BA 0348r			 mov dx, offset	find_next_fails
+3   402	    01FC  CD 21				 int 21h
+2   403						 print <offset newline>
+3   404	    01FE  B4 09				 mov ah, 09h
+3   405	    0200  BA 042Fr			 mov dx, offset	newline
+3   406	    0203  CD 21				 int 21h
+    407					     exit
+1   408	    0205  B4 00			     mov ah, 00h
+1   409	    0207  CD 21			     int 21h
+    410
+    411	    0209			 parse_command_line:
+    412					     ;
+    413					     ; prepare root folder
+    414					     ;
+    415	    0209  BE 0082		     mov si, 82h
+    416	    020C  B9 0040		     mov cx, 64
+    417	    020F  51			     push cx
+    418	    0210  56			     push si
+    419	    0211  E8 00DF		     call count_no_space_no_zero_letters
+    420	    0214  8B C8			     mov cx, ax
+    421	    0216  BE 0082		     mov si, 82h
+    422	    0219  BF 03AFr		     mov di, offset root_folder
+    423	    021C  F3> A4		     rep movsb
+    424
+    425	    021E			 parse_args:
+    426	    021E  46			     inc si
+    427	    021F  46			     inc si
+    428	    0220  80 3C	64		     cmp byte ptr [si],	'd'
+    429	    0223  74 07			     je	parse_d
+    430	    0225  80 3C	66		     cmp byte ptr [si],	'f'
+    431	    0228  74 0F			     je	parse_f
+    432	    022A  EB 19			     jmp parse_end
+    433	    022C			 parse_d:
+    434					     ;
+    435					     ; parse_deep level
+    436					     ;
+    437	    022C  46			     inc si
+    438	    022D  46			     inc si
+    439	    022E  8A 1C			     mov bl, byte ptr [si]
+    440	    0230  80 EB	30		     sub bl, 30h	     ; to number
+    441	    0233  88 1E	0363r		     mov byte ptr [deep_level],	bl
+    442	    0237  EB E5			     jmp parse_args
+    443	    0239			 parse_f:
+    444	    0239  46			     inc si
+    445	    023A  46			     inc si
+    446	    023B  BF 0365r		     mov di, offset file_ext
+    447	    023E  B9 0004		     mov cx, 4
+    448	    0241  F3> A4		     rep movsb
+    449	    0243  EB D9			     jmp parse_args
+    450					     ;
+    451					     ; parse file extension
+    452					     ;
+    453	    0245			 parse_end:
+    454	    0245  C3			     ret
+    455	    0246			 find_next:
+    456	    0246  B4 4F			     mov ah, 4Fh
+Turbo Assembler	 Version 4.1	    12/08/19 21:55:34	    Page 9
 2tree.ASM
 
 
 
-    457
-    458	    0253  33 C0			     xor ax, ax
-    459	    0255  B4 4E			     mov ah, 4Eh
-    460	    0257  CD 21			     int 21h
-    461	    0259  C3			     ret
-    462	    025A			 show_filename_from_dta:
-    463	    025A  5B			     pop bx
-    464	    025B  59			     pop cx  ; deep level
-    465	    025C  53			     push bx
+    457	    0248  CD 21			     int 21h
+    458
+    459	    024A  C3			     ret
+    460
+    461	    024B			 find_first:
+    462	    024B  5B			     pop bx
+    463	    024C  5A			     pop dx		 ; filename spec
+    464	    024D  B9 0010		     mov cx, 10h	 ; include directories
+    465	    0250  53			     push bx
     466
-    467	    025D  51			     push cx
-    468	    025E  E8 FF53		     call move_dta
-    469	    0261  05 001E		     add ax, 1Eh
-    470					     ; xor ax, ax
-    471					     ; mov al, byte ptr	[dta_len]
-    472					     ; mul cx
-    473					     ; mov bx, offset dta + 1Eh
-    474					     ; add bx, ax
+    467	    0251  33 C0			     xor ax, ax
+    468	    0253  B4 4E			     mov ah, 4Eh
+    469	    0255  CD 21			     int 21h
+    470	    0257  C3			     ret
+    471	    0258			 show_filename_from_dta:
+    472	    0258  5B			     pop bx
+    473	    0259  59			     pop cx  ; deep level
+    474	    025A  53			     push bx
     475
-    476	    0264  8B D8			     mov bx, ax
-    477					     load <bx>
-2   478	    0266  53				 push bx
-    479	    0267  80 3F	2E		     cmp byte ptr [bx],	'.'
-    480	    026A  75 05			     jne _show_filename_from_dta_valid_name
-    481	    026C  B8 0000		     mov ax, 0
-    482					     restore <bx>
-2   483	    026F  5B				 pop bx
-    484	    0270  C3			     ret
-    485	    0271			 _show_filename_from_dta_valid_name:
-    486	    0271  B9 000D		     mov cx, 13
-    487					     restore <bx>
-2   488	    0274  5B				 pop bx
-    489					     load <bx>
-2   490	    0275  53				 push bx
-    491	    0276  51			     push cx
-    492	    0277  53			     push bx
-    493	    0278  E8 0078		     call count_no_space_no_zero_letters
-    494	    027B  8B C8			     mov cx, ax
-    495					     restore <bx>
-2   496	    027D  5B				 pop bx
-    497					     ; mov ax, offset dta + 1Eh
-    498	    027E  51			     push cx
-    499	    027F  53			     push bx
-    500	    0280  E8 005A		     call print_string_with_length
-    501					     print_range <newline>
-2   502						 print <offset newline>
-3   503	    0283  B4 09				 mov ah, 09h
-3   504	    0285  BA 042Fr			 mov dx, offset	newline
-3   505	    0288  CD 21				 int 21h
-    506	    028A  B8 0001		     mov ax, 1
-    507	    028D  C3			     ret
-    508	    028E			 cd:
-    509	    028E  5B			     pop bx ; ret addr
-    510	    028F  5A			     pop dx ; root address
-    511	    0290  53			     push bx ; ret addr
-    512
-    513	    0291  33 C0			     xor ax, ax
-Turbo Assembler	 Version 4.1	    12/08/19 21:52:25	    Page 10
+    476	    025B  51			     push cx
+    477	    025C  E8 FF53		     call move_dta
+    478	    025F  05 001E		     add ax, 1Eh
+    479					     ; xor ax, ax
+    480					     ; mov al, byte ptr	[dta_len]
+    481					     ; mul cx
+    482					     ; mov bx, offset dta + 1Eh
+    483					     ; add bx, ax
+    484
+    485	    0262  8B D8			     mov bx, ax
+    486					     load <bx>
+2   487	    0264  53				 push bx
+    488	    0265  80 3F	2E		     cmp byte ptr [bx],	'.'
+    489	    0268  75 05			     jne _show_filename_from_dta_valid_name
+    490	    026A  B8 0000		     mov ax, 0
+    491					     restore <bx>
+2   492	    026D  5B				 pop bx
+    493	    026E  C3			     ret
+    494	    026F			 _show_filename_from_dta_valid_name:
+    495	    026F  B9 000D		     mov cx, 13
+    496					     restore <bx>
+2   497	    0272  5B				 pop bx
+    498					     load <bx>
+2   499	    0273  53				 push bx
+    500	    0274  51			     push cx
+    501	    0275  53			     push bx
+    502	    0276  E8 007A		     call count_no_space_no_zero_letters
+    503	    0279  8B C8			     mov cx, ax
+    504					     restore <bx>
+2   505	    027B  5B				 pop bx
+    506					     ; mov ax, offset dta + 1Eh
+    507	    027C  51			     push cx
+    508	    027D  53			     push bx
+    509	    027E  E8 005C		     call print_string_with_length
+    510					     print_range <newline>
+2   511						 print <offset newline>
+3   512	    0281  B4 09				 mov ah, 09h
+3   513	    0283  BA 042Fr			 mov dx, offset	newline
+Turbo Assembler	 Version 4.1	    12/08/19 21:55:34	    Page 10
 2tree.ASM
 
 
 
-    514	    0293  B4 3B			     mov ah, 3Bh
-    515	    0295  CD 21			     int 21h
-    516
-    517	    0297  72 01			     jc	cd_error
-    518	    0299  C3			     ret
-    519	    029A			 cd_error:
-    520					     print_range <cd_fails, newline>
-2   521						 print <offset cd_fails>
-3   522	    029A  B4 09				 mov ah, 09h
-3   523	    029C  BA 0314r			 mov dx, offset	cd_fails
-3   524	    029F  CD 21				 int 21h
-2   525						 print <offset newline>
-3   526	    02A1  B4 09				 mov ah, 09h
-3   527	    02A3  BA 042Fr			 mov dx, offset	newline
-3   528	    02A6  CD 21				 int 21h
-    529	    02A8  C3			     ret
-    530
-    531	    02A9			 set_dta:
-    532	    02A9  5B			     pop bx
-    533	    02AA  59			     pop cx			 ; deep	level
-    534	    02AB  5A			     pop dx			 ; dta address offset
-    535	    02AC  53			     push bx
-    536
-    537					     ; shift to	current	dta
-    538					     ; mov cx, 0
-    539					     ; load <dx>
-    540					     ; push cx
-    541					     ; call move_dta
-    542					     ; restore <dx>
-    543					     ; add dx, ax
-    544					     load <dx>
-2   545	    02AD  52				 push dx
-    546	    02AE  33 C0			     xor ax, ax
-    547	    02B0  A0 0313r		     mov al, byte ptr [dta_len]
-    548	    02B3  F7 E1			     mul cx
-    549					     restore <dx>
-2   550	    02B5  5A				 pop dx
-    551	    02B6  03 D0			     add dx, ax
-    552
-    553	    02B8  33 C0			     xor ax, ax
-    554	    02BA  B4 1A			     mov ah, 1Ah
-    555	    02BC  CD 21			     int 21h
-    556
-    557	    02BE  C3			     ret
-    558
-    559	    02BF			 save_cwd:
-    560	    02BF  BE 036Fr		     mov si, offset working_folder
-    561
-    562					     ;
-    563					     ; save driver
-    564					     ;
-    565	    02C2  B4 19			     mov ah, 19h		 ; GET CURRENT DEFAULT DRIVE
-    566	    02C4  CD 21			     int 21h
-    567	    02C6  8A D0			     mov dl, al
-    568	    02C8  80 C2	41		     add dl, 41h
-    569	    02CB  88 14			     mov byte ptr [si],	dl
-    570	    02CD  46			     inc si
-Turbo Assembler	 Version 4.1	    12/08/19 21:52:25	    Page 11
+3   514	    0286  CD 21				 int 21h
+    515	    0288  B8 0001		     mov ax, 1
+    516	    028B  C3			     ret
+    517	    028C			 cd:
+    518	    028C  5B			     pop bx ; ret addr
+    519	    028D  5A			     pop dx ; root address
+    520	    028E  53			     push bx ; ret addr
+    521
+    522	    028F  33 C0			     xor ax, ax
+    523	    0291  B4 3B			     mov ah, 3Bh
+    524	    0293  CD 21			     int 21h
+    525
+    526	    0295  72 01			     jc	cd_error
+    527	    0297  C3			     ret
+    528	    0298			 cd_error:
+    529					     print_range <cd_fails, newline>
+2   530						 print <offset cd_fails>
+3   531	    0298  B4 09				 mov ah, 09h
+3   532	    029A  BA 0314r			 mov dx, offset	cd_fails
+3   533	    029D  CD 21				 int 21h
+2   534						 print <offset newline>
+3   535	    029F  B4 09				 mov ah, 09h
+3   536	    02A1  BA 042Fr			 mov dx, offset	newline
+3   537	    02A4  CD 21				 int 21h
+    538	    02A6  C3			     ret
+    539
+    540	    02A7			 set_dta:
+    541	    02A7  5B			     pop bx
+    542	    02A8  59			     pop cx			 ; deep	level
+    543					     ; pop dx			   ; dta address offset
+    544	    02A9  53			     push bx
+    545
+    546	    02AA  BA 0431r		     mov dx, offset dta
+    547					     ; shift to	current	dta
+    548					     ; mov cx, 0
+    549					     ; load <dx>
+    550					     ; push cx
+    551					     ; call move_dta
+    552					     ; restore <dx>
+    553					     ; add dx, ax
+    554					     load <dx>
+2   555	    02AD  52				 push dx
+    556	    02AE  33 C0			     xor ax, ax
+    557	    02B0  A0 0313r		     mov al, byte ptr [dta_len]
+    558	    02B3  F7 E1			     mul cx
+    559					     restore <dx>
+2   560	    02B5  5A				 pop dx
+    561	    02B6  03 D0			     add dx, ax
+    562
+    563	    02B8  33 C0			     xor ax, ax
+    564	    02BA  B4 1A			     mov ah, 1Ah
+    565	    02BC  CD 21			     int 21h
+    566
+    567	    02BE  C3			     ret
+    568
+    569	    02BF			 save_cwd:
+    570	    02BF  BE 036Fr		     mov si, offset working_folder
+Turbo Assembler	 Version 4.1	    12/08/19 21:55:34	    Page 11
 2tree.ASM
 
 
 
-    571	    02CE  C6 04	3A		     mov byte ptr [si],	':'
-    572	    02D1  46			     inc si
-    573	    02D2  C6 04	5C		     mov byte ptr [si],	'\'
-    574	    02D5  46			     inc si
-    575
-    576					     ;
-    577					     ; save folder
-    578					     ;
-    579	    02D6  32 D2			     xor dl, dl			 ; Actual drive
-    580	    02D8  B4 47			     mov ah, 47h		 ; CWD - GET CURRENT DIRECTORY
-    581	    02DA  CD 21			     int 21h
-    582	    02DC  C3			     ret
-    583	    02DD			 print_string_with_length:
-    584	    02DD  5B			     pop bx ; ret address
-    585	    02DE  5E			     pop si ; string offset
-    586	    02DF  59			     pop cx ; string length
-    587	    02E0  53			     push bx; ret address
-    588	    02E1  33 C0			     xor ax, ax
-    589	    02E3			 _print_string_with_length_loop:
-    590	    02E3  B4 02			     mov ah, 02h
-    591	    02E5  8A 14			     mov dl, byte ptr [si]
-    592	    02E7  CD 21			     int 21h
-    593	    02E9  49			     dec cx
-    594	    02EA  46			     inc si
-    595	    02EB  83 F9	00		     cmp cx, 00h
-    596	    02EE  74 02			     je	_print_string_with_length_end
-    597	    02F0  EB F1			     jmp _print_string_with_length_loop
-    598	    02F2			 _print_string_with_length_end:
-    599	    02F2  C3			     ret
-    600	    02F3			 count_no_space_no_zero_letters:
-    601	    02F3  5B			     pop bx ; ret address
-    602	    02F4  5E			     pop si ; string offset
-    603	    02F5  59			     pop cx ; string length
-    604	    02F6  53			     push bx ; ret address
-    605	    02F7  B8 0000		     mov ax, 0
-    606	    02FA			 _count_non_space_symbols_loop:
-    607	    02FA  80 3C	20		     cmp byte ptr [si],	20h
-    608	    02FD  74 12			     je	_count_non_space_symbols_end
-    609	    02FF  80 3C	0D		     cmp byte ptr [si],	0Dh
-    610	    0302  74 0D			     je	_count_non_space_symbols_end
-    611	    0304  80 3C	00		     cmp byte ptr [si],	00h
-    612	    0307  74 08			     je	_count_non_space_symbols_end
-    613	    0309  3B C1			     cmp ax, cx
-    614	    030B  74 04			     je	_count_non_space_symbols_end
-    615	    030D  40			     inc ax
-    616	    030E  46			     inc si
-    617	    030F  EB E9			     jmp _count_non_space_symbols_loop
-    618	    0311			 _count_non_space_symbols_end:
-    619	    0311  C3			     ret
-    620					 ;
-    621					 ; error codes
-    622					 ;
-    623	    0312  12			 no_more_files db 18
-    624	    0313  2B			 dta_len db 2bh
-    625					 ;
-    626					 ; error messages
-    627					 ;
-Turbo Assembler	 Version 4.1	    12/08/19 21:52:25	    Page 12
+    571
+    572					     ;
+    573					     ; save driver
+    574					     ;
+    575	    02C2  B4 19			     mov ah, 19h		 ; GET CURRENT DEFAULT DRIVE
+    576	    02C4  CD 21			     int 21h
+    577	    02C6  8A D0			     mov dl, al
+    578	    02C8  80 C2	41		     add dl, 41h
+    579	    02CB  88 14			     mov byte ptr [si],	dl
+    580	    02CD  46			     inc si
+    581	    02CE  C6 04	3A		     mov byte ptr [si],	':'
+    582	    02D1  46			     inc si
+    583	    02D2  C6 04	5C		     mov byte ptr [si],	'\'
+    584	    02D5  46			     inc si
+    585
+    586					     ;
+    587					     ; save folder
+    588					     ;
+    589	    02D6  32 D2			     xor dl, dl			 ; Actual drive
+    590	    02D8  B4 47			     mov ah, 47h		 ; CWD - GET CURRENT DIRECTORY
+    591	    02DA  CD 21			     int 21h
+    592	    02DC  C3			     ret
+    593	    02DD			 print_string_with_length:
+    594	    02DD  5B			     pop bx ; ret address
+    595	    02DE  5E			     pop si ; string offset
+    596	    02DF  59			     pop cx ; string length
+    597	    02E0  53			     push bx; ret address
+    598	    02E1  33 C0			     xor ax, ax
+    599	    02E3			 _print_string_with_length_loop:
+    600	    02E3  B4 02			     mov ah, 02h
+    601	    02E5  8A 14			     mov dl, byte ptr [si]
+    602	    02E7  CD 21			     int 21h
+    603	    02E9  49			     dec cx
+    604	    02EA  46			     inc si
+    605	    02EB  83 F9	00		     cmp cx, 00h
+    606	    02EE  74 02			     je	_print_string_with_length_end
+    607	    02F0  EB F1			     jmp _print_string_with_length_loop
+    608	    02F2			 _print_string_with_length_end:
+    609	    02F2  C3			     ret
+    610	    02F3			 count_no_space_no_zero_letters:
+    611	    02F3  5B			     pop bx ; ret address
+    612	    02F4  5E			     pop si ; string offset
+    613	    02F5  59			     pop cx ; string length
+    614	    02F6  53			     push bx ; ret address
+    615	    02F7  B8 0000		     mov ax, 0
+    616	    02FA			 _count_non_space_symbols_loop:
+    617	    02FA  80 3C	20		     cmp byte ptr [si],	20h
+    618	    02FD  74 12			     je	_count_non_space_symbols_end
+    619	    02FF  80 3C	0D		     cmp byte ptr [si],	0Dh
+    620	    0302  74 0D			     je	_count_non_space_symbols_end
+    621	    0304  80 3C	00		     cmp byte ptr [si],	00h
+    622	    0307  74 08			     je	_count_non_space_symbols_end
+    623	    0309  3B C1			     cmp ax, cx
+    624	    030B  74 04			     je	_count_non_space_symbols_end
+    625	    030D  40			     inc ax
+    626	    030E  46			     inc si
+    627	    030F  EB E9			     jmp _count_non_space_symbols_loop
+Turbo Assembler	 Version 4.1	    12/08/19 21:55:34	    Page 12
 2tree.ASM
 
 
 
-    628	    0314  43 68	61 6E 67 65 20+	 cd_fails db 'Change directory fails.$'
-    629		  64 69	72 65 63 74 6F+
-    630		  72 79	20 66 61 69 6C+
-    631		  73 2E	24
-    632	    032C  66 69	6E 64 5F 66 69+	 find_first_fails db 'find_first filenames fails.$'
-    633		  72 73	74 20 66 69 6C+
-    634		  65 6E	61 6D 65 73 20+
-    635		  66 61	69 6C 73 2E 24
-    636	    0348  66 69	6E 64 5F 6E 65+	 find_next_fails db  'find_next	filenames fails.$'
-    637		  78 74	20 66 69 6C 65+
-    638		  6E 61	6D 65 73 20 66+
-    639		  61 69	6C 73 2E 24
-    640					 ;
-    641					 ;   parse arguments
-    642					 ;
-    643	    0363  01			 deep_level db 1
-    644	    0364  2A			 file_mask db '*'
-    645	    0365  2E 2A	00 00 00	 file_ext db '.*', 00h,	00h, 00h
-    646	    036A  2A 00			 folder_mask db	'*', 00h
-    647					 ;
-    648					 ; strings
-    649					 ;
-    650	    036C  2E 2E	00		 parent_folder db '..',	00h
-    651	    036F  40*(00)		 working_folder	db 64 dup(00h)
-    652	    03AF  40*(00)		 root_folder db	64 dup(00h)
-    653	    03EF  40*(00)		 start_mask db 64 dup(00h)
-    654	    042F  0A 24			 newline db 0Ah, '$'
-    655	    0431  2B*(00)		 dta db	43 dup(0)
-    656					 end start
-Turbo Assembler	 Version 4.1	    12/08/19 21:52:25	    Page 13
+    628	    0311			 _count_non_space_symbols_end:
+    629	    0311  C3			     ret
+    630					 ;
+    631					 ; error codes
+    632					 ;
+    633	    0312  12			 no_more_files db 18
+    634	    0313  2B			 dta_len db 2bh
+    635					 ;
+    636					 ; error messages
+    637					 ;
+    638	    0314  43 68	61 6E 67 65 20+	 cd_fails db 'Change directory fails.$'
+    639		  64 69	72 65 63 74 6F+
+    640		  72 79	20 66 61 69 6C+
+    641		  73 2E	24
+    642	    032C  66 69	6E 64 5F 66 69+	 find_first_fails db 'find_first filenames fails.$'
+    643		  72 73	74 20 66 69 6C+
+    644		  65 6E	61 6D 65 73 20+
+    645		  66 61	69 6C 73 2E 24
+    646	    0348  66 69	6E 64 5F 6E 65+	 find_next_fails db  'find_next	filenames fails.$'
+    647		  78 74	20 66 69 6C 65+
+    648		  6E 61	6D 65 73 20 66+
+    649		  61 69	6C 73 2E 24
+    650					 ;
+    651					 ;   parse arguments
+    652					 ;
+    653	    0363  01			 deep_level db 1
+    654	    0364  2A			 file_mask db '*'
+    655	    0365  2E 2A	00 00 00	 file_ext db '.*', 00h,	00h, 00h
+    656	    036A  2A 00			 folder_mask db	'*', 00h
+    657					 ;
+    658					 ; strings
+    659					 ;
+    660	    036C  2E 2E	00		 parent_folder db '..',	00h
+    661	    036F  40*(00)		 working_folder	db 64 dup(00h)
+    662	    03AF  40*(00)		 root_folder db	64 dup(00h)
+    663	    03EF  40*(00)		 start_mask db 64 dup(00h)
+    664	    042F  0A 24			 newline db 0Ah, '$'
+    665	    0431  2B*(00)		 dta db	43 dup(0)
+    666					 end start
+Turbo Assembler	 Version 4.1	    12/08/19 21:55:34	    Page 13
 Symbol Table
 
 
@@ -724,7 +734,7 @@ Symbol Name			  Type	 Value
 
 ??DATE				  Text	 "12/08/19"
 ??FILENAME			  Text	 "2tree	  "
-??TIME				  Text	 "21:52:24"
+??TIME				  Text	 "21:55:33"
 ??VERSION			  Number 040A
 @32BIT				  Text	 0
 @CODE				  Text	 DGROUP
@@ -738,8 +748,8 @@ Symbol Name			  Type	 Value
 @MODEL				  Text	 1
 @STACK				  Text	 DGROUP
 @WORDSIZE			  Text	 2
-CD				  Near	 DGROUP:028E
-CD_ERROR			  Near	 DGROUP:029A
+CD				  Near	 DGROUP:028C
+CD_ERROR			  Near	 DGROUP:0298
 CD_FAILS			  Byte	 DGROUP:0314
 COUNT_NO_SPACE_NO_ZERO_LETTERS	  Near	 DGROUP:02F3
 DEEP_LEVEL			  Byte	 DGROUP:0363
@@ -747,50 +757,50 @@ DTA				  Byte	 DGROUP:0431
 DTA_LEN				  Byte	 DGROUP:0313
 FILE_EXT			  Byte	 DGROUP:0365
 FILE_MASK			  Byte	 DGROUP:0364
-FIND_FIRST			  Near	 DGROUP:024D
-FIND_FIRST_ERROR		  Near	 DGROUP:01E7
+FIND_FIRST			  Near	 DGROUP:024B
+FIND_FIRST_ERROR		  Near	 DGROUP:01E5
 FIND_FIRST_FAILS		  Byte	 DGROUP:032C
-FIND_NEXT			  Near	 DGROUP:0248
-FIND_NEXT_ERROR			  Near	 DGROUP:01F9
+FIND_NEXT			  Near	 DGROUP:0246
+FIND_NEXT_ERROR			  Near	 DGROUP:01F7
 FIND_NEXT_FAILS			  Byte	 DGROUP:0348
 FOLDER_MASK			  Byte	 DGROUP:036A
-IS_FOLDER			  Near	 DGROUP:01D0
-LIST_SUBFILES_RECURSIVE		  Near	 DGROUP:0146
-LIST_SUBFILES_RECURSIVE_FROM	  Near	 DGROUP:0127
-MOVE_DTA			  Near	 DGROUP:01B4
+IS_FOLDER			  Near	 DGROUP:01CE
+LIST_SUBFILES_RECURSIVE		  Near	 DGROUP:0142
+LIST_SUBFILES_RECURSIVE_FROM	  Near	 DGROUP:0123
+MOVE_DTA			  Near	 DGROUP:01B2
 NEWLINE				  Byte	 DGROUP:042F
 NO_MORE_FILES			  Byte	 DGROUP:0312
 PARENT_FOLDER			  Byte	 DGROUP:036C
-PARSE_ARGS			  Near	 DGROUP:0220
-PARSE_COMMAND_LINE		  Near	 DGROUP:020B
-PARSE_D				  Near	 DGROUP:022E
-PARSE_END			  Near	 DGROUP:0247
-PARSE_F				  Near	 DGROUP:023B
+PARSE_ARGS			  Near	 DGROUP:021E
+PARSE_COMMAND_LINE		  Near	 DGROUP:0209
+PARSE_D				  Near	 DGROUP:022C
+PARSE_END			  Near	 DGROUP:0245
+PARSE_F				  Near	 DGROUP:0239
 PRINT_STRING_WITH_LENGTH	  Near	 DGROUP:02DD
 ROOT_FOLDER			  Byte	 DGROUP:03AF
 SAVE_CWD			  Near	 DGROUP:02BF
-SET_DTA				  Near	 DGROUP:02A9
-SHOW_FILENAME_FROM_DTA		  Near	 DGROUP:025A
+SET_DTA				  Near	 DGROUP:02A7
+SHOW_FILENAME_FROM_DTA		  Near	 DGROUP:0258
 START				  Near	 DGROUP:0100
 START_MASK			  Byte	 DGROUP:03EF
 WORKING_FOLDER			  Byte	 DGROUP:036F
-ZEROS				  Near	 DGROUP:01C6
+ZEROS				  Near	 DGROUP:01C4
 _COUNT_NON_SPACE_SYMBOLS_END	  Near	 DGROUP:0311
-Turbo Assembler	 Version 4.1	    12/08/19 21:52:25	    Page 14
+Turbo Assembler	 Version 4.1	    12/08/19 21:55:34	    Page 14
 Symbol Table
 
 
 
 _COUNT_NON_SPACE_SYMBOLS_LOOP	  Near	 DGROUP:02FA
-_IS_FOLDER_END			  Near	 DGROUP:01E6
-_IS_FOLDER_FALSE		  Near	 DGROUP:01E1
-_IS_FOLDER_TRUE			  Near	 DGROUP:01DC
-_LIST_SUBFILES_RECURSIVE_END	  Near	 DGROUP:01B2
-_LIST_SUBFILES_RECURSIVE_LOOP	  Near	 DGROUP:015F
-_LIST_SUBFILES_RECURSIVE_NEXT	  Near	 DGROUP:01A7
+_IS_FOLDER_END			  Near	 DGROUP:01E4
+_IS_FOLDER_FALSE		  Near	 DGROUP:01DF
+_IS_FOLDER_TRUE			  Near	 DGROUP:01DA
+_LIST_SUBFILES_RECURSIVE_END	  Near	 DGROUP:01B0
+_LIST_SUBFILES_RECURSIVE_LOOP	  Near	 DGROUP:0157
+_LIST_SUBFILES_RECURSIVE_NEXT	  Near	 DGROUP:01A5
 _PRINT_STRING_WITH_LENGTH_END	  Near	 DGROUP:02F2
 _PRINT_STRING_WITH_LENGTH_LOOP	  Near	 DGROUP:02E3
-_SHOW_FILENAME_FROM_DTA_VALID_NA  Near	 DGROUP:0271
+_SHOW_FILENAME_FROM_DTA_VALID_NA  Near	 DGROUP:026F
 ME
 
 Macro Name

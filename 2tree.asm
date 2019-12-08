@@ -6,8 +6,8 @@ model tiny
 org 100h
 start:
     call save_cwd
-    mov ax, offset dta
-    push ax
+    ; mov ax, offset dta
+    ; push ax
     mov cx, 0
     push cx
     call set_dta
@@ -69,8 +69,8 @@ list_subfiles_recursive:
     ; mov ax, offset file_mask
 
     load <cx, ax>
-    mov ax, offset dta
-    push ax
+    ; mov ax, offset dta
+    ; push ax
     ; mov cx, 0
     push cx
     call set_dta
@@ -159,6 +159,13 @@ _list_subfiles_recursive_loop:
     mov ax, offset parent_folder
     push ax
     call cd
+
+    restore <cx>
+    load <cx>
+    ; mov ax, offset dta
+    push cx
+    ; push ax
+    call set_dta
 _list_subfiles_recursive_next:
     call find_next
     jnc _list_subfiles_recursive_loop
@@ -328,9 +335,10 @@ cd_error:
 set_dta:
     pop bx
     pop cx                      ; deep level
-    pop dx                      ; dta address offset
+    ; pop dx                      ; dta address offset
     push bx
 
+    mov dx, offset dta
     ; shift to current dta
     ; mov cx, 0
     ; load <dx>
