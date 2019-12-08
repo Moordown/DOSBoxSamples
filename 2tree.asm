@@ -39,7 +39,7 @@ list_subfiles_recursive_from:
     restore <cx>
 
     ;
-    ; list subfiles
+    ; list subfolder
     ;
     mov ax, offset folder_mask
     load <cx>
@@ -65,12 +65,14 @@ list_subfiles_recursive:
     pop ax ; filemask offset
     push bx
     ; mov ax, offset file_mask
+    load <cx>
     push ax
     call find_first
     jc find_first_error
-    load <cx>
 _list_subfiles_recursive_loop:
     call show_filename_from_dta
+    cmp ax, 1
+    jne _list_subfiles_recursive_next 
     
     ;
     ;   check if folder
@@ -87,11 +89,36 @@ _list_subfiles_recursive_loop:
     xor bx, bx
     mov bl, byte ptr [deep_level]
     cmp cx, bx
-    jne _list_subfiles_recursive_next
+    jge _list_subfiles_recursive_next
 
     ;
     ; start new search
     ;
+
+    ;
+    ;   cd to subfolder
+    ;
+    load <cx>
+    mov ax, offset dta + 1Eh
+    push ax
+    call cd
+    restore <cx>
+
+    ;
+    ;   list subfiles from subfolder
+    ;
+    inc cx
+    mov ax, offset file_mask
+    push ax
+    push cx
+    call list_subfiles_recursive
+
+    ;
+    ;   cd to this function
+    ;
+    mov ax, offset parent_folder
+    push ax
+    call cd
 
 _list_subfiles_recursive_next:
     call find_next
@@ -103,8 +130,9 @@ _list_subfiles_recursive_end:
     ret
 
 is_folder:
-    mov ax, offset dta + 15h
-    cmp ax, 10h
+    mov bx, offset dta + 15h
+    mov bl, byte ptr [bx]
+    cmp bl, 10h
     je _is_folder_true
     jne _is_folder_false
 _is_folder_true:
@@ -189,6 +217,7 @@ show_filename_from_dta:
     mov bx, offset dta + 1Eh
     cmp byte ptr [bx], '.'
     jne show_filename_from_dta_valid_name
+    mov ax, 0
     ret
 show_filename_from_dta_valid_name:
     mov cx, 13
@@ -201,6 +230,7 @@ show_filename_from_dta_valid_name:
     push ax
     call print_string_with_length
     print_range <newline>
+    mov ax, 1
     ret
 cd:
     pop bx ; ret addr
