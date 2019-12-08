@@ -143,7 +143,6 @@ _list_subfiles_recursive_loop:
     mov ax, offset parent_folder
     push ax
     call cd
-
 _list_subfiles_recursive_next:
     call find_next
     jnc _list_subfiles_recursive_loop
@@ -152,7 +151,15 @@ _list_subfiles_recursive_next:
 _list_subfiles_recursive_end:
     restore <cx>
     ret
-
+zeros:
+    pop bx
+    pop cx ; length
+    pop di ; address
+    push bx
+    mov al, 0
+    cld
+    rep stosb
+    ret
 is_folder:
     mov bx, offset dta + 15h
     mov bl, byte ptr [bx]
