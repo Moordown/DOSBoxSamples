@@ -25,6 +25,7 @@ start:
     ;
     mov ax, offset working_folder
     push ax
+    break_point <ax>
     call cd
     exit
 
@@ -69,7 +70,6 @@ list_subfiles_recursive:
     ;
     call count_subfiles_here
     mov word ptr [current_max_entities], ax
-    ; break_point <bx>
 
     pop dx
     pop cx ; deep level
@@ -87,7 +87,7 @@ list_subfiles_recursive:
     push ax
     call find_first
     jnc _list_subfiles_recursive_loop
-    call find_first_error
+    ; call find_first_error
     jmp _list_subfiles_recursive_end
 _list_subfiles_recursive_loop:
     restore <cx>
@@ -102,7 +102,6 @@ _list_subfiles_recursive_loop:
     load <bx, cx>
     push bx
     push cx
-    ; break_point <ax>
     call show_filename_from_dta
     ; cmp ax, 1
     ; jne _list_subfiles_recursive_next 
@@ -110,6 +109,9 @@ _list_subfiles_recursive_loop:
     ;
     ;   check if folder
     ;
+    restore <cx>
+    load <cx>
+    push cx
     call is_folder
     cmp ax, 1
     jne _list_subfiles_recursive_next
@@ -129,6 +131,7 @@ _list_subfiles_recursive_loop:
     ;
     mov ax, word ptr [current_max_entities]
     load <ax>
+
     ;
     ;   cd to subfolder
     ;
@@ -138,6 +141,7 @@ _list_subfiles_recursive_loop:
     add ax, 1Eh
 
     push ax
+    break_point <bx>
     call cd
     restore <cx>
 
@@ -150,7 +154,6 @@ _list_subfiles_recursive_loop:
     ; sub bx, 0Bh
     ; mov bx, word ptr [bx]
     mov ax, offset folder_mask
-    ; break_point <bx>
     push bx
     push ax
     push cx
@@ -177,9 +180,9 @@ _list_subfiles_recursive_loop:
     ;
     mov ax, offset parent_folder
     push ax
+    break_point <cx>
     call cd
 
-    ; break_point <ax>
     restore <ax>
     mov word ptr [current_max_entities], ax
 
@@ -210,8 +213,17 @@ move_dta:
     mov ax, bx
     ret
 is_folder:
-    mov bx, offset dta + 15h
+    pop bx
+    pop cx
+    push bx
+
+    push cx
+    call move_dta
+
+    add ax, 15h
+    mov bx, ax
     mov bl, byte ptr [bx]
+    and bl, 10h
     cmp bl, 10h
     je _is_folder_true
     jne _is_folder_false
@@ -334,7 +346,6 @@ _show_filename_from_dta_valid_name:
     add ax, 1Eh
     mov bx, ax
     restore <ax>
-    ; break_point <dx>
     ; restore <cx, ax>
 
     load <cx, bx>
@@ -365,16 +376,17 @@ print_pseudographic_prefix:
 
     cmp cx, 0
     je _print_pseudographic_prefix_zero_level
+    ; print_range <level_shift>
+    ; dec cx
+    ; cmp cx, 0
+    ; je _print_pseudographic_prefix_zero_level
+_print_pseudographic_prefix_loop:
     print_range <level_shift>
     dec cx
     cmp cx, 0
-    je _print_pseudographic_prefix_zero_level
-_print_pseudographic_prefix_loop:
-    print_range <space>
-    dec cx
-    jnz _print_string_with_length_loop
+    jne _print_pseudographic_prefix_loop
+    ; jnz _print_string_with_length_loop
 _print_pseudographic_prefix_zero_level:
-    break_point <dx>
 
     mov bx, word ptr [current_max_entities]
     cmp al, bl
@@ -398,14 +410,23 @@ cd:
     pop dx ; root address
     push bx ; ret addr
 
+    load <dx>
     xor ax, ax
     mov ah, 3Bh
     int 21h
 
     jc cd_error
+    restore <dx>
     ret
 cd_error:
     print_range <cd_fails, newline>
+    restore <dx>
+    
+	mov ah, 09h
+    int 21h
+
+    print_range <newline>
+    exit
     ret
 
 set_dta:
