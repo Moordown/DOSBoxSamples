@@ -374,8 +374,10 @@ _print_pseudographic_prefix_loop:
     dec cx
     jnz _print_string_with_length_loop
 _print_pseudographic_prefix_zero_level:
-    cmp ax, word ptr [current_max_entities]
     break_point <dx>
+
+    mov bx, word ptr [current_max_entities]
+    cmp al, bl
     je _print_pseudographic_prefix_zero_level_end
     cmp ax, 1
     je _print_pseudographic_prefix_zero_level_first
