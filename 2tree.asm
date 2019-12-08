@@ -294,6 +294,12 @@ _show_filename_from_dta_valid_name:
     ;   pseudo graphic prefix
     ;
     restore <cx, bx>
+
+    load <cx, bx>
+    push cx
+    call print_pseudographic_prefix
+    restore <bx, cx>
+
     load <bx>
     mov cx, 13
     push cx
@@ -307,6 +313,26 @@ _show_filename_from_dta_valid_name:
     call print_string_with_length
     print_range <newline>
     mov ax, 1
+    ret
+print_pseudographic_prefix:
+    pop bx
+    pop cx
+    push bx
+
+    cmp cx, 0
+    je _print_pseudographic_prefix_zero_level
+_print_pseudographic_prefix_loop:
+    print_range <level_shift>
+    dec cx
+    jnz _print_string_with_length_loop
+    print_range <no_zero_level_middle_file>
+
+    jmp _print_pseudographic_prefix_end
+_print_pseudographic_prefix_zero_level:
+    print_range <zero_level_middle_file>
+
+    jmp _print_pseudographic_prefix_end
+_print_pseudographic_prefix_end:
     ret
 cd:
     pop bx ; ret addr
@@ -424,8 +450,13 @@ folder_mask db '*', 00h
 ;
 ;   pseudographic
 ;
-zero_level_folder db '├'
-no_zero_level_folder db '┬'
+level_shift db '| ', '$'
+zero_level_middle_file db 195, '$'
+zero_level_subfile db '|', '$'
+no_zero_level_first_file db 194, '$'
+no_zero_level_middle_file db 195, '$'
+no_zero_level_end_file db 192, '$'
+
 ;
 ; strings
 ;
@@ -434,5 +465,6 @@ working_folder db 64 dup(00h)
 root_folder db 64 dup(00h)
 start_mask db 64 dup(00h)
 newline db 0Ah, '$'
-dta db 43 dup(0)
+dta db 4300 dup(0)
+count_dta db 43 dup(0)
 end start
