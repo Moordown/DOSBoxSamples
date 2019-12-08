@@ -84,14 +84,21 @@ list_subfiles_recursive:
     call find_first_error
     jmp _list_subfiles_recursive_end
 _list_subfiles_recursive_loop:
+    restore <cx>
+    push cx
+    call is_valid_name
+    load <cx>
+    cmp ax, 1
+    jne _list_subfiles_recursive_next
+
     restore <cx, bx>
     inc bx
     load <bx, cx>
     push bx
     push cx
     call show_filename_from_dta
-    cmp ax, 1
-    jne _list_subfiles_recursive_next 
+    ; cmp ax, 1
+    ; jne _list_subfiles_recursive_next 
     
     ;
     ;   check if folder
@@ -293,19 +300,27 @@ show_filename_from_dta:
     pop ax  ; entity count
     push bx
 
-    load <ax, cx>
-    push cx
-    call is_valid_name
-    cmp ax, 1
-    je _show_filename_from_dta_valid_name
-    restore <cx, ax>
-    mov ax, 0
-    ret
+    ; load <ax, cx>
+    ; push cx
+    ; call is_valid_name
+    ; cmp ax, 1
+    ; je _show_filename_from_dta_valid_name
+    ; restore <cx, ax>
+    ; mov ax, 0
+    ; ret
 _show_filename_from_dta_valid_name:
     ;
     ;   pseudo graphic prefix
     ;
-    restore <cx, ax>
+    load <ax>
+    push cx
+    call move_dta
+    
+    add ax, 1Eh
+    mov bx, ax
+    restore <ax>
+    break_point <dx>
+    ; restore <cx, ax>
 
     load <cx, bx>
     push ax     ; entity count
