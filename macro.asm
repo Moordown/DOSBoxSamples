@@ -27,6 +27,17 @@ print_range macro args
     endm
 endm
 
+break_point macro
+    load <ax>
+    xor ax, ax
+    xor ax, ax
+    xor ax, ax
+    xor ax, ax
+    xor ax, ax
+    xor ax, ax
+    restore <ax>
+endm
+
 get_offset macro state
     xor dx, dx
     xor ax, ax
