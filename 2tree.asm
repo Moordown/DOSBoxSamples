@@ -229,15 +229,15 @@ parse_d:
     mov byte ptr [deep_level], bl
     jmp parse_args
 parse_f:
+    ;
+    ; parse file extension
+    ;
     inc si
     inc si
     mov di, offset file_ext
     mov cx, 4
     rep movsb
     jmp parse_args
-    ;
-    ; parse file extension
-    ;
 parse_end:
     ret
 find_next:
