@@ -13,15 +13,27 @@ start:
     mov ax, offset root_folder
     push ax
     call cd
-    mov ax, offset file_mask
-    push ax
-    call list_subfiles
+    ;
+    ; list subfiles
+    ;
     mov ax, offset folder_mask
+    mov cx, 0
     push ax
+    push cx
+    call list_subfiles
+
+    ;
+    ; list files
+    ;
+    mov ax, offset file_mask
+    mov cx, 0
+    push ax
+    push cx
     call list_subfiles
 
 list_subfiles:
     pop bx
+    pop cx ; deep level
     pop ax ; filemask offset
     push bx
     ; mov ax, offset file_mask
@@ -108,10 +120,14 @@ find_first:
     int 21h
     ret
 show_filename_from_dta:
-    mov ax, offset dta + 1Eh
+    mov bx, offset dta + 1Eh
+    cmp byte ptr [bx], '.'
+    jne show_filename_from_dta_valid_name
+    ret
+show_filename_from_dta_valid_name:
     mov cx, 13
     push cx
-    push ax
+    push bx
     call count_no_space_no_zero_letters
     mov cx, ax
     mov ax, offset dta + 1Eh
@@ -220,13 +236,14 @@ find_next_fails db  'find_next filenames fails.$'
 ;
 ;   parse arguments
 ;
-deep_level db 0
+deep_level db 2
 file_mask db '*'
-file_ext db '.txt', 00h
+file_ext db '.*', 00h, 00h, 00h
 folder_mask db '*', 00h
 ;
 ; strings
 ;
+parent_folder db '..', 00h
 working_folder db 64 dup(00h)
 root_folder db 64 dup(00h)
 start_mask db 64 dup(00h)
