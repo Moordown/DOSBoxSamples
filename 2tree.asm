@@ -10,28 +10,56 @@ start:
     push ax
     call set_dta
     call parse_command_line
+    
+    ;
+    ;   start tree 
+    ;
     mov ax, offset root_folder
+    mov cx, 0
+    push cx
+    push ax
+    call list_subfiles_recursive_from
+
+    ;
+    ;   cd to start folder
+    ;
+    mov ax, offset working_folder
     push ax
     call cd
+    exit
+
+list_subfiles_recursive_from:
+    pop bx      ; ret address
+    pop ax      ; deep level
+    pop cx      ; root folder offset
+    push bx
+    load <cx>     
+    push ax
+    call cd
+    restore <cx>
+
     ;
     ; list subfiles
     ;
     mov ax, offset folder_mask
-    mov cx, 0
+    load <cx>
     push ax
     push cx
-    call list_subfiles
+    call list_subfiles_recursive
+    restore <cx>
 
     ;
     ; list files
     ;
     mov ax, offset file_mask
-    mov cx, 0
+    load <cx>
     push ax
     push cx
-    call list_subfiles
+    call list_subfiles_recursive
+    restore <cx>
+    ret
 
-list_subfiles:
+list_subfiles_recursive:
     pop bx
     pop cx ; deep level
     pop ax ; filemask offset
@@ -40,17 +68,55 @@ list_subfiles:
     push ax
     call find_first
     jc find_first_error
-find_loop:
+    load <cx>
+_list_subfiles_recursive_loop:
     call show_filename_from_dta
+    
+    ;
+    ;   check if folder
+    ;
+    call is_folder
+    cmp ax, 1
+    jne _list_subfiles_recursive_next
+
+    ;
+    ;   check deep level
+    ;
+    restore <cx>
+    load <cx>
+    xor bx, bx
+    mov bl, byte ptr [deep_level]
+    cmp cx, bx
+    jne _list_subfiles_recursive_next
+
+    ;
+    ; start new search
+    ;
+
+_list_subfiles_recursive_next:
     call find_next
-    jnc find_loop
+    jnc _list_subfiles_recursive_loop
     cmp al, byte ptr [no_more_files]
     jne find_next_error
-program_end:
-    mov ax, offset working_folder
-    push ax
-    call cd
+_list_subfiles_recursive_end:
+    restore <cx>
     ret
+
+is_folder:
+    mov ax, offset dta + 15h
+    cmp ax, 10h
+    je _is_folder_true
+    jne _is_folder_false
+_is_folder_true:
+    mov ax, 1
+    jmp _is_folder_end
+_is_folder_false:
+    mov ax, 0
+    jmp _is_folder_end
+_is_folder_end:
+    ret
+
+
 
 find_first_error:
     print_range <find_first_fails, newline>
@@ -236,7 +302,7 @@ find_next_fails db  'find_next filenames fails.$'
 ;
 ;   parse arguments
 ;
-deep_level db 2
+deep_level db 1
 file_mask db '*'
 file_ext db '.*', 00h, 00h, 00h
 folder_mask db '*', 00h
