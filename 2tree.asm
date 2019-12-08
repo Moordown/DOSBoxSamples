@@ -6,8 +6,6 @@ model tiny
 org 100h
 start:
     call save_cwd
-    ; mov ax, offset dta
-    ; push ax
     mov cx, 0
     push cx
     call set_dta
@@ -66,12 +64,8 @@ list_subfiles_recursive:
     pop cx ; deep level
     pop ax ; filemask offset
     push bx
-    ; mov ax, offset file_mask
 
     load <cx, ax>
-    ; mov ax, offset dta
-    ; push ax
-    ; mov cx, 0
     push cx
     call set_dta
     restore <ax, cx>
@@ -79,11 +73,12 @@ list_subfiles_recursive:
     load <cx>
     push ax
     call find_first
-    jc find_first_error
+    jnc _list_subfiles_recursive_loop
+    call find_first_error
+    jmp _list_subfiles_recursive_end
 _list_subfiles_recursive_loop:
     restore <cx>
     load <cx>
-    ; mov cx, 0
     push cx
     call show_filename_from_dta
     cmp ax, 1
@@ -118,14 +113,6 @@ _list_subfiles_recursive_loop:
     call move_dta
     add ax, 1Eh
 
-
-    ; xor ax, ax
-    ; mov al, byte ptr [dta_len]
-    ; mul cx
-
-    ; mov bx, offset dta + 1Eh
-    ; add bx, ax
-    ; push bx
     push ax
     call cd
     restore <cx>
@@ -162,9 +149,7 @@ _list_subfiles_recursive_loop:
 
     restore <cx>
     load <cx>
-    ; mov ax, offset dta
     push cx
-    ; push ax
     call set_dta
 _list_subfiles_recursive_next:
     call find_next
@@ -215,7 +200,7 @@ _is_folder_end:
 
 find_first_error:
     print_range <find_first_fails, newline>
-    exit
+    ret
 find_next_error:
     print_range <find_next_fails, newline>
     exit
@@ -335,17 +320,9 @@ cd_error:
 set_dta:
     pop bx
     pop cx                      ; deep level
-    ; pop dx                      ; dta address offset
     push bx
 
     mov dx, offset dta
-    ; shift to current dta
-    ; mov cx, 0
-    ; load <dx>
-    ; push cx
-    ; call move_dta
-    ; restore <dx>
-    ; add dx, ax
     load <dx>
     xor ax, ax
     mov al, byte ptr [dta_len]
