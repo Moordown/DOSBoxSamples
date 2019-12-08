@@ -8,6 +8,8 @@ start:
     call save_cwd
     mov ax, offset dta
     push ax
+    mov cx, 0
+    push cx
     call set_dta
     call parse_command_line
     
@@ -249,8 +251,17 @@ cd_error:
 
 set_dta:
     pop bx
+    pop cx                      ; deep level
     pop dx                      ; dta address offset
     push bx
+
+    ; shift to current dta
+    ; mov cx, 0
+    mov ax, 43
+    load <dx>
+    mul cx
+    restore <dx>
+    add dx, ax
 
     xor ax, ax 
     mov ah, 1Ah
@@ -343,6 +354,6 @@ parent_folder db '..', 00h
 working_folder db 64 dup(00h)
 root_folder db 64 dup(00h)
 start_mask db 64 dup(00h)
-dta db 43 dup(0)
 newline db 0Ah, '$'
+dta db 43 dup(0)
 end start
