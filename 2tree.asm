@@ -68,18 +68,23 @@ list_subfiles_recursive:
     push bx
     ; mov ax, offset file_mask
 
-    ; load <cx, ax>
-    ; mov ax, offset dta
-    ; push ax
-    ; push cx
-    ; call set_dta
-    ; restore <ax, cx>
+    load <cx, ax>
+    mov ax, offset dta
+    push ax
+    ; mov cx, 0
+    push cx
+    call set_dta
+    restore <ax, cx>
 
     load <cx>
     push ax
     call find_first
     jc find_first_error
 _list_subfiles_recursive_loop:
+    restore <cx>
+    load <cx>
+    ; mov cx, 0
+    push cx
     call show_filename_from_dta
     cmp ax, 1
     jne _list_subfiles_recursive_next 
@@ -119,7 +124,7 @@ _list_subfiles_recursive_loop:
     ;   list subfiles from subfolder
     ;
     load <cx>
-    mov ax, offset file_mask
+    mov ax, offset folder_mask
     push ax
     push cx
     call list_subfiles_recursive
@@ -130,7 +135,7 @@ _list_subfiles_recursive_loop:
     ;   list subfolders from subfolder
     ;
     load <cx>
-    mov ax, offset folder_mask
+    mov ax, offset file_mask
     push ax
     push cx
     call list_subfiles_recursive
@@ -245,20 +250,34 @@ find_first:
     int 21h
     ret
 show_filename_from_dta:
+    pop bx
+    pop cx  ; deep level 
+    push bx
+
+    xor ax, ax
+    mov al, byte ptr [dta_len]
+    mul cx
     mov bx, offset dta + 1Eh
+    add bx, ax
+
+    load <bx>
     cmp byte ptr [bx], '.'
-    jne show_filename_from_dta_valid_name
+    jne _show_filename_from_dta_valid_name
     mov ax, 0
+    restore <bx>
     ret
-show_filename_from_dta_valid_name:
+_show_filename_from_dta_valid_name:
     mov cx, 13
+    restore <bx>
+    load <bx>
     push cx
     push bx
     call count_no_space_no_zero_letters
     mov cx, ax
-    mov ax, offset dta + 1Eh
+    restore <bx>
+    ; mov ax, offset dta + 1Eh
     push cx
-    push ax
+    push bx
     call print_string_with_length
     print_range <newline>
     mov ax, 1
@@ -286,7 +305,8 @@ set_dta:
 
     ; shift to current dta
     ; mov cx, 0
-    mov ax, 43
+    xor ax, ax
+    mov al, byte ptr [dta_len]
     load <dx>
     mul cx
     restore <dx>
@@ -363,6 +383,7 @@ _count_non_space_symbols_end:
 ; error codes
 ;
 no_more_files db 18
+dta_len db 2bh
 ;
 ; error messages
 ;
