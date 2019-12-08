@@ -41,8 +41,10 @@ list_subfiles_recursive_from:
     ;
     ; list subfolder
     ;
+    mov bx, 0
     mov ax, offset folder_mask
     load <cx>
+    push bx
     push ax
     push cx
     call list_subfiles_recursive
@@ -51,8 +53,10 @@ list_subfiles_recursive_from:
     ;
     ; list files
     ;
+    mov bx, ax
     mov ax, offset file_mask
     load <cx>
+    push bx
     push ax
     push cx
     call list_subfiles_recursive
@@ -64,19 +68,21 @@ list_subfiles_recursive:
     ;   save current files
     ;
     call count_subfiles_here
-    break_point <bx>
+    mov word ptr [current_max_entities], ax
+    ; break_point <bx>
 
-    pop bx
+    pop dx
     pop cx ; deep level
     pop ax ; filemask offset
-    push bx
+    pop bx ; current index
+    push dx
 
-    load <cx, ax>
+    load <cx, ax, bx>
     push cx
     call set_dta
-    restore <ax, cx>
+    restore <bx, ax, cx>
 
-    mov bx, 0
+    ; mov bx, word ptr [current_id_entity]
     load <bx, cx>
     push ax
     call find_first
@@ -139,7 +145,12 @@ _list_subfiles_recursive_loop:
     ;   list subfiles from subfolder
     ;
     load <cx>
+    mov bx, sp
+    sub bx, 0Bh
+    mov bx, word ptr [bx]
     mov ax, offset folder_mask
+    break_point <bx>
+    push bx
     push ax
     push cx
     call list_subfiles_recursive
@@ -150,7 +161,11 @@ _list_subfiles_recursive_loop:
     ;   list subfolders from subfolder
     ;
     load <cx>
+    mov bx, sp
+    sub bx, 0Bh
+    mov bx, word ptr [bx]
     mov ax, offset file_mask
+    push bx
     push ax
     push cx
     call list_subfiles_recursive
@@ -163,7 +178,7 @@ _list_subfiles_recursive_loop:
     push ax
     call cd
 
-    break_point <ax>
+    ; break_point <ax>
     restore <ax>
     mov word ptr [current_max_entities], ax
 
@@ -178,6 +193,7 @@ _list_subfiles_recursive_next:
     jne find_next_error
 _list_subfiles_recursive_end:
     restore <cx, bx>
+    mov ax, bx
     ret
 move_dta:
     pop bx
@@ -537,6 +553,7 @@ find_next_fails db  'find_next filenames fails.$'
 ; int variables
 ;
 current_max_entities dw 0
+current_id_entity dw 0
 ;
 ;   parse arguments
 ;
