@@ -134,13 +134,15 @@ _list_subfiles_recursive_loop:
     ;   pseudographic hack
     ;
     restore <cx, bx>
+    load <bx, cx>
+
     cmp bx, word ptr [current_max_entities]
     jne _list_subfiles_recursive_loop_pseudographic_hack
     mov bx, offset level_shift
+    add bx, cx
     mov al, byte ptr [space]
     mov byte ptr [bx], al
 _list_subfiles_recursive_loop_pseudographic_hack:
-    load <bx, cx>
 
     ;
     ; start new search
@@ -197,6 +199,7 @@ _list_subfiles_recursive_loop_pseudographic_hack:
     ;   reverse pseudographic hack
     ;
     mov bx, offset level_shift
+    add bx, cx
     ; mov byte ptr [bx], 179
     mov al, byte ptr [old_level_shift]
     mov byte ptr [bx], al
@@ -403,10 +406,13 @@ print_pseudographic_prefix:
 
     cmp cx, 0
     je _print_pseudographic_prefix_zero_level
+    load <cx, ax>
+    mov ax, offset level_shift
+    
     push cx
-    mov bx, offset level_shift
-    push bx
+    push ax
     call print_string_with_length
+    restore <ax, cx>
 ; _print_pseudographic_prefix_loop:
 ;     print_range <level_shift>
 ;     dec cx
@@ -418,6 +424,8 @@ _print_pseudographic_prefix_zero_level:
     cmp al, bl
     je _print_pseudographic_prefix_zero_level_end
     cmp ax, 1
+    jne _print_pseudographic_prefix_zero_level_middle
+    cmp cx, 0
     je _print_pseudographic_prefix_zero_level_first
     jmp _print_pseudographic_prefix_zero_level_middle
 _print_pseudographic_prefix_zero_level_first:
