@@ -200,7 +200,6 @@ _list_subfiles_recursive_loop_pseudographic_hack:
     ;
     mov bx, offset level_shift
     add bx, cx
-    ; mov byte ptr [bx], 179
     mov al, byte ptr [old_level_shift]
     mov byte ptr [bx], al
 
@@ -303,6 +302,7 @@ parse_d:
     mov bl, byte ptr [si]
     sub bl, 30h             ; to number
     mov byte ptr [deep_level], bl
+    inc si
     jmp parse_args
 parse_f:
     ;
@@ -413,11 +413,6 @@ print_pseudographic_prefix:
     push ax
     call print_string_with_length
     restore <ax, cx>
-; _print_pseudographic_prefix_loop:
-;     print_range <level_shift>
-;     dec cx
-;     cmp cx, 0
-;     jne _print_pseudographic_prefix_loop
 _print_pseudographic_prefix_zero_level:
 
     mov bx, word ptr [current_max_entities]
