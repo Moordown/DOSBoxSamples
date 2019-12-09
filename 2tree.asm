@@ -82,12 +82,10 @@ list_subfiles_recursive:
     call set_dta
     restore <bx, ax, cx>
 
-    ; mov bx, word ptr [current_id_entity]
     load <bx, cx>
     push ax
     call find_first
     jnc _list_subfiles_recursive_loop
-    ; call find_first_error
     jmp _list_subfiles_recursive_end
 _list_subfiles_recursive_loop:
     restore <cx>
@@ -103,8 +101,6 @@ _list_subfiles_recursive_loop:
     push bx
     push cx
     call show_filename_from_dta
-    ; cmp ax, 1
-    ; jne _list_subfiles_recursive_next 
     
     ;
     ;   check if folder
@@ -151,8 +147,6 @@ _list_subfiles_recursive_loop:
     ;
     load <cx>
     mov bx, 0
-    ; sub bx, 0Bh
-    ; mov bx, word ptr [bx]
     mov ax, offset folder_mask
     push bx
     push ax
@@ -166,8 +160,6 @@ _list_subfiles_recursive_loop:
     ;
     load <cx>
     mov bx, ax
-    ; sub bx, 0Bh
-    ; mov bx, word ptr [bx]
     mov ax, offset file_mask
     push bx
     push ax
@@ -327,14 +319,6 @@ show_filename_from_dta:
     pop ax  ; entity count
     push bx
 
-    ; load <ax, cx>
-    ; push cx
-    ; call is_valid_name
-    ; cmp ax, 1
-    ; je _show_filename_from_dta_valid_name
-    ; restore <cx, ax>
-    ; mov ax, 0
-    ; ret
 _show_filename_from_dta_valid_name:
     ;
     ;   pseudo graphic prefix
@@ -346,7 +330,6 @@ _show_filename_from_dta_valid_name:
     add ax, 1Eh
     mov bx, ax
     restore <ax>
-    ; restore <cx, ax>
 
     load <cx, bx>
     push ax     ; entity count
@@ -361,7 +344,6 @@ _show_filename_from_dta_valid_name:
     call count_no_space_no_zero_letters
     mov cx, ax
     restore <bx>
-    ; mov ax, offset dta + 1Eh
     push cx
     push bx
     call print_string_with_length
@@ -376,16 +358,11 @@ print_pseudographic_prefix:
 
     cmp cx, 0
     je _print_pseudographic_prefix_zero_level
-    ; print_range <level_shift>
-    ; dec cx
-    ; cmp cx, 0
-    ; je _print_pseudographic_prefix_zero_level
 _print_pseudographic_prefix_loop:
     print_range <level_shift>
     dec cx
     cmp cx, 0
     jne _print_pseudographic_prefix_loop
-    ; jnz _print_string_with_length_loop
 _print_pseudographic_prefix_zero_level:
 
     mov bx, word ptr [current_max_entities]
@@ -566,17 +543,20 @@ _count_subfiles_from_end:
 ;
 no_more_files db 18
 dta_len db 2bh
+
 ;
 ; error messages
 ;
 cd_fails db 'Change directory fails.$'
 find_first_fails db 'find_first filenames fails.$'
 find_next_fails db  'find_next filenames fails.$'
+
 ;
 ; int variables
 ;
 current_max_entities dw 0
 current_id_entity dw 0
+
 ;
 ;   parse arguments
 ;
@@ -585,6 +565,7 @@ file_mask db '*'
 file_ext db '.*', 00h, 00h, 00h
 folder_mask db '*', 00h
 all_files db '*.*', 00h
+
 ;
 ;   pseudographic
 ;
@@ -597,6 +578,7 @@ zero_end_file db 192, '$'
 first_file_char db 194, '$'
 middle_file_char db 195, '$'
 end_file_char db 192, '$'
+
 ;
 ; strings
 ;
