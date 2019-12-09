@@ -42,9 +42,11 @@ list_subfiles_recursive_from:
     ;
     ; list subfolder
     ;
+    mov si, offset find_first_folder
     mov bx, 0
     mov ax, offset folder_mask
     load <cx>
+    push si
     push bx
     push ax
     push cx
@@ -54,9 +56,11 @@ list_subfiles_recursive_from:
     ;
     ; list files
     ;
+    mov si, offset find_first_file
     mov bx, ax
     mov ax, offset file_mask
     load <cx>
+    push si
     push bx
     push ax
     push cx
@@ -75,16 +79,17 @@ list_subfiles_recursive:
     pop cx ; deep level
     pop ax ; filemask offset
     pop bx ; current index
+    pop si ; search address
     push dx
 
-    load <cx, ax, bx>
+    load <cx, ax, bx, si>
     push cx
     call set_dta
-    restore <bx, ax, cx>
+    restore <si, bx, ax, cx>
 
     load <bx, cx>
     push ax
-    call find_first
+    call si
     jnc _list_subfiles_recursive_loop
     jmp _list_subfiles_recursive_end
 _list_subfiles_recursive_loop:
@@ -148,6 +153,9 @@ _list_subfiles_recursive_loop:
     load <cx>
     mov bx, 0
     mov ax, offset folder_mask
+    mov si, offset find_first_folder
+    
+    push si
     push bx
     push ax
     push cx
@@ -161,6 +169,9 @@ _list_subfiles_recursive_loop:
     load <cx>
     mov bx, ax
     mov ax, offset file_mask
+    mov si, offset find_first_file
+    
+    push si
     push bx
     push ax
     push cx
@@ -285,7 +296,18 @@ find_next:
 
     ret
 
-find_first:
+find_first_file:
+    pop bx
+    pop dx             ; filename spec
+    mov cx, 0fh         ; include files
+    push bx
+
+    xor ax, ax
+    mov ah, 4Eh
+    int 21h
+    ret
+
+find_first_folder:
     pop bx
     pop dx              ; filename spec
     mov cx, 10h         ; include directories
@@ -489,11 +511,17 @@ _count_non_space_symbols_end:
     ret
 count_subfiles_here:
     mov ax, offset file_mask
+    mov si, offset find_first_folder
+
     push ax
+    push si
     call count_subfiles_here_by_mask
     load <ax>
     mov ax, offset folder_mask
+    mov si, offset find_first_file
+    
     push ax
+    push si
     call count_subfiles_here_by_mask
     mov bx, ax
     restore <ax>
@@ -503,19 +531,20 @@ count_subfiles_here:
     ret
 count_subfiles_here_by_mask:
     pop bx
+    pop si              ; find_first address
     pop ax              ; mask address
     push bx
 
-    load <ax>
+    load <ax, si>
     mov cx, 11          ; set pointer to count_dta 
     push cx
     call set_dta
-    restore <ax>
+    restore <si, ax>
 
     mov cx, 0
     load <cx>
     push ax
-    call find_first
+    call si
     jc _count_subfiles_from_end
 _count_subfiles_from_loop:
     mov cx, 11
