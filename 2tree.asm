@@ -100,6 +100,9 @@ _list_subfiles_recursive_loop:
     cmp ax, 1
     jne _list_subfiles_recursive_next
 
+    ;
+    ;   increment current index in subfiles
+    ;
     restore <cx, bx>
     inc bx
     load <bx, cx>
@@ -126,6 +129,18 @@ _list_subfiles_recursive_loop:
     mov bl, byte ptr [deep_level]
     cmp cx, bx
     jge _list_subfiles_recursive_next
+
+    ;
+    ;   pseudographic hack
+    ;
+    restore <cx, bx>
+    cmp bx, word ptr [current_max_entities]
+    jne _list_subfiles_recursive_loop_pseudographic_hack
+    mov bx, offset level_shift
+    mov al, byte ptr [space]
+    mov byte ptr [bx], al
+_list_subfiles_recursive_loop_pseudographic_hack:
+    load <bx, cx>
 
     ;
     ; start new search
@@ -177,6 +192,14 @@ _list_subfiles_recursive_loop:
     push cx
     call list_subfiles_recursive
     restore <cx>
+
+    ;
+    ;   reverse pseudographic hack
+    ;
+    mov bx, offset level_shift
+    ; mov byte ptr [bx], 179
+    mov al, byte ptr [old_level_shift]
+    mov byte ptr [bx], al
 
     ;
     ;   cd back to this function
@@ -380,11 +403,15 @@ print_pseudographic_prefix:
 
     cmp cx, 0
     je _print_pseudographic_prefix_zero_level
-_print_pseudographic_prefix_loop:
-    print_range <level_shift>
-    dec cx
-    cmp cx, 0
-    jne _print_pseudographic_prefix_loop
+    push cx
+    mov bx, offset level_shift
+    push bx
+    call print_string_with_length
+; _print_pseudographic_prefix_loop:
+;     print_range <level_shift>
+;     dec cx
+;     cmp cx, 0
+;     jne _print_pseudographic_prefix_loop
 _print_pseudographic_prefix_zero_level:
 
     mov bx, word ptr [current_max_entities]
@@ -511,14 +538,14 @@ _count_non_space_symbols_end:
     ret
 count_subfiles_here:
     mov ax, offset file_mask
-    mov si, offset find_first_folder
+    mov si, offset find_first_file
 
     push ax
     push si
     call count_subfiles_here_by_mask
     load <ax>
     mov ax, offset folder_mask
-    mov si, offset find_first_file
+    mov si, offset find_first_folder
     
     push ax
     push si
@@ -598,7 +625,8 @@ all_files db '*.*', 00h
 ;
 ;   pseudographic
 ;
-level_shift db 179, '$'
+old_level_shift db 179, '$'
+level_shift db 10 dup(179), '$'
 space db, 32, '$'
 
 zero_first_file db 195, '$'
