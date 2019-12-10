@@ -27,6 +27,10 @@ print_range macro args
     endm
 endm
 
+push_fragment macro buf, length
+
+endm
+
 break_point macro arg
     load <arg>
     xor arg, arg

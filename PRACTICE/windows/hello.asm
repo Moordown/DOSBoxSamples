@@ -35,5 +35,3 @@ error2:
     mov ecx, 2
     jmp _exit
 _start endp
-
-; bc3013
