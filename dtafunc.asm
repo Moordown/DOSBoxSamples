@@ -1,4 +1,5 @@
 include filefunc.asm
+include clfunc.asm
 include tmacro.asm
 
 
