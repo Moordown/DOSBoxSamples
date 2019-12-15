@@ -136,10 +136,11 @@ _list_subfiles_recursive_loop:
 
     cmp bx, word ptr [current_max_entities]
     jne _list_subfiles_recursive_loop_pseudographic_hack
-    mov bx, offset level_shift
-    add bx, cx
-    mov al, byte ptr [space]
-    mov byte ptr [bx], al
+    load <ax, bx, cx>
+    push cx
+    call set_level_shift
+    restore <cx, bx, ax>
+
 _list_subfiles_recursive_loop_pseudographic_hack:
     mov ax, cx
     ;
@@ -200,10 +201,10 @@ _list_subfiles_recursive_loop_pseudographic_hack:
     ;
     ;   reverse pseudographic hack
     ;
-    mov bx, offset level_shift
-    add bx, cx
-    mov al, byte ptr [old_level_shift]
-    mov byte ptr [bx], al
+    load <ax, bx, cx>
+    push cx
+    call reset_level_shift
+    restore <cx, bx, ax>
 
     ;
     ;   cd back to this function
@@ -243,60 +244,6 @@ find_next_error:
     exit
 
 
-is_valid_name:
-    pop bx
-    pop cx      ; deep level
-    push bx
-    
-    lea ax, dta
-    add ax, 1Eh
-    mov bx, ax
-    mov ax, 1
-    cmp byte ptr [bx], '.'
-    jne _is_valid_name_end
-    mov ax, 0
-_is_valid_name_end:
-    ret
-
-show_filename_from_dta:
-    pop bx
-    pop cx  ; deep level 
-    pop ax  ; entity count
-    push bx
-
-_show_filename_from_dta_valid_name:
-    ;
-    ;   pseudo graphic prefix
-    ;
-    load <ax>
-    lea ax, dta
-    
-    add ax, 1Eh
-    mov bx, ax
-    restore <ax>
-
-    load <cx, bx>
-    push ax     ; entity count
-    push cx     ; deep level
-    call print_pseudographic_prefix
-    restore <bx, cx>
-
-    load <bx>
-    mov cx, 13
-    push cx
-    push bx
-    call count_no_space_no_zero_letters
-    mov cx, ax
-    restore <bx>
-    push cx
-    push bx
-    call print_string_with_length
-    print_range <newline>
-    mov ax, 1
-    ret
-
-
-
 save_cwd:
     mov si, offset working_folder
 
@@ -321,6 +268,7 @@ save_cwd:
     mov ah, 47h                 ; CWD - GET CURRENT DIRECTORY
     int 21h
     ret
+
 print_string_with_length: 
     pop bx ; ret address
     pop si ; string offset
@@ -339,28 +287,6 @@ _print_string_with_length_loop:
 _print_string_with_length_end:
     ret
 
-count_subfiles_here:
-    mov ax, offset file_mask
-    mov si, offset find_first_file
-
-    push ax
-    push si
-    call count_subfiles_here_by_mask
-    load <ax>
-    mov ax, offset folder_mask
-    mov si, offset find_first_folder
-    
-    push ax
-    push si
-    call count_subfiles_here_by_mask
-    mov bx, ax
-    restore <ax>
-    add bx, ax
-    mov ax, bx
-    mov word ptr [current_max_entities], ax
-    ret
-
-
 include dtafunc.asm
 include pgraph.asm
 
@@ -368,7 +294,6 @@ include pgraph.asm
 ; error codes
 ;
 no_more_files db 18
-dta_len db 2bh
 
 ;
 ; error messages
@@ -379,7 +304,6 @@ find_next_fails db  'find_next filenames fails.$'
 ;
 ; int variables
 ;
-current_max_entities dw 0
 current_id_entity dw 0
 
 
@@ -390,5 +314,4 @@ parent_folder db '..', 00h
 working_folder db 64 dup(00h)
 root_folder db 64 dup(00h)
 start_mask db 64 dup(00h)
-dta db 128 dup(0)
 end start

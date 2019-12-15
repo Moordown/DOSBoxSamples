@@ -36,6 +36,34 @@ _print_pseudographic_prefix_zero_level_end:
 _print_pseudographic_prefix_end:
     ret
 
+set_level_shift:
+    pop bx
+    pop cx  ; line level
+    push bx
+
+    lea bx, level_shift
+    add bx, cx
+    mov al, byte ptr [space]
+    mov byte ptr [bx], al
+
+    mov ax, 1
+
+    ret
+
+reset_level_shift:
+    pop bx
+    pop cx  ; line level
+    push bx
+
+    lea bx, level_shift
+    add bx, cx
+    mov al, byte ptr [old_level_shift]
+    mov byte ptr [bx], al
+
+    mov ax, 1
+    
+    ret
+
 ;
 ;   pseudographic
 ;
