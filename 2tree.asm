@@ -6,9 +6,10 @@ model tiny
 org 100h
 start:
     call save_cwd
-    mov cx, 0
-    push cx
-    call set_dta
+    ; mov cx, 0
+    ; push cx
+    ; call set_dta
+    set_dta dta
     call parse_command_line
     
     ;
@@ -25,7 +26,7 @@ start:
     ;
     mov ax, offset working_folder
     push ax
-    break_point <ax>
+    ; break_point <ax>
     call cd
     exit
 
@@ -83,8 +84,9 @@ list_subfiles_recursive:
     push dx
 
     load <cx, ax, bx, si>
-    push cx
-    call set_dta
+    ; push cx
+    ; call set_dta
+    set_dta dta
     restore <si, bx, ax, cx>
 
     load <bx, cx>
@@ -143,6 +145,12 @@ _list_subfiles_recursive_loop:
     mov al, byte ptr [space]
     mov byte ptr [bx], al
 _list_subfiles_recursive_loop_pseudographic_hack:
+    mov ax, cx
+    ;
+    ;   save dta
+    ;
+    push_fragment dta, 43
+    mov cx, ax
 
     ;
     ; start new search
@@ -150,16 +158,17 @@ _list_subfiles_recursive_loop_pseudographic_hack:
     mov ax, word ptr [current_max_entities]
     load <ax>
 
+    load <cx>
     ;
     ;   cd to subfolder
     ;
-    load <cx>
-    push cx
-    call move_dta
+    ; push cx
+    ; call move_dta
+    lea ax, dta
     add ax, 1Eh
 
     push ax
-    break_point <bx>
+    ; break_point <bx>
     call cd
     restore <cx>
 
@@ -169,8 +178,8 @@ _list_subfiles_recursive_loop_pseudographic_hack:
     ;
     load <cx>
     mov bx, 0
-    mov ax, offset folder_mask
-    mov si, offset find_first_folder
+    mov ax, offset file_mask
+    mov si, offset find_first_file
     
     push si
     push bx
@@ -185,8 +194,8 @@ _list_subfiles_recursive_loop_pseudographic_hack:
     ;
     load <cx>
     mov bx, ax
-    mov ax, offset file_mask
-    mov si, offset find_first_file
+    mov ax, offset folder_mask
+    mov si, offset find_first_folder
     
     push si
     push bx
@@ -208,16 +217,24 @@ _list_subfiles_recursive_loop_pseudographic_hack:
     ;
     mov ax, offset parent_folder
     push ax
-    break_point <cx>
+    ; break_point <cx>
     call cd
+
 
     restore <ax>
     mov word ptr [current_max_entities], ax
 
-    restore <cx>
-    load <cx>
-    push cx
-    call set_dta
+    break_point <ax>
+    ;
+    ;   restore dta
+    ;
+    pop_fragment dta, 43
+    set_dta dta
+
+    ; restore <cx>
+    ; load <cx>
+    ; push cx
+    ; call set_dta
 _list_subfiles_recursive_next:
     call find_next
     jnc _list_subfiles_recursive_loop
@@ -227,26 +244,29 @@ _list_subfiles_recursive_end:
     restore <cx, bx>
     mov ax, bx
     ret
-move_dta:
-    pop bx
-    pop cx
-    push bx
+; move_dta:
+;     pop bx
+;     pop cx
+;     push bx
+;     ; lea ax, dta
+;     ; ret
 
-    xor ax, ax
-    mov al, byte ptr [dta_len]
-    mul cx
+;     xor ax, ax
+;     mov al, byte ptr [dta_len]
+;     mul cx
 
-    mov bx, offset dta
-    add bx, ax
-    mov ax, bx
-    ret
+;     mov bx, offset dta
+;     add bx, ax
+;     mov ax, bx
+;     ret
 is_folder:
     pop bx
     pop cx
     push bx
 
-    push cx
-    call move_dta
+    lea ax, dta
+    ; push cx
+    ; call move_dta
 
     add ax, 15h
     mov bx, ax
@@ -349,9 +369,9 @@ is_valid_name:
     pop cx      ; deep level
     push bx
     
-    push cx
-    call move_dta
-    
+    ; push cx
+    ; call move_dta
+    lea ax, dta
     add ax, 1Eh
     mov bx, ax
     mov ax, 1
@@ -372,8 +392,9 @@ _show_filename_from_dta_valid_name:
     ;   pseudo graphic prefix
     ;
     load <ax>
-    push cx
-    call move_dta
+    ; push cx
+    ; call move_dta
+    lea ax, dta
     
     add ax, 1Eh
     mov bx, ax
@@ -458,25 +479,25 @@ cd_error:
     exit
     ret
 
-set_dta:
-    pop bx
-    pop cx                      ; deep level
-    push bx
+; set_dta:
+;     pop bx
+;     pop cx                      ; deep level
+;     push bx
 
-    mov dx, offset dta
-    load <dx>
-    xor ax, ax
-    mov al, byte ptr [dta_len]
-    mul cx
+;     mov dx, offset dta
+;     load <dx>
+;     xor ax, ax
+;     mov al, byte ptr [dta_len]
+;     mul cx
     
-    restore <dx>
-    add dx, ax
+;     restore <dx>
+;     add dx, ax
 
-    xor ax, ax 
-    mov ah, 1Ah
-    int 21h
+;     xor ax, ax 
+;     mov ah, 1Ah
+;     int 21h
     
-    ret
+;     ret
 
 save_cwd:
     mov si, offset working_folder
@@ -566,9 +587,10 @@ count_subfiles_here_by_mask:
     push bx
 
     load <ax, si>
-    mov cx, 11          ; set pointer to count_dta 
-    push cx
-    call set_dta
+    ; mov cx, 11          ; set pointer to count_dta 
+    ; push cx
+    ; call set_dta
+    set_dta count_dta
     restore <si, ax>
 
     mov cx, 0
@@ -577,9 +599,10 @@ count_subfiles_here_by_mask:
     call si
     jc _count_subfiles_from_end
 _count_subfiles_from_loop:
-    mov cx, 11
-    push cx
-    call move_dta
+    ; mov cx, 11
+    ; push cx
+    ; call move_dta
+    lea ax, count_dta
     add ax, 1Eh
     mov bx, ax
     cmp byte ptr [bx], '.' 

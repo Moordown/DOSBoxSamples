@@ -28,7 +28,40 @@ print_range macro args
 endm
 
 push_fragment macro buf, length
+    local l1
+    lea di, buf
+    mov cx, length
+    xor bx, bx
+l1:
+    mov bl, byte ptr [di]
+    push bx
+    inc di
+    dec cx
+    cmp cx, 0
+    jne l1
+endm
 
+pop_fragment macro buf, length
+    local l1
+    lea di, buf
+    mov cx, length
+    add di, cx
+    dec di
+    xor bx, bx
+l1:
+    pop bx
+    mov byte ptr [di], bl
+    dec di
+    dec cx
+    cmp cx, 0
+    jne l1
+endm
+
+set_dta macro dta
+    lea dx, dta
+    xor ax, ax 
+    mov ah, 1Ah
+    int 21h
 endm
 
 break_point macro arg
