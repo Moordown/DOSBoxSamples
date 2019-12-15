@@ -1,7 +1,7 @@
 
  Start  Stop   Length Name               Class
 
- 00000H 00349H 0034AH _TEXT              CODE
- 0034AH 0034AH 00000H _DATA              DATA
+ 00000H 006A9H 006AAH _TEXT              CODE
+ 006AAH 006AAH 00000H _DATA              DATA
 
 
