@@ -1,5 +1,6 @@
 include filefunc.asm
 include clfunc.asm
+include pgraph.asm
 include tmacro.asm
 
 count_subfiles_here:

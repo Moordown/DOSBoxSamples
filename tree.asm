@@ -8,7 +8,6 @@ start:
     call save_cwd
     set_dta dta
     call parse_command_line
-    
     ;
     ;   start tree 
     ;
@@ -17,7 +16,6 @@ start:
     push cx
     push ax
     call list_subfiles_recursive_from
-
     ;
     ;   cd to start folder
     ;
@@ -35,7 +33,6 @@ list_subfiles_recursive_from:
     push ax
     call cd
     restore <cx>
-
     ;
     ; list subfolder
     ;
@@ -49,7 +46,6 @@ list_subfiles_recursive_from:
     push cx
     call list_subfiles_recursive
     restore <cx>
-
     ;
     ; list files
     ;
@@ -67,7 +63,7 @@ list_subfiles_recursive_from:
 
 list_subfiles_recursive:
     ;
-    ;   save current files
+    ;   save current files count
     ;
     call count_subfiles_here
     mov word ptr [current_max_entities], ax
@@ -95,7 +91,6 @@ _list_subfiles_recursive_loop:
     load <cx>
     cmp ax, 1
     jne _list_subfiles_recursive_next
-
     ;
     ;   increment current index in subfiles
     ;
@@ -105,7 +100,6 @@ _list_subfiles_recursive_loop:
     push bx
     push cx
     call show_filename_from_dta
-    
     ;
     ;   check if folder
     ;
@@ -117,7 +111,6 @@ _list_subfiles_recursive_loop:
     call is_folder
     cmp ax, 1
     jne _list_subfiles_recursive_next
-
     ;
     ;   check deep level
     ;
@@ -127,7 +120,6 @@ _list_subfiles_recursive_loop:
     mov bl, byte ptr [deep_level]
     cmp cx, bx
     jge _list_subfiles_recursive_next
-
     ;
     ;   pseudographic hack
     ;
@@ -135,20 +127,19 @@ _list_subfiles_recursive_loop:
     load <bx, cx>
 
     cmp bx, word ptr [current_max_entities]
-    jne _list_subfiles_recursive_loop_pseudographic_hack
+    jne _list_subfiles_recursive_loop_pseudographic_hack_end
     load <ax, bx, cx>
     push cx
     call set_level_shift
     restore <cx, bx, ax>
 
-_list_subfiles_recursive_loop_pseudographic_hack:
+_list_subfiles_recursive_loop_pseudographic_hack_end:
     mov ax, cx
     ;
     ;   save dta
     ;
     push_fragment dta, 128
     mov cx, ax
-
     ;
     ; start new search
     ;
@@ -181,8 +172,6 @@ _list_subfiles_recursive_loop_pseudographic_hack:
     push cx
     call list_subfiles_recursive
     restore <cx>
-
-    
     ;
     ;   list subfolders from subfolder
     ;
@@ -197,7 +186,6 @@ _list_subfiles_recursive_loop_pseudographic_hack:
     push cx
     call list_subfiles_recursive
     restore <cx>
-
     ;
     ;   reverse pseudographic hack
     ;
@@ -205,7 +193,6 @@ _list_subfiles_recursive_loop_pseudographic_hack:
     push cx
     call reset_level_shift
     restore <cx, bx, ax>
-
     ;
     ;   cd back to this function
     ;
@@ -213,17 +200,13 @@ _list_subfiles_recursive_loop_pseudographic_hack:
     push ax
     call cd
 
-
     restore <ax>
     mov word ptr [current_max_entities], ax
-
-    break_point <ax>
     ;
     ;   restore dta
     ;
     pop_fragment dta, 128
     set_dta dta
-
 _list_subfiles_recursive_next:
     call find_next
     jnc _list_subfiles_recursive_loop
@@ -233,9 +216,6 @@ _list_subfiles_recursive_end:
     restore <cx, bx>
     mov ax, bx
     ret
-
-
-
 find_first_error:
     print_range <find_first_fails, newline>
     ret
@@ -243,52 +223,7 @@ find_next_error:
     print_range <find_next_fails, newline>
     exit
 
-
-save_cwd:
-    mov si, offset working_folder
-
-    ;
-    ; save driver
-    ;
-    mov ah, 19h                 ; GET CURRENT DEFAULT DRIVE
-    int 21h
-    mov dl, al
-    add dl, 41h
-    mov byte ptr [si], dl
-    inc si
-    mov byte ptr [si], ':'
-    inc si
-    mov byte ptr [si], '\'
-    inc si
-
-    ;
-    ; save folder
-    ;
-    xor dl, dl                  ; Actual drive
-    mov ah, 47h                 ; CWD - GET CURRENT DIRECTORY
-    int 21h
-    ret
-
-print_string_with_length: 
-    pop bx ; ret address
-    pop si ; string offset
-    pop cx ; string length
-    push bx; ret address
-    xor ax, ax
-_print_string_with_length_loop:
-    mov ah, 02h
-    mov dl, byte ptr [si]
-    int 21h
-    dec cx
-    inc si
-    cmp cx, 00h
-    je _print_string_with_length_end
-    jmp _print_string_with_length_loop
-_print_string_with_length_end:
-    ret
-
 include dtafunc.asm
-include pgraph.asm
 
 ;
 ; error codes
@@ -311,7 +246,5 @@ current_id_entity dw 0
 ; strings
 ;
 parent_folder db '..', 00h
-working_folder db 64 dup(00h)
 root_folder db 64 dup(00h)
-start_mask db 64 dup(00h)
 end start

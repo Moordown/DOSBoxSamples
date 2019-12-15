@@ -72,6 +72,32 @@ cd_error:
     exit
     ret
 
+save_cwd:
+    mov si, offset working_folder
 
+    ;
+    ; save driver
+    ;
+    mov ah, 19h                 ; GET CURRENT DEFAULT DRIVE
+    int 21h
+    mov dl, al
+    add dl, 41h
+    mov byte ptr [si], dl
+    inc si
+    mov byte ptr [si], ':'
+    inc si
+    mov byte ptr [si], '\'
+    inc si
+
+    ;
+    ; save folder
+    ;
+    xor dl, dl                  ; Actual drive
+    mov ah, 47h                 ; CWD - GET CURRENT DIRECTORY
+    int 21h
+    ret
+
+
+working_folder db 64 dup(00h)
 cd_fails db 'Change directory fails.$'
 newline db 0Ah, '$'

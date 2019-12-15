@@ -61,7 +61,25 @@ reset_level_shift:
     mov byte ptr [bx], al
 
     mov ax, 1
-    
+
+    ret
+
+print_string_with_length: 
+    pop bx ; ret address
+    pop si ; string offset
+    pop cx ; string length
+    push bx; ret address
+    xor ax, ax
+_print_string_with_length_loop:
+    mov ah, 02h
+    mov dl, byte ptr [si]
+    int 21h
+    dec cx
+    inc si
+    cmp cx, 00h
+    je _print_string_with_length_end
+    jmp _print_string_with_length_loop
+_print_string_with_length_end:
     ret
 
 ;
