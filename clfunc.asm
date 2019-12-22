@@ -40,6 +40,10 @@ parse_args:
     je parse_d
     cmp byte ptr [si], 'f'
     je parse_f
+    cmp byte ptr [si], 's'
+    je parse_s
+    cmp byte ptr [si], 't'
+    je parse_t
     jmp parse_end
 parse_d:
     ;
@@ -62,12 +66,29 @@ parse_f:
     mov cx, 4
     rep movsb
     jmp parse_args
+parse_s: 
+    ;
+    ; print storage
+    ;
+    mov bl, 1
+    mov byte ptr [use_storage], bl
+    jmp parse_args
+parse_t:
+    ;
+    ; print time
+    ;
+    mov bl, 1
+    mov byte ptr [use_time], bl
+    jmp parse_args
+
 parse_end:
     ret
 
 ;
 ;   parse arguments
 ;
+use_storage db 0
+use_time db 0
 deep_level db 1
 file_mask db '*'
 file_ext db '.*', 00h, 00h, 00h

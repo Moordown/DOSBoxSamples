@@ -2,6 +2,7 @@ include filefunc.asm
 include clfunc.asm
 include pgraph.asm
 include tmacro.asm
+include time.asm
 
 count_subfiles_here:
     lea ax, file_mask
@@ -92,7 +93,16 @@ _show_filename_from_dta_valid_name:
     push cx
     push bx
     call print_string_with_length
-    print_range <newline>
+    ; print_range <newline>
+    
+    lea bx, dta
+    mov cx, word ptr [bx + 16h]
+    mov dx, word ptr [bx + 18h]
+    push dx
+    push cx
+    call print_datetimestamp
+    print_range <time_space, datetime, time_newline> 
+    
     mov ax, 1
     ret
 

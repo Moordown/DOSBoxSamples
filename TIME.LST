@@ -1,0 +1,403 @@
+Turbo Assembler	 Version 4.1	    12/22/19 15:55:43	    Page 1
+time.ASM
+
+
+
+      1					 include bmacro.asm
+1     2					 load macro args
+1     3					     irp d,<args>
+1     4						 push d
+1     5					     endm
+1     6					 endm
+1     7
+1     8					 restore macro args
+1     9					     irp d,<args>
+1    10						 pop d
+1    11					     endm
+1    12					 endm
+1    13
+1    14					 exit macro
+1    15					     mov ah, 00h
+1    16					     int 21h
+1    17					 endm
+1    18
+1    19					 print macro buf
+1    20						 mov ah, 09h
+1    21						 mov dx, buf
+1    22						 int 21h
+1    23					 endm
+1    24
+1    25					 print_range macro args
+1    26					     irp d,<args>
+1    27						 print <offset d>
+1    28					     endm
+1    29					 endm
+1    30
+1    31					 break_point macro arg
+1    32					     load <arg>
+1    33					     xor arg, arg
+1    34					     xor arg, arg
+1    35					     xor arg, arg
+1    36					     xor arg, arg
+1    37					     xor arg, arg
+1    38					     xor arg, arg
+1    39					     xor arg, arg
+1    40					     xor arg, arg
+1    41					     restore <arg>
+1    42					 endm
+1    43
+1    44					 parse_byte_to_str macro from, to
+1    45					     mov ax, to
+1    46					     push ax
+1    47					     xor ax, ax
+1    48					     mov al, from
+1    49					     push ax
+1    50					     call store_iint_to_string
+1    51					 endm
+1    52
+1    53					 parse_word_to_str macro from, to
+1    54					     mov ax, to
+1    55					     push ax
+1    56					     xor ax, ax
+1    57					     mov ax, from
+Turbo Assembler	 Version 4.1	    12/22/19 15:55:43	    Page 2
+time.ASM
+
+
+
+1    58					     push ax
+1    59					     call store_iint_to_string
+1    60					 endm
+     61
+     62	    0000			 model tiny
+     63					 .386
+     64	    0000			 .code
+     65					 org 100h
+     66
+     67
+     68	    0100			 start:
+     69	    0100  B9 7A40		     mov cx, 31296
+     70	    0103  BA 4F96		     mov dx, 20374
+     71	    0106  52			     push dx
+     72	    0107  51			     push cx
+     73	    0108  E8 0012		     call print_datetimestamp
+     74
+     75					     print_range <datetime, time_newline>
+2    76						 print <offset datetime>
+3    77	    010B  B4 09				 mov ah, 09h
+3    78	    010D  BA 0254r			 mov dx, offset	datetime
+3    79	    0110  CD 21				 int 21h
+2    80						 print <offset time_newline>
+3    81	    0112  B4 09				 mov ah, 09h
+3    82	    0114  BA 026Cr			 mov dx, offset	time_newline
+3    83	    0117  CD 21				 int 21h
+     84					     exit
+1    85	    0119  B4 00			     mov ah, 00h
+1    86	    011B  CD 21			     int 21h
+     87
+     88	    011D			 print_datetimestamp:
+     89	    011D  5B			     pop bx
+     90	    011E  59			     pop cx ; time
+     91	    011F  5A			     pop dx ; date
+     92	    0120  53			     push bx
+     93
+     94	    0121  BE 0254r		     lea si, datetime
+     95
+     96					     ;
+     97					     ; date format
+     98					     ;
+     99					     load <cx, dx, si>
+2   100	    0124  51				 push cx
+2   101	    0125  52				 push dx
+2   102	    0126  56				 push si
+    103	    0127  C1 FA	09		     sar dx, 9
+    104	    012A  81 C2	07BC		     add dx, 1980
+    105					     parse_word_to_str dx, si
+1   106	    012E  8B C6			     mov ax, si
+1   107	    0130  50			     push ax
+1   108	    0131  33 C0			     xor ax, ax
+1   109	    0133  8B C2			     mov ax, dx
+1   110	    0135  50			     push ax
+1   111	    0136  E8 00AE		     call store_iint_to_string
+    112					     restore <si, dx, cx>
+2   113	    0139  5E				 pop si
+2   114	    013A  5A				 pop dx
+Turbo Assembler	 Version 4.1	    12/22/19 15:55:43	    Page 3
+time.ASM
+
+
+
+2   115	    013B  59				 pop cx
+    116					     break_point ax
+1   117					     load <ax>
+3   118	    013C  50				 push ax
+1   119	    013D  33 C0			     xor ax, ax
+1   120	    013F  33 C0			     xor ax, ax
+1   121	    0141  33 C0			     xor ax, ax
+1   122	    0143  33 C0			     xor ax, ax
+1   123	    0145  33 C0			     xor ax, ax
+1   124	    0147  33 C0			     xor ax, ax
+1   125	    0149  33 C0			     xor ax, ax
+1   126	    014B  33 C0			     xor ax, ax
+1   127					     restore <ax>
+3   128	    014D  58				 pop ax
+    129	    014E  83 C6	04		     add si, 4
+    130	    0151  C6 04	3A		     mov byte ptr [si],	':'
+    131	    0154  46			     inc si
+    132
+    133					     load <cx, dx, si>
+2   134	    0155  51				 push cx
+2   135	    0156  52				 push dx
+2   136	    0157  56				 push si
+    137	    0158  81 E2	01E0		     and dx, 32	+ 64 + 128 + 256
+    138	    015C  C1 FA	05		     sar dx, 5
+    139					     parse_byte_to_str dl, si
+1   140	    015F  8B C6			     mov ax, si
+1   141	    0161  50			     push ax
+1   142	    0162  33 C0			     xor ax, ax
+1   143	    0164  8A C2			     mov al, dl
+1   144	    0166  50			     push ax
+1   145	    0167  E8 007D		     call store_iint_to_string
+    146					     restore <si, dx, cx>
+2   147	    016A  5E				 pop si
+2   148	    016B  5A				 pop dx
+2   149	    016C  59				 pop cx
+    150	    016D  83 C6	02		     add si, 2
+    151	    0170  C6 04	3A		     mov byte ptr [si],	':'
+    152	    0173  46			     inc si
+    153
+    154					     load <cx, dx, si>
+2   155	    0174  51				 push cx
+2   156	    0175  52				 push dx
+2   157	    0176  56				 push si
+    158	    0177  80 E2	1F		     and dl, 1 + 2 + 4 + 8 + 16
+    159					     parse_byte_to_str dl, si
+1   160	    017A  8B C6			     mov ax, si
+1   161	    017C  50			     push ax
+1   162	    017D  33 C0			     xor ax, ax
+1   163	    017F  8A C2			     mov al, dl
+1   164	    0181  50			     push ax
+1   165	    0182  E8 0062		     call store_iint_to_string
+    166					     restore <si, dx, cx>
+2   167	    0185  5E				 pop si
+2   168	    0186  5A				 pop dx
+2   169	    0187  59				 pop cx
+    170	    0188  83 C6	02		     add si, 2
+    171	    018B  C6 04	20		     mov byte ptr [si],	' '
+Turbo Assembler	 Version 4.1	    12/22/19 15:55:43	    Page 4
+time.ASM
+
+
+
+    172	    018E  46			     inc si
+    173
+    174					     ;
+    175					     ; time format
+    176					     ;
+    177					     load <cx, dx, si>
+2   178	    018F  51				 push cx
+2   179	    0190  52				 push dx
+2   180	    0191  56				 push si
+    181	    0192  C1 F9	0B		     sar cx, 11
+    182					     parse_byte_to_str cl, si
+1   183	    0195  8B C6			     mov ax, si
+1   184	    0197  50			     push ax
+1   185	    0198  33 C0			     xor ax, ax
+1   186	    019A  8A C1			     mov al, cl
+1   187	    019C  50			     push ax
+1   188	    019D  E8 0047		     call store_iint_to_string
+    189					     restore <si, dx, cx>
+2   190	    01A0  5E				 pop si
+2   191	    01A1  5A				 pop dx
+2   192	    01A2  59				 pop cx
+    193	    01A3  83 C6	02		     add si, 2
+    194	    01A6  C6 04	3A		     mov byte ptr [si],	':'
+    195	    01A9  46			     inc si
+    196
+    197					     load <cx, dx, si>
+2   198	    01AA  51				 push cx
+2   199	    01AB  52				 push dx
+2   200	    01AC  56				 push si
+    201	    01AD  81 E1	07E0		     and cx, 2016
+    202	    01B1  C1 F9	05		     sar cx, 5
+    203					     parse_byte_to_str cl, si
+1   204	    01B4  8B C6			     mov ax, si
+1   205	    01B6  50			     push ax
+1   206	    01B7  33 C0			     xor ax, ax
+1   207	    01B9  8A C1			     mov al, cl
+1   208	    01BB  50			     push ax
+1   209	    01BC  E8 0028		     call store_iint_to_string
+    210					     restore <si, dx, cx>
+2   211	    01BF  5E				 pop si
+2   212	    01C0  5A				 pop dx
+2   213	    01C1  59				 pop cx
+    214	    01C2  83 C6	02		     add si, 2
+    215	    01C5  C6 04	3A		     mov byte ptr [si],	':'
+    216	    01C8  46			     inc si
+    217
+    218					     load <cx, dx, si>
+2   219	    01C9  51				 push cx
+2   220	    01CA  52				 push dx
+2   221	    01CB  56				 push si
+    222	    01CC  80 E1	0F		     and cl, 15
+    223	    01CF  D0 E1			     sal cl, 1
+    224					     parse_byte_to_str cl, si
+1   225	    01D1  8B C6			     mov ax, si
+1   226	    01D3  50			     push ax
+1   227	    01D4  33 C0			     xor ax, ax
+1   228	    01D6  8A C1			     mov al, cl
+Turbo Assembler	 Version 4.1	    12/22/19 15:55:43	    Page 5
+time.ASM
+
+
+
+1   229	    01D8  50			     push ax
+1   230	    01D9  E8 000B		     call store_iint_to_string
+    231					     restore <si, dx, cx>
+2   232	    01DC  5E				 pop si
+2   233	    01DD  5A				 pop dx
+2   234	    01DE  59				 pop cx
+    235	    01DF  83 C6	02		     add si, 2
+    236	    01E2  C6 04	24		     mov byte ptr [si],	'$'
+    237	    01E5  46			     inc si
+    238
+    239	    01E6  C3			     ret
+    240
+    241	    01E7			 store_iint_to_string:
+    242	    01E7  5B			     pop bx
+    243	    01E8  58			     pop ax ; integer
+    244	    01E9  5E			     pop si ; memory for integer storage
+    245	    01EA  53			     push bx
+    246
+    247	    01EB  B9 0000		     mov cx, 0
+    248	    01EE  BB 000A		     mov bx, 10
+    249	    01F1			 _store_iint_to_string_direct:
+    250	    01F1  3D 0000		     cmp ax, 0
+    251	    01F4  74 08			     je	_store_iint_to_string_leading_zeros
+    252
+    253	    01F6  33 D2			     xor dx, dx
+    254	    01F8  F7 F3			     div bx
+    255	    01FA  52			     push dx
+    256	    01FB  41			     inc cx
+    257
+    258	    01FC  EB F3			     jmp _store_iint_to_string_direct
+    259
+    260	    01FE			 _store_iint_to_string_leading_zeros:
+    261	    01FE  83 F9	00		     cmp cx, 0
+    262	    0201  75 05			     jne _store_iint_to_string_leading_zeros_start
+    263	    0203  BB 0000		     mov bx, 0
+    264	    0206  53			     push bx
+    265	    0207  41			     inc cx
+    266	    0208			 _store_iint_to_string_leading_zeros_start:
+    267					     load <cx>
+2   268	    0208  51				 push cx
+    269	    0209  83 E1	01		     and cx, 1
+    270	    020C  83 F9	00		     cmp cx, 0
+    271					     restore <cx>
+2   272	    020F  59				 pop cx
+    273	    0210  74 07			     je	_store_iint_to_string_inverse
+    274	    0212  41			     inc cx
+    275	    0213  BB 0000		     mov bx, 0
+    276	    0216  53			     push bx
+    277	    0217  EB EF			     jmp _store_iint_to_string_leading_zeros_start
+    278	    0219			 _store_iint_to_string_inverse:
+    279					     load <si>
+2   280	    0219  56				 push si
+    281	    021A  03 F1			     add si, cx
+    282	    021C  C6 04	24		     mov byte ptr [si],	'$'
+    283					     restore <si>
+2   284	    021F  5E				 pop si
+    285	    0220			 _store_iint_to_string_inverse_loop:
+Turbo Assembler	 Version 4.1	    12/22/19 15:55:43	    Page 6
+time.ASM
+
+
+
+    286	    0220  83 F9	00		     cmp cx, 0
+    287	    0223  74 0A			     je	_store_iint_to_string_end
+    288
+    289	    0225  5A			     pop dx
+    290	    0226  80 C2	30		     add dl, 30h
+    291	    0229  88 14			     mov byte ptr [si],	dl
+    292	    022B  46			     inc si
+    293	    022C  49			     dec cx
+    294
+    295	    022D  EB F1			     jmp _store_iint_to_string_inverse_loop
+    296
+    297	    022F			 _store_iint_to_string_end:
+    298	    022F  C3			     ret
+    299
+    300	    0230  43 75	72 72 65 6E 74+	 hello_time db 'Current	time is: $'
+    301		  20 74	69 6D 65 20 69+
+    302		  73 3A	20 24
+    303	    0242  43 75	72 72 65 6E 74+	 hello_date db 'Current	date is: $'
+    304		  20 64	61 74 65 20 69+
+    305		  73 3A	20 24
+    306	    0254  14*(24)		 datetime db 20	dup('$')
+    307	    0268  3A 24			 time_semicolon	db ':',	'$'
+    308	    026A  20 24			 time_space db ' ', '$'
+    309	    026C  0A 24			 time_newline db 0Ah, '$'
+    310	    026E  80*(24)		 num db	128 dup('$')
+    311
+    312					 end start
+Turbo Assembler	 Version 4.1	    12/22/19 15:55:43	    Page 7
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "12/22/19"
+??FILENAME			  Text	 "time	  "
+??TIME				  Text	 "15:55:42"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0F0FH
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 TIME
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+DATETIME			  Byte	 DGROUP:0254
+HELLO_DATE			  Byte	 DGROUP:0242
+HELLO_TIME			  Byte	 DGROUP:0230
+NUM				  Byte	 DGROUP:026E
+PRINT_DATETIMESTAMP		  Near	 DGROUP:011D
+START				  Near	 DGROUP:0100
+STORE_IINT_TO_STRING		  Near	 DGROUP:01E7
+TIME_NEWLINE			  Byte	 DGROUP:026C
+TIME_SEMICOLON			  Byte	 DGROUP:0268
+TIME_SPACE			  Byte	 DGROUP:026A
+_STORE_IINT_TO_STRING_DIRECT	  Near	 DGROUP:01F1
+_STORE_IINT_TO_STRING_END	  Near	 DGROUP:022F
+_STORE_IINT_TO_STRING_INVERSE	  Near	 DGROUP:0219
+_STORE_IINT_TO_STRING_INVERSE_LO  Near	 DGROUP:0220
+OP
+_STORE_IINT_TO_STRING_LEADING_ZE  Near	 DGROUP:01FE
+ROS
+_STORE_IINT_TO_STRING_LEADING_ZE  Near	 DGROUP:0208
+ROS_START
+
+Macro Name
+
+BREAK_POINT
+EXIT
+LOAD
+PARSE_BYTE_TO_STR
+PARSE_WORD_TO_STR
+PRINT
+PRINT_RANGE
+RESTORE
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  02EE Word	  Public  CODE
+
