@@ -94,24 +94,43 @@ _show_filename_from_dta_valid_name:
     push bx
     call print_string_with_length
     
-    mov al, 0
+_show_filename_from_dta_datetime:
+    mov al, 1
     cmp byte ptr [use_time], al
-    jne _show_filename_from_dta_with_datetime
+    jne _show_filename_from_dta_storage
+    call show_datetime
+    jmp _show_filename_from_dta_storage
 
-    print_range <time_newline>
+_show_filename_from_dta_storage:
+    mov al, 1
+    cmp byte ptr [use_storage], al
+    jne _show_filename_from_dta_end
+    call show_storage
     jmp _show_filename_from_dta_end
 
-_show_filename_from_dta_with_datetime:
+ _show_filename_from_dta_end:   
+    print_range <newline>
+    mov ax, 1
+    ret
+
+show_datetime:
     lea bx, dta
     mov cx, word ptr [bx + 16h]
     mov dx, word ptr [bx + 18h]
     push dx
     push cx
     call print_datetimestamp
-    print_range <time_space, datetime, time_newline> 
+    print_range <time_space, datetime>
+    ret
 
- _show_filename_from_dta_end:   
-    mov ax, 1
+show_storage:
+    lea bx, dta
+    lea dx, storage
+    push dx
+    mov dx, word ptr [bx + 1Ah]
+    push dx
+    call store_iint_to_string
+    print_range <time_space, storage>
     ret
 
 is_valid_name:
@@ -129,6 +148,7 @@ is_valid_name:
 _is_valid_name_end:
     ret
 
+storage db 64 dup('$')
 count_dta db 128 dup(0)
 dta db 128 dup(0)
 current_max_entities dw 0
