@@ -93,8 +93,15 @@ _show_filename_from_dta_valid_name:
     push cx
     push bx
     call print_string_with_length
-    ; print_range <newline>
     
+    mov al, 0
+    cmp byte ptr [use_time], al
+    jne _show_filename_from_dta_with_datetime
+
+    print_range <time_newline>
+    jmp _show_filename_from_dta_end
+
+_show_filename_from_dta_with_datetime:
     lea bx, dta
     mov cx, word ptr [bx + 16h]
     mov dx, word ptr [bx + 18h]
@@ -102,7 +109,8 @@ _show_filename_from_dta_valid_name:
     push cx
     call print_datetimestamp
     print_range <time_space, datetime, time_newline> 
-    
+
+ _show_filename_from_dta_end:   
     mov ax, 1
     ret
 

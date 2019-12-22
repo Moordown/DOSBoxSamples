@@ -1,21 +1,5 @@
 include bmacro.asm
 
-; model tiny
-; .386
-; .code
-; org 100h
-
-
-; start:
-;     mov cx, 31296
-;     mov dx, 20374
-;     push dx
-;     push cx
-;     call print_datetimestamp
-
-;     print_range <datetime, time_newline>
-;     exit
-
 print_datetimestamp:
     pop bx
     pop cx ; time
@@ -34,7 +18,7 @@ print_datetimestamp:
     restore <si, dx, cx>
     break_point ax
     add si, 4
-    mov byte ptr [si], ':'
+    mov byte ptr [si], '.'
     inc si
 
     load <cx, dx, si>
@@ -43,7 +27,7 @@ print_datetimestamp:
     parse_byte_to_str dl, si
     restore <si, dx, cx>
     add si, 2
-    mov byte ptr [si], ':'
+    mov byte ptr [si], '.'
     inc si
 
     load <cx, dx, si>
@@ -147,5 +131,3 @@ time_semicolon db ':', '$'
 time_space db ' ', '$'
 time_newline db 0Ah, '$'
 num db 128 dup('$')
-
-; end start

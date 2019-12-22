@@ -72,6 +72,7 @@ parse_s:
     ;
     mov bl, 1
     mov byte ptr [use_storage], bl
+    inc si
     jmp parse_args
 parse_t:
     ;
@@ -79,6 +80,7 @@ parse_t:
     ;
     mov bl, 1
     mov byte ptr [use_time], bl
+    inc si
     jmp parse_args
 
 parse_end:
