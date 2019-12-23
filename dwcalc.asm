@@ -5,91 +5,69 @@ include bmacro.asm
 .code
 org 100h
 start:
+    call example_add
+
+example_div:
+    mov ax, word ptr [div_word]
+    mov bx, word ptr [div_word + 2]
+    push bx
+    push ax
+    call set_dword
     call ddiv10
     mov dx, word ptr [remainder]
     cmp dx, 2
-    jne l1
-    call ddiv10_get_word
+    jne example_div_l1
+    call get_dword
     pop ax ; l
     pop dx ; h
     cmp dx, 102
-    jne l1
+    jne example_div_l1
     cmp ax, 45939
-    jne l1
-    print_range <ddiv10ok, ddiv10newline>
-    jmp ext
-l1:
-    print_range <ddiv10err, ddiv10newline>
-    jmp ext
-ext:
+    jne example_div_l1
+    print_range <example_ok, example_newline>
+    jmp example_div_ext
+example_div_l1:
+    print_range <example_err, example_newline>
+    jmp example_div_ext
+example_div_ext:
     exit
-
-ddiv10_set_word:
-    pop cx ; ret address
-    pop ax ; word ptr [l16]
-    pop dx ; word ptr [h16]
-
-    push cx
-    mov word ptr [doubleword], ax
-    mov word ptr [doubleword + 2], dx
-
     ret
 
-ddiv10_get_word:
-    pop cx ; ret address
 
-    mov ax, word ptr [doubleword]
-    mov dx, word ptr [doubleword + 2]
-
-    push dx
-    push ax
-    push cx
-
-    ret
-
-ddiv10:
-    call ddiv10_get_word
-    ; mov ax, word ptr [num]
-    ; mov dx, word ptr [num + 2]
-    ; push dx
-    ; push ax
-    call _ddiv10
-
-    mov word ptr [remainder], dx
-    call ddiv10_set_word
-    ; pop ax ; l
-    ; pop dx ; h
-    ; mov word ptr [num], ax
-    ; mov word ptr [num + 2], dx 
-
-    ret
-
-_ddiv10:
-    pop cx ; ret address
-    pop ax ; word ptr [l16]
-    pop dx ; word ptr [h16]
-
-    load <ax>
-    mov ax, dx
-    xor dx, dx
-    mov bx, 10
-    div bx
-    mov bx, ax ; word ptr [h16]
-    restore <ax>
+example_add:
+    mov ax, word ptr [add_word]
+    mov bx, word ptr [add_word + 2]
     push bx
-
-    mov bx, 10
-    div bx
-    push ax ; word ptr [l15]
-
-    push cx
+    push ax
+    call set_dword
+    mov ax, word ptr [add_word]
+    mov bx, word ptr [add_word + 2]
+    push bx
+    push ax
+    call dadd
+    call get_dword
+    pop ax ; l
+    pop dx ; h
+    cmp dx, 1
+    jne example_add_l1
+    cmp ax, 65534
+    jne example_add_l1
+    print_range <example_ok, example_newline>
+    jmp example_add_ext
+example_add_l1:
+    print_range <example_err, example_newline>
+    jmp example_add_ext
+example_add_ext:
+    exit
     ret
 
-remainder dw 0
-doubleword dd 67306112
+include fdwcalc.asm
 
-ddiv10ok db 'ok$'
-ddiv10err db 'err$'
-ddiv10newline db 0Ah, '$'
+div_word dd 67306112
+add_word dd 65535
+
+example_ok db 'ok$'
+example_err db 'err$'
+example_newline db 0Ah, '$'
 
 end start

@@ -1,4 +1,4 @@
-ddiv10_set_word:
+set_dword:
     pop cx ; ret address
     pop ax ; word ptr [l16]
     pop dx ; word ptr [h16]
@@ -9,7 +9,7 @@ ddiv10_set_word:
 
     ret
 
-ddiv10_get_word:
+get_dword:
     pop cx ; ret address
 
     mov ax, word ptr [doubleword]
@@ -21,11 +21,34 @@ ddiv10_get_word:
 
     ret
 
+dadd:
+    pop si
+    ;
+    ; on stack lay pair (l,h) of one dword, then we load second
+    ;
+    call get_dword
+
+    pop ax ; our low
+    pop bx ; our hight
+    pop cx ; their low
+    pop dx ; their hight
+
+    adc ax, cx
+    jc _dadd_add_one
+_dadd_add_one:
+    inc bx
+    add bx, dx
+    push bx
+    push ax
+    call set_dword
+    push si
+    ret
+
 ddiv10:
-    call ddiv10_get_word
+    call get_dword
     call _ddiv10
     mov word ptr [remainder], dx
-    call ddiv10_set_word
+    call set_dword
 
     ret
 
@@ -51,4 +74,4 @@ _ddiv10:
     ret
 
 remainder dw 0
-doubleword dd 67306112
+doubleword dd 0
