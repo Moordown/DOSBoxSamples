@@ -91,6 +91,19 @@ parse_o:
     ;
     ; use file for specifying pseudographic
     ;
+    inc si
+    inc si
+    load <si>
+    mov cx, 64
+    push cx
+    push si
+    call count_no_space_no_zero_letters
+    restore <si>
+    mov cx, ax
+    lea di, filename
+    cld
+    rep movsb
+
     lea dx, filename
     push dx
     call parse_file_from
@@ -111,7 +124,6 @@ parse_o:
     mov al, byte ptr [spac]
     mov byte ptr [space], al
 
-    inc si
     jmp parse_args
 
 
@@ -121,7 +133,7 @@ parse_end:
 ;
 ;   parse arguments
 ;
-filename db 'graph.txt', 00h
+filename db 64 dup(0)
 use_storage db 0
 use_time db 0
 deep_level db 1
