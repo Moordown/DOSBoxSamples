@@ -1,6 +1,6 @@
+
 include filefunc.asm
 include clfunc.asm
-include pgraph.asm
 include tmacro.asm
 include time.asm
 
@@ -231,7 +231,7 @@ set_accumulative_storage_from_dir:
     ;   list subfiles from subfolder
     ;
     mov bx, 0
-    mov cx, 1
+    mov cx, 10
     mov ax, offset file_mask
     mov si, offset find_first_file
     
@@ -243,7 +243,7 @@ set_accumulative_storage_from_dir:
     ;
     ;   list subfolders from subfolder
     ;
-    mov cx, 1
+    mov cx, 10
     mov bx, ax
     mov ax, offset folder_mask
     mov si, offset find_first_folder
@@ -560,4 +560,4 @@ accumulative_storage dd 0
 storage db 64 dup('$')
 count_dta db 128 dup(0)
 dta db 128 dup(0)
-current_max_entities dw 0
+current_max_entities dw 

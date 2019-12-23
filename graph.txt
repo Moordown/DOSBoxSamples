@@ -1,3 +1,2 @@
-first_member: o
-last_member: o
-middle_member: 0
+f: -
+l: _

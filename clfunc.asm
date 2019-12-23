@@ -1,3 +1,6 @@
+include pgraph.asm
+include parser.asm
+
 count_no_space_no_zero_letters:
     pop bx ; ret address
     pop si ; string offset
@@ -44,6 +47,8 @@ parse_args:
     je parse_s
     cmp byte ptr [si], 't'
     je parse_t
+    cmp byte ptr [si], 'o'
+    je parse_o
     jmp parse_end
 parse_d:
     ;
@@ -82,6 +87,33 @@ parse_t:
     mov byte ptr [use_time], bl
     inc si
     jmp parse_args
+parse_o:
+    ;
+    ; use file for specifying pseudographic
+    ;
+    lea dx, filename
+    push dx
+    call parse_file_from
+    mov al, byte ptr [fp]
+    mov byte ptr [first_file_char], al
+    mov al, byte ptr [mp]
+    mov byte ptr [middle_file_char], al
+    mov al, byte ptr [lp]
+    mov byte ptr [end_file_char], al
+    mov al, byte ptr [lhp]
+    mov byte ptr [old_level_shift], al
+
+    lea di, level_shift
+    mov cx, 10
+    cld
+    rep stosb
+
+    mov al, byte ptr [spac]
+    mov byte ptr [space], al
+
+    inc si
+    jmp parse_args
+
 
 parse_end:
     ret
@@ -89,6 +121,7 @@ parse_end:
 ;
 ;   parse arguments
 ;
+filename db 'graph.txt', 00h
 use_storage db 0
 use_time db 0
 deep_level db 1

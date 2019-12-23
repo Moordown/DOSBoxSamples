@@ -1,7 +1,12 @@
+include macro.asm
+include ffile.asm
+
 parse_file_from:
     call create_first_transition_table
     call create_middle_transition_table
     call create_last_transition_table
+    call create_level_shift_transition_table
+    call create_space_transition_table
 
     pop bx  ; ret address
     pop dx  ; filename pointer
@@ -45,7 +50,7 @@ _parse_file_loop:
     jne _parse_file_next
     cmp al, 0
     jne _parse_file_next
-    print_range <parse_error, open_newline>
+    print_range <parse_error, parse_newline>
     jmp _parse_file_ext 
 _parse_file_next:
     mov byte ptr [state], al
@@ -64,73 +69,72 @@ _parse_file_next_terminal_1:
     jmp _parse_file_loop
 _parse_file_next_terminal_2:
     cmp al, byte ptr [last_terminal]
-    jne _parse_file_loop
+    jne _parse_file_next_terminal_3
     mov al, byte ptr [buf]
     mov byte ptr [lp], al
     ; print_range <last_parsed, buf, open_newline>
     jmp _parse_file_loop
+_parse_file_next_terminal_3:
+    cmp al, byte ptr [level_shift_terminal]
+    jne _parse_file_next_terminal_4
+    mov al, byte ptr [buf]
+    mov byte ptr [lhp], al
+    ; print_range <last_parsed, buf, open_newline>
+    jmp _parse_file_loop
+_parse_file_next_terminal_4:
+    cmp al, byte ptr [space_terminal]
+    jne _parse_file_loop
+    mov al, byte ptr [buf]
+    mov byte ptr [spac], al
+    ; print_range <last_parsed, buf, open_newline>
+    jmp _parse_file_loop
+    
 _parse_file_ext:
     restore <bx>
     ret
 
 create_first_transition_table:
     set_transition transition_table 0 1 'f'
-    set_transition transition_table 1 2 'i'
-    set_transition transition_table 2 3 'r'
-    set_transition transition_table 3 4 's'
-    set_transition transition_table 4 5 't'
-    set_transition transition_table 5 6 '_'
-    set_transition transition_table 6 7 'm'
-    set_transition transition_table 7 8 'e'
-    set_transition transition_table 8 9 'm'
-    set_transition transition_table 9 10 'b'
-    set_transition transition_table 10 11 'e'
-    set_transition transition_table 11 12 'r'
-    set_transition transition_table 12 13 ':'
-    set_transition transition_table 13 14 ' '
-    set_transition_for_all transition_table 14 15
-    set_transition transition_table 15 0 0ah
+    set_transition transition_table 1 2 ':'
+    set_transition transition_table 2 3 ' '
+    set_transition_for_all transition_table 3 4
+    set_transition transition_table 4 0 0ah
     ret
 
 create_middle_transition_table:
-    set_transition transition_table 0 16 'm'
-    set_transition transition_table 16 17 'i'
-    set_transition transition_table 17 18 'd'
-    set_transition transition_table 18 19 'd'
-    set_transition transition_table 19 20 'l'
-    set_transition transition_table 20 21 'e'
-    set_transition transition_table 21 22 '_'
-    set_transition transition_table 22 23 'm'
-    set_transition transition_table 23 24 'e'
-    set_transition transition_table 24 25 'm'
-    set_transition transition_table 25 26 'b'
-    set_transition transition_table 26 27 'e'
-    set_transition transition_table 27 28 'r'
-    set_transition transition_table 28 29 ':'
-    set_transition transition_table 29 30 ' '
-    set_transition_for_all transition_table 30 31
-    set_transition transition_table 31 0 0ah
+    set_transition transition_table 0 5 'm'
+    set_transition transition_table 5 6 ':'
+    set_transition transition_table 6 7 ' '
+    set_transition_for_all transition_table 7 8
+    set_transition transition_table 8 0 0ah
     ret
 
 create_last_transition_table:
-    set_transition transition_table 0 32 'l'
-    set_transition transition_table 32 33 'a'
-    set_transition transition_table 33 34 's'
-    set_transition transition_table 34 35 't'
-    set_transition transition_table 35 36 '_'
-    set_transition transition_table 36 37 'm'
-    set_transition transition_table 37 38 'e'
-    set_transition transition_table 38 39 'm'
-    set_transition transition_table 39 40 'b'
-    set_transition transition_table 40 41 'e'
-    set_transition transition_table 41 42 'r'
-    set_transition transition_table 42 43 ':'
-    set_transition transition_table 43 44 ' '
-    set_transition_for_all transition_table 44 45
-    set_transition transition_table 45 0 0ah
+    set_transition transition_table 0 9 'l'
+    set_transition transition_table 9 10 ':'
+    set_transition transition_table 10 11 ' '
+    set_transition_for_all transition_table 11 12
+    set_transition transition_table 12 0 0ah
     ret
 
-include ffile.asm
+create_level_shift_transition_table:
+    set_transition transition_table 9 14 'h'
+    set_transition transition_table 14 15 ':'
+    set_transition transition_table 15 16 ' '
+    set_transition_for_all transition_table 16 17
+    set_transition transition_table 17 0 0ah
+    ret
+
+create_space_transition_table:
+    set_transition transition_table 0 18 's'
+    set_transition transition_table 18 19 ':'
+    set_transition transition_table 19 20 ' '
+    set_transition_for_all transition_table 20 21
+    set_transition transition_table 21 0 0ah
+    ret
+
+
+
 
 ;
 ; errors
@@ -140,9 +144,11 @@ parse_error db 'parse error: incorrect format$'
 ;
 ; terminal states
 ;
-first_terminal db 15
-middle_terminal db 31
-last_terminal db 45
+first_terminal db 4
+middle_terminal db 8
+last_terminal db 12
+level_shift_terminal db 17
+space_terminal db 21
 
 ;
 ; info messages
@@ -150,14 +156,18 @@ last_terminal db 45
 first_parsed db 'first parsed: $'
 middle_parsed db 'middle parsed: $'
 last_parsed db 'last parsed: $'
+level_shift_parsed db 'level shift parsed: $'
+parse_newline db 0ah, '$'
 
 ;
 ; parsed symbols
 ;
-fp db '$$'
-mp db '$$'
-lp db '$$'
+fp db 194, '$'
+mp db 195, '$'
+lp db 192, '$'
+lhp db 179, '$'
+spac db 32, '$'
 
 state db 0
 buf db '$$'
-transition_table db 11475 dup(0)
+transition_table db 5610 dup(0)

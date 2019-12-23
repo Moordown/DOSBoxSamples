@@ -86,7 +86,7 @@ _print_string_with_length_end:
 ;   pseudographic
 ;
 old_level_shift db 179, '$'
-level_shift db 10 dup(179), '$'
+level_shift db 20 dup(179), '$'
 space db, 32, '$'
 
 zero_first_file db 195, '$'

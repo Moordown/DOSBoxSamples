@@ -13,6 +13,7 @@ start:
     print_range <first_parsed, fp, open_newline>
     print_range <middle_parsed, mp, open_newline>
     print_range <last_parsed, lp, open_newline>
+    print_range <level_shift_parsed, lhp, open_newline>
     exit
 
 
