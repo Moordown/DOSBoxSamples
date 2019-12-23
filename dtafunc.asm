@@ -3,7 +3,6 @@ include clfunc.asm
 include pgraph.asm
 include tmacro.asm
 include time.asm
-include fdwcalc.asm
 
 count_subfiles_here:
     lea ax, file_mask
@@ -124,7 +123,7 @@ show_datetime:
     push dx
     push cx
     call print_datetimestamp
-    print_range <time_space, datetime>
+    print_range <time_space, datetime, time_space>
     ret
 
 show_storage:
@@ -149,7 +148,7 @@ show_storage:
 _show_storage_file:
     lea bx, dta
     add bx, 1Ah
-    mov bx, word ptr [bx]
+    ; mov bx, word ptr [bx]
     push bx
     jmp _print_storage
     ; call dadd_from
@@ -158,12 +157,12 @@ _show_storage_file:
     ; pop bx
     ; push ax
 _show_storage_folder:
-    mov ax, word ptr [accumulative_storage]
+    lea ax, accumulative_storage
     push ax
     jmp _print_storage
 _print_storage:
-    call store_iint_to_string
-    print_range <time_space, storage>
+    call store_dword_to_string
+    print_range <time_space, storage, time_space>
     ret
 
 is_valid_name:

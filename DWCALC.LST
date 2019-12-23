@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    12/23/19 12:39:54	    Page 1
+Turbo Assembler	 Version 4.1	    12/23/19 16:01:56	    Page 1
 dwcalc.ASM
 
 
@@ -60,7 +60,7 @@ dwcalc.ASM
 1    55					 parse_word_to_str macro from, to, length
 1    56					     mov ax, length
 1    57					     push ax
-Turbo Assembler	 Version 4.1	    12/23/19 12:39:54	    Page 2
+Turbo Assembler	 Version 4.1	    12/23/19 16:01:56	    Page 2
 dwcalc.ASM
 
 
@@ -73,226 +73,257 @@ dwcalc.ASM
 1    63					     call store_iint_to_string
 1    64					 endm
      65
-     66	    0000			 .model	tiny
-     67					 .386
-     68	    0000			 .code
-     69					 org 100h
-     70	    0100			 start:
-     71	    0100  E8 004C		     call example_add
-     72
-     73	    0103			 example_div:
-     74	    0103  A1 0208r		     mov ax, word ptr [div_word]
-     75	    0106  8B 1E	020Ar		     mov bx, word ptr [div_word	+ 2]
-     76	    010A  53			     push bx
-     77	    010B  50			     push ax
-     78	    010C  E8 0082		     call set_dword
-     79	    010F  E8 00C9		     call ddiv10
-     80	    0112  8B 16	0202r		     mov dx, word ptr [remainder]
-     81	    0116  83 FA	02		     cmp dx, 2
-     82	    0119  75 1F			     jne example_div_l1
-     83	    011B  E8 007F		     call get_dword
-     84	    011E  58			     pop ax ; l
-     85	    011F  5A			     pop dx ; h
-     86	    0120  83 FA	66		     cmp dx, 102
-     87	    0123  75 15			     jne example_div_l1
-     88	    0125  3D B373		     cmp ax, 45939
-     89	    0128  75 10			     jne example_div_l1
-     90					     print_range <example_ok, example_newline>
-2    91						 print <offset example_ok>
-3    92	    012A  B4 09				 mov ah, 09h
-3    93	    012C  BA 0210r			 mov dx, offset	example_ok
-3    94	    012F  CD 21				 int 21h
-2    95						 print <offset example_newline>
-3    96	    0131  B4 09				 mov ah, 09h
-3    97	    0133  BA 0217r			 mov dx, offset	example_newline
-3    98	    0136  CD 21				 int 21h
-     99	    0138  EB 10			     jmp example_div_ext
-    100	    013A			 example_div_l1:
-    101					     print_range <example_err, example_newline>
-2   102						 print <offset example_err>
-3   103	    013A  B4 09				 mov ah, 09h
-3   104	    013C  BA 0213r			 mov dx, offset	example_err
-3   105	    013F  CD 21				 int 21h
-2   106						 print <offset example_newline>
-3   107	    0141  B4 09				 mov ah, 09h
-3   108	    0143  BA 0217r			 mov dx, offset	example_newline
-3   109	    0146  CD 21				 int 21h
-    110	    0148  EB 00			     jmp example_div_ext
-    111	    014A			 example_div_ext:
-    112					     exit
-1   113	    014A  B4 00			     mov ah, 00h
-1   114	    014C  CD 21			     int 21h
-Turbo Assembler	 Version 4.1	    12/23/19 12:39:54	    Page 3
+     66
+     67	    0000			 .model	tiny
+     68					 .386
+     69	    0000			 .code
+     70					 org 100h
+     71	    0100			 start:
+     72	    0100  E8 0000		     call example_add
+     73
+     74	    0103			 example_add:
+     75	    0103  B8 024Br		     lea ax, add_word_1
+     76	    0106  50			     push ax
+     77	    0107  E8 0046		     call set_dword_from
+     78	    010A  B8 024Fr		     lea ax, add_word_2
+     79	    010D  50			     push ax
+     80	    010E  E8 004D		     call dadd_from
+     81	    0111  B8 0000		     mov ax, 0
+     82	    0114  50			     push ax
+     83	    0115  B8 0207r		     lea ax, integer
+     84	    0118  50			     push ax
+     85	    0119  B8 0203r		     lea ax, doubleword
+     86	    011C  50			     push ax
+     87	    011D  E8 008B		     call store_iint_to_string
+     88					     print_range <integer, example_newline>
+2    89						 print <offset integer>
+3    90	    0120  B4 09				 mov ah, 09h
+3    91	    0122  BA 0207r			 mov dx, offset	integer
+3    92	    0125  CD 21				 int 21h
+2    93						 print <offset example_newline>
+3    94	    0127  B4 09				 mov ah, 09h
+3    95	    0129  BA 025Ar			 mov dx, offset	example_newline
+3    96	    012C  CD 21				 int 21h
+     97					     exit
+1    98	    012E  B4 00			     mov ah, 00h
+1    99	    0130  CD 21			     int 21h
+    100
+    101	    0132			 set_dword:
+    102	    0132  59			     pop cx ; ret address
+    103	    0133  58			     pop ax ; word ptr [l16]
+    104	    0134  5A			     pop dx ; word ptr [h16]
+    105
+    106	    0135  51			     push cx
+    107	    0136  A3 0203r		     mov word ptr [doubleword],	ax
+    108	    0139  89 16	0205r		     mov word ptr [doubleword +	2], dx
+    109
+    110	    013D  C3			     ret
+    111
+    112	    013E			 get_dword:
+    113	    013E  59			     pop cx ; ret address
+    114
+Turbo Assembler	 Version 4.1	    12/23/19 16:01:56	    Page 3
 dwcalc.ASM
 
 
 
-    115	    014E  C3			     ret
-    116
+    115	    013F  A1 0203r		     mov ax, word ptr [doubleword]
+    116	    0142  8B 16	0205r		     mov dx, word ptr [doubleword + 2]
     117
-    118	    014F			 example_add:
-    119	    014F  B8 020Cr		     lea ax, add_word
-    120	    0152  50			     push ax
-    121	    0153  E8 0053		     call set_dword_from
-    122	    0156  B8 020Cr		     lea ax, add_word
-    123	    0159  50			     push ax
-    124	    015A  E8 005A		     call dadd_from
-    125	    015D  E8 003D		     call get_dword
-    126	    0160  58			     pop ax ; l
-    127	    0161  5A			     pop dx ; h
-    128	    0162  83 FA	01		     cmp dx, 1
-    129	    0165  75 15			     jne example_add_l1
-    130	    0167  3D FFFE		     cmp ax, 65534
-    131	    016A  75 10			     jne example_add_l1
-    132					     print_range <example_ok, example_newline>
-2   133						 print <offset example_ok>
-3   134	    016C  B4 09				 mov ah, 09h
-3   135	    016E  BA 0210r			 mov dx, offset	example_ok
-3   136	    0171  CD 21				 int 21h
-2   137						 print <offset example_newline>
-3   138	    0173  B4 09				 mov ah, 09h
-3   139	    0175  BA 0217r			 mov dx, offset	example_newline
-3   140	    0178  CD 21				 int 21h
-    141	    017A  EB 10			     jmp example_add_ext
-    142	    017C			 example_add_l1:
-    143					     print_range <example_err, example_newline>
-2   144						 print <offset example_err>
-3   145	    017C  B4 09				 mov ah, 09h
-3   146	    017E  BA 0213r			 mov dx, offset	example_err
-3   147	    0181  CD 21				 int 21h
-2   148						 print <offset example_newline>
-3   149	    0183  B4 09				 mov ah, 09h
-3   150	    0185  BA 0217r			 mov dx, offset	example_newline
-3   151	    0188  CD 21				 int 21h
-    152	    018A  EB 00			     jmp example_add_ext
-    153	    018C			 example_add_ext:
-    154					     exit
-1   155	    018C  B4 00			     mov ah, 00h
-1   156	    018E  CD 21			     int 21h
-    157	    0190  C3			     ret
-    158
-    159					 include fdwcalc.asm
-1   160	    0191			 set_dword:
-1   161	    0191  59			     pop cx ; ret address
-1   162	    0192  58			     pop ax ; word ptr [l16]
-1   163	    0193  5A			     pop dx ; word ptr [h16]
-1   164
-1   165	    0194  51			     push cx
-1   166	    0195  A3 0204r		     mov word ptr [doubleword],	ax
-1   167	    0198  89 16	0206r		     mov word ptr [doubleword +	2], dx
-1   168
-1   169	    019C  C3			     ret
-1   170
-1   171	    019D			 get_dword:
-Turbo Assembler	 Version 4.1	    12/23/19 12:39:54	    Page 4
+    118	    0146  52			     push dx
+    119	    0147  50			     push ax
+    120	    0148  51			     push cx
+    121
+    122	    0149  C3			     ret
+    123
+    124	    014A			 get_dword_addr:
+    125	    014A  5B			     pop bx
+    126	    014B  B8 0203r		     lea ax, doubleword
+    127	    014E  53			     push bx
+    128
+    129	    014F  C3			     ret
+    130
+    131	    0150			 set_dword_from:
+    132	    0150  5A			     pop dx
+    133	    0151  5B			     pop bx ; address from
+    134	    0152  52			     push dx
+    135	    0153  8B 57	02		     mov dx, word ptr [bx + 2]
+    136	    0156  52			     push dx
+    137	    0157  8B 17			     mov dx, word ptr [bx]
+    138	    0159  52			     push dx
+    139	    015A  E8 FFD5		     call set_dword
+    140	    015D  C3			     ret
+    141
+    142	    015E			 dadd_from:
+    143	    015E  5A			     pop dx
+    144	    015F  5B			     pop bx ; address from
+    145	    0160  52			     push dx
+    146	    0161  8B 47	02		     mov ax, word ptr [bx + 2]
+    147	    0164  50			     push ax
+    148	    0165  8B 07			     mov ax, word ptr [bx]
+    149	    0167  50			     push ax
+    150	    0168  E8 0001		     call dadd
+    151	    016B  C3			     ret
+    152
+    153	    016C			 dadd:
+    154	    016C  5E			     pop si
+    155					     ;
+    156					     ; on stack	lay pair (l,h) of one dword, then we load second
+    157					     ;
+    158	    016D  E8 FFCE		     call get_dword
+    159
+    160	    0170  58			     pop ax ; our low
+    161	    0171  5B			     pop bx ; our hight
+    162	    0172  59			     pop cx ; their low
+    163	    0173  5A			     pop dx ; their hight
+    164
+    165	    0174  13 C1			     adc ax, cx
+    166	    0176  72 02			     jc	_dadd_add_one
+    167	    0178  EB 01			     jmp _dadd_no_add_one
+    168	    017A			 _dadd_add_one:
+    169	    017A  43			     inc bx
+    170	    017B			 _dadd_no_add_one:
+    171	    017B  03 DA			     add bx, dx
+Turbo Assembler	 Version 4.1	    12/23/19 16:01:56	    Page 4
 dwcalc.ASM
 
 
 
-1   172	    019D  59			     pop cx ; ret address
-1   173
-1   174	    019E  A1 0204r		     mov ax, word ptr [doubleword]
-1   175	    01A1  8B 16	0206r		     mov dx, word ptr [doubleword + 2]
-1   176
-1   177	    01A5  52			     push dx
-1   178	    01A6  50			     push ax
-1   179	    01A7  51			     push cx
-1   180
-1   181	    01A8  C3			     ret
-1   182
-1   183	    01A9			 set_dword_from:
-1   184	    01A9  5A			     pop dx
-1   185	    01AA  5B			     pop bx ; address from
-1   186	    01AB  52			     push dx
-1   187	    01AC  8B 57	02		     mov dx, word ptr [bx + 2]
-1   188	    01AF  52			     push dx
-1   189	    01B0  8B 17			     mov dx, word ptr [bx]
-1   190	    01B2  52			     push dx
-1   191	    01B3  E8 FFDB		     call set_dword
-1   192	    01B6  C3			     ret
-1   193
-1   194	    01B7			 dadd_from:
-1   195	    01B7  5A			     pop dx
-1   196	    01B8  5B			     pop bx ; address from
-1   197	    01B9  52			     push dx
-1   198	    01BA  8B 47	02		     mov ax, word ptr [bx + 2]
-1   199	    01BD  50			     push ax
-1   200	    01BE  8B 07			     mov ax, word ptr [bx]
-1   201	    01C0  50			     push ax
-1   202	    01C1  E8 0001		     call dadd
-1   203	    01C4  C3			     ret
-1   204
-1   205	    01C5			 dadd:
-1   206	    01C5  5E			     pop si
-1   207					     ;
-1   208					     ; on stack	lay pair (l,h) of one dword, then we load second
-1   209					     ;
-1   210	    01C6  E8 FFD4		     call get_dword
-1   211
-1   212	    01C9  58			     pop ax ; our low
-1   213	    01CA  5B			     pop bx ; our hight
-1   214	    01CB  59			     pop cx ; their low
-1   215	    01CC  5A			     pop dx ; their hight
-1   216
-1   217	    01CD  13 C1			     adc ax, cx
-1   218	    01CF  72 00			     jc	_dadd_add_one
-1   219	    01D1			 _dadd_add_one:
-1   220	    01D1  43			     inc bx
-1   221	    01D2  03 DA			     add bx, dx
-1   222	    01D4  53			     push bx
-1   223	    01D5  50			     push ax
-1   224	    01D6  E8 FFB8		     call set_dword
-1   225	    01D9  56			     push si
-1   226	    01DA  C3			     ret
-1   227
-1   228	    01DB			 ddiv10:
-Turbo Assembler	 Version 4.1	    12/23/19 12:39:54	    Page 5
+    172	    017D  53			     push bx
+    173	    017E  50			     push ax
+    174	    017F  E8 FFB0		     call set_dword
+    175	    0182  56			     push si
+    176	    0183  C3			     ret
+    177
+    178	    0184			 ddiv10:
+    179	    0184  E8 FFB7		     call get_dword
+    180	    0187  E8 0008		     call _ddiv10
+    181	    018A  89 16	0201r		     mov word ptr [remainder], dx
+    182	    018E  E8 FFA1		     call set_dword
+    183
+    184	    0191  C3			     ret
+    185
+    186	    0192			 _ddiv10:
+    187	    0192  59			     pop cx ; ret address
+    188	    0193  58			     pop ax ; word ptr [l16]
+    189	    0194  5A			     pop dx ; word ptr [h16]
+    190
+    191					     load <ax>
+2   192	    0195  50				 push ax
+    193	    0196  8B C2			     mov ax, dx
+    194	    0198  33 D2			     xor dx, dx
+    195	    019A  BB 000A		     mov bx, 10
+    196	    019D  F7 F3			     div bx
+    197	    019F  8B D8			     mov bx, ax	; word ptr [h16]
+    198					     restore <ax>
+2   199	    01A1  58				 pop ax
+    200	    01A2  53			     push bx
+    201
+    202	    01A3  BB 000A		     mov bx, 10
+    203	    01A6  F7 F3			     div bx
+    204	    01A8  50			     push ax ; word ptr	[l15]
+    205
+    206	    01A9  51			     push cx
+    207	    01AA  C3			     ret
+    208
+    209	    01AB			 store_iint_to_string:
+    210	    01AB  5B			     pop bx
+    211	    01AC  58			     pop ax ; dword integer address
+    212	    01AD  5E			     pop si ; memory for storing integer
+    213	    01AE  5F			     pop di ; integer min length
+    214	    01AF  53			     push bx
+    215
+    216	    01B0  50			     push ax
+    217	    01B1  E8 FF9C		     call set_dword_from
+    218
+    219	    01B4  B9 0000		     mov cx, 0
+    220	    01B7			 _store_iint_to_string_direct:
+    221					     load <cx>
+2   222	    01B7  51				 push cx
+    223	    01B8  E8 FF83		     call get_dword
+    224	    01BB  58			     pop ax
+    225	    01BC  5B			     pop bx
+    226					     restore <cx>
+2   227	    01BD  59				 pop cx
+    228	    01BE  3D 0000		     cmp ax, 0
+Turbo Assembler	 Version 4.1	    12/23/19 16:01:56	    Page 5
 dwcalc.ASM
 
 
 
-1   229	    01DB  E8 FFBF		     call get_dword
-1   230	    01DE  E8 0008		     call _ddiv10
-1   231	    01E1  89 16	0202r		     mov word ptr [remainder], dx
-1   232	    01E5  E8 FFA9		     call set_dword
-1   233
-1   234	    01E8  C3			     ret
-1   235
-1   236	    01E9			 _ddiv10:
-1   237	    01E9  59			     pop cx ; ret address
-1   238	    01EA  58			     pop ax ; word ptr [l16]
-1   239	    01EB  5A			     pop dx ; word ptr [h16]
-1   240
-1   241					     load <ax>
-3   242	    01EC  50				 push ax
-1   243	    01ED  8B C2			     mov ax, dx
-1   244	    01EF  33 D2			     xor dx, dx
-1   245	    01F1  BB 000A		     mov bx, 10
-1   246	    01F4  F7 F3			     div bx
-1   247	    01F6  8B D8			     mov bx, ax	; word ptr [h16]
-1   248					     restore <ax>
-3   249	    01F8  58				 pop ax
-1   250	    01F9  53			     push bx
-1   251
-1   252	    01FA  BB 000A		     mov bx, 10
-1   253	    01FD  F7 F3			     div bx
-1   254	    01FF  50			     push ax ; word ptr	[l15]
-1   255
-1   256	    0200  51			     push cx
-1   257	    0201  C3			     ret
-1   258
-1   259	    0202  0000			 remainder dw 0
-1   260	    0204  00000000		 doubleword dd 0
-    261
-    262	    0208  04030280		 div_word dd 67306112
-    263	    020C  0000FFFF		 add_word dd 65535
-    264
-    265	    0210  6F 6B	24		 example_ok db 'ok$'
-    266	    0213  65 72	72 24		 example_err db	'err$'
-    267	    0217  0A 24			 example_newline db 0Ah, '$'
-    268
-    269					 end start
-Turbo Assembler	 Version 4.1	    12/23/19 12:39:54	    Page 6
+    229	    01C1  75 07			     jne _store_iint_to_string_direct_next_loop
+    230	    01C3  83 FB	00		     cmp bx, 0
+    231	    01C6  75 02			     jne _store_iint_to_string_direct_next_loop
+    232	    01C8  EB 11			     jmp _store_iint_to_string_zero_padding_start
+    233
+    234	    01CA			 _store_iint_to_string_direct_next_loop:
+    235					     load <cx, si, di>
+2   236	    01CA  51				 push cx
+2   237	    01CB  56				 push si
+2   238	    01CC  57				 push di
+    239	    01CD  E8 FFB4		     call ddiv10
+    240					     restore <di, si, cx>
+2   241	    01D0  5F				 pop di
+2   242	    01D1  5E				 pop si
+2   243	    01D2  59				 pop cx
+    244	    01D3  8B 16	0201r		     mov dx, word ptr [remainder]
+    245	    01D7  52			     push dx
+    246	    01D8  41			     inc cx
+    247
+    248	    01D9  EB DC			     jmp _store_iint_to_string_direct
+    249
+    250	    01DB			 _store_iint_to_string_zero_padding_start:
+    251	    01DB  2B F9			     sub di, cx
+    252	    01DD			 _store_iint_to_string_zero_padding_loop:
+    253	    01DD  83 FF	00		     cmp di, 0
+    254	    01E0  7E 08			     jle _store_iint_to_string_zero_padding_end
+    255	    01E2  BB 0000		     mov bx, 0
+    256	    01E5  53			     push bx
+    257	    01E6  4F			     dec di
+    258	    01E7  41			     inc cx
+    259	    01E8  EB F3			     jmp _store_iint_to_string_zero_padding_loop
+    260	    01EA			 _store_iint_to_string_zero_padding_end:
+    261	    01EA			 _store_iint_to_string_inverse:
+    262					     load <si>
+2   263	    01EA  56				 push si
+    264	    01EB  03 F1			     add si, cx
+    265	    01ED  C6 04	24		     mov byte ptr [si],	'$'
+    266					     restore <si>
+2   267	    01F0  5E				 pop si
+    268	    01F1			 _store_iint_to_string_inverse_loop:
+    269	    01F1  83 F9	00		     cmp cx, 0
+    270	    01F4  74 0A			     je	_store_iint_to_string_end
+    271
+    272	    01F6  5A			     pop dx
+    273	    01F7  80 C2	30		     add dl, 30h
+    274	    01FA  88 14			     mov byte ptr [si],	dl
+    275	    01FC  46			     inc si
+    276	    01FD  49			     dec cx
+    277
+    278	    01FE  EB F1			     jmp _store_iint_to_string_inverse_loop
+    279
+    280	    0200			 _store_iint_to_string_end:
+    281	    0200  C3			     ret
+    282
+    283	    0201  0000			 remainder dw 0
+    284	    0203  00000000		 doubleword dd 0
+    285	    0207  40*(24)		 integer db 64 dup('$')
+Turbo Assembler	 Version 4.1	    12/23/19 16:01:56	    Page 6
+dwcalc.ASM
+
+
+
+    286
+    287	    0247  04030280		 div_word dd 67306112
+    288	    024B  0001E0AC		 add_word_1 dd 123052
+    289	    024F  0000001E		 add_word_2 dd 30
+    290
+    291	    0253  6F 6B	24		 example_ok db 'ok$'
+    292	    0256  65 72	72 24		 example_err db	'err$'
+    293	    025A  0A 24			 example_newline db 0Ah, '$'
+    294
+    295					 end start
+Turbo Assembler	 Version 4.1	    12/23/19 16:01:56	    Page 7
 Symbol Table
 
 
@@ -302,7 +333,7 @@ Symbol Name			  Type	 Value
 
 ??DATE				  Text	 "12/23/19"
 ??FILENAME			  Text	 "dwcalc  "
-??TIME				  Text	 "12:39:54"
+??TIME				  Text	 "16:01:55"
 ??VERSION			  Number 040A
 @32BIT				  Text	 0
 @CODE				  Text	 DGROUP
@@ -316,28 +347,46 @@ Symbol Name			  Type	 Value
 @MODEL				  Text	 1
 @STACK				  Text	 DGROUP
 @WORDSIZE			  Text	 2
-ADD_WORD			  Dword	 DGROUP:020C
-DADD				  Near	 DGROUP:01C5
-DADD_FROM			  Near	 DGROUP:01B7
-DDIV10				  Near	 DGROUP:01DB
-DIV_WORD			  Dword	 DGROUP:0208
-DOUBLEWORD			  Dword	 DGROUP:0204
-EXAMPLE_ADD			  Near	 DGROUP:014F
-EXAMPLE_ADD_EXT			  Near	 DGROUP:018C
-EXAMPLE_ADD_L1			  Near	 DGROUP:017C
-EXAMPLE_DIV			  Near	 DGROUP:0103
-EXAMPLE_DIV_EXT			  Near	 DGROUP:014A
-EXAMPLE_DIV_L1			  Near	 DGROUP:013A
-EXAMPLE_ERR			  Byte	 DGROUP:0213
-EXAMPLE_NEWLINE			  Byte	 DGROUP:0217
-EXAMPLE_OK			  Byte	 DGROUP:0210
-GET_DWORD			  Near	 DGROUP:019D
-REMAINDER			  Word	 DGROUP:0202
-SET_DWORD			  Near	 DGROUP:0191
-SET_DWORD_FROM			  Near	 DGROUP:01A9
+ADD_WORD_1			  Dword	 DGROUP:024B
+ADD_WORD_2			  Dword	 DGROUP:024F
+DADD				  Near	 DGROUP:016C
+DADD_FROM			  Near	 DGROUP:015E
+DDIV10				  Near	 DGROUP:0184
+DIV_WORD			  Dword	 DGROUP:0247
+DOUBLEWORD			  Dword	 DGROUP:0203
+EXAMPLE_ADD			  Near	 DGROUP:0103
+EXAMPLE_ERR			  Byte	 DGROUP:0256
+EXAMPLE_NEWLINE			  Byte	 DGROUP:025A
+EXAMPLE_OK			  Byte	 DGROUP:0253
+GET_DWORD			  Near	 DGROUP:013E
+GET_DWORD_ADDR			  Near	 DGROUP:014A
+INTEGER				  Byte	 DGROUP:0207
+REMAINDER			  Word	 DGROUP:0201
+SET_DWORD			  Near	 DGROUP:0132
+SET_DWORD_FROM			  Near	 DGROUP:0150
 START				  Near	 DGROUP:0100
-_DADD_ADD_ONE			  Near	 DGROUP:01D1
-_DDIV10				  Near	 DGROUP:01E9
+STORE_IINT_TO_STRING		  Near	 DGROUP:01AB
+_DADD_ADD_ONE			  Near	 DGROUP:017A
+_DADD_NO_ADD_ONE		  Near	 DGROUP:017B
+_DDIV10				  Near	 DGROUP:0192
+_STORE_IINT_TO_STRING_DIRECT	  Near	 DGROUP:01B7
+_STORE_IINT_TO_STRING_DIRECT_NEX  Near	 DGROUP:01CA
+T_LOOP
+_STORE_IINT_TO_STRING_END	  Near	 DGROUP:0200
+_STORE_IINT_TO_STRING_INVERSE	  Near	 DGROUP:01EA
+_STORE_IINT_TO_STRING_INVERSE_LO  Near	 DGROUP:01F1
+OP
+_STORE_IINT_TO_STRING_ZERO_PADDI  Near	 DGROUP:01EA
+NG_END
+_STORE_IINT_TO_STRING_ZERO_PADDI  Near	 DGROUP:01DD
+NG_LOOP
+_STORE_IINT_TO_STRING_ZERO_PADDI  Near	 DGROUP:01DB
+NG_START
+Turbo Assembler	 Version 4.1	    12/23/19 16:01:56	    Page 8
+Symbol Table
+
+
+
 
 Macro Name
 
@@ -349,15 +398,10 @@ PARSE_WORD_TO_STR
 PRINT
 PRINT_RANGE
 RESTORE
-Turbo Assembler	 Version 4.1	    12/23/19 12:39:54	    Page 7
-Symbol Table
-
-
-
 
 Groups & Segments		  Bit Size Align  Combine Class
 
 DGROUP				  Group
   _DATA				  16  0000 Word	  Public  DATA
-  _TEXT				  16  0219 Word	  Public  CODE
+  _TEXT				  16  025C Word	  Public  CODE
 

@@ -64,8 +64,10 @@ dadd:
 
     adc ax, cx
     jc _dadd_add_one
+    jmp _dadd_no_add_one
 _dadd_add_one:
     inc bx
+_dadd_no_add_one:
     add bx, dx
     push bx
     push ax
