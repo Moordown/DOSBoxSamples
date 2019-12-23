@@ -124,6 +124,8 @@ show_datetime:
     ret
 
 show_storage:
+    mov dx, 0
+    push dx
     lea bx, dta
     lea dx, storage
     push dx

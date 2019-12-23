@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 1
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 1
 tree.ASM
 
 
@@ -60,7 +60,7 @@ tree.ASM
 1    55					     dec di
 1    56					     dec cx
 1    57					     cmp cx, 0
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 2
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 2
 tree.ASM
 
 
@@ -95,7 +95,7 @@ tree.ASM
      85	    0100			 start:
      86	    0100  E8 01DD		     call save_cwd
      87					     set_dta dta
-1    88	    0103  BA 07FDr		     lea dx, dta
+1    88	    0103  BA 080Er		     lea dx, dta
 1    89	    0106  33 C0			     xor ax, ax
 1    90	    0108  B4 1A			     mov ah, 1Ah
 1    91	    010A  CD 21			     int 21h
@@ -103,7 +103,7 @@ tree.ASM
      93					     ;
      94					     ;	 start tree
      95					     ;
-     96	    010F  B8 08BCr		     mov ax, offset root_folder
+     96	    010F  B8 08CDr		     mov ax, offset root_folder
      97	    0112  B9 0000		     mov cx, 0
      98	    0115  51			     push cx
      99	    0116  50			     push ax
@@ -122,7 +122,7 @@ tree.ASM
     112	    0125  5B			     pop bx	 ; ret address
     113	    0126  58			     pop ax	 ; deep	level
     114	    0127  59			     pop cx	 ; root	folder offset
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 3
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 3
 tree.ASM
 
 
@@ -170,8 +170,8 @@ tree.ASM
     155					     ;
     156					     ;	 save current files count
     157					     ;
-    158	    0153  E8 04F2		     call count_subfiles_here
-    159	    0156  A3 087Dr		     mov word ptr [current_max_entities], ax
+    158	    0153  E8 04FF		     call count_subfiles_here
+    159	    0156  A3 088Er		     mov word ptr [current_max_entities], ax
     160
     161	    0159  5A			     pop dx
     162	    015A  59			     pop cx ; deep level
@@ -184,14 +184,14 @@ tree.ASM
 2   169	    015F  51				 push cx
 2   170	    0160  50				 push ax
 2   171	    0161  53				 push bx
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 4
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 4
 tree.ASM
 
 
 
 2   172	    0162  56				 push si
     173					     set_dta dta
-1   174	    0163  BA 07FDr		     lea dx, dta
+1   174	    0163  BA 080Er		     lea dx, dta
 1   175	    0166  33 C0			     xor ax, ax
 1   176	    0168  B4 1A			     mov ah, 1Ah
 1   177	    016A  CD 21			     int 21h
@@ -212,7 +212,7 @@ tree.ASM
     192					     restore <cx>
 2   193	    017A  59				 pop cx
     194	    017B  51			     push cx
-    195	    017C  E8 05A7		     call is_valid_name
+    195	    017C  E8 05B8		     call is_valid_name
     196					     load <cx>
 2   197	    017F  51				 push cx
     198	    0180  3D 0001		     cmp ax, 1
@@ -229,7 +229,7 @@ tree.ASM
 2   209	    018B  51				 push cx
     210	    018C  53			     push bx
     211	    018D  51			     push cx
-    212	    018E  E8 050E		     call show_filename_from_dta
+    212	    018E  E8 051B		     call show_filename_from_dta
     213					     ;
     214					     ;	 check if folder
     215					     ;
@@ -237,7 +237,7 @@ tree.ASM
 2   217	    0191  59				 pop cx
     218					     load <cx>
 2   219	    0192  51				 push cx
-    220	    0193  B8 07FDr		     lea ax, dta
+    220	    0193  B8 080Er		     lea ax, dta
     221	    0196  50			     push ax
     222	    0197  51			     push cx
     223	    0198  E8 00F8		     call is_folder
@@ -246,7 +246,7 @@ tree.ASM
     226					     ;
     227					     ;	 check deep level
     228					     ;
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 5
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 5
 tree.ASM
 
 
@@ -269,7 +269,7 @@ tree.ASM
 2   244	    01B2  53				 push bx
 2   245	    01B3  51				 push cx
     246
-    247	    01B4  3B 1E	087Dr		     cmp bx, word ptr [current_max_entities]
+    247	    01B4  3B 1E	088Er		     cmp bx, word ptr [current_max_entities]
     248	    01B8  75 0A			     jne _list_subfiles_recursive_loop_pseudographic_hack_end
     249					     load <ax, bx, cx>
 2   250	    01BA  50				 push ax
@@ -288,7 +288,7 @@ tree.ASM
     263					     ;	 save dta
     264					     ;
     265					     push_fragment dta,	128
-1   266	    01C6  BF 07FDr		     lea di, dta
+1   266	    01C6  BF 080Er		     lea di, dta
 1   267	    01C9  B9 0080		     mov cx, 128
 1   268	    01CC  33 DB			     xor bx, bx
 1   269	    01CE			 ??0000:
@@ -302,13 +302,13 @@ tree.ASM
     277					     ;
     278					     ; start new search
     279					     ;
-    280	    01DA  A1 087Dr		     mov ax, word ptr [current_max_entities]
+    280	    01DA  A1 088Er		     mov ax, word ptr [current_max_entities]
     281					     load <ax>
 2   282	    01DD  50				 push ax
     283
     284					     load <cx>
 2   285	    01DE  51				 push cx
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 6
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 6
 tree.ASM
 
 
@@ -316,7 +316,7 @@ tree.ASM
     286					     ;
     287					     ;	 cd to subfolder
     288					     ;
-    289	    01DF  B8 07FDr		     lea ax, dta
+    289	    01DF  B8 080Er		     lea ax, dta
     290	    01E2  05 001E		     add ax, 1Eh
     291
     292	    01E5  50			     push ax
@@ -370,7 +370,7 @@ tree.ASM
 2   340	    0215  59				 pop cx
 2   341	    0216  5B				 pop bx
 2   342	    0217  58				 pop ax
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 7
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 7
 tree.ASM
 
 
@@ -378,18 +378,18 @@ tree.ASM
     343					     ;
     344					     ;	 cd back to this function
     345					     ;
-    346	    0218  B8 08B9r		     mov ax, offset parent_folder
+    346	    0218  B8 08CAr		     mov ax, offset parent_folder
     347	    021B  50			     push ax
     348	    021C  E8 0094		     call cd
     349
     350					     restore <ax>
 2   351	    021F  58				 pop ax
-    352	    0220  A3 087Dr		     mov word ptr [current_max_entities], ax
+    352	    0220  A3 088Er		     mov word ptr [current_max_entities], ax
     353					     ;
     354					     ;	 restore dta
     355					     ;
     356					     pop_fragment dta, 128
-1   357	    0223  BF 07FDr		     lea di, dta
+1   357	    0223  BF 080Er		     lea di, dta
 1   358	    0226  B9 0080		     mov cx, 128
 1   359	    0229  03 F9			     add di, cx
 1   360	    022B  4F			     dec di
@@ -402,14 +402,14 @@ tree.ASM
 1   367	    0233  83 F9	00		     cmp cx, 0
 1   368	    0236  75 F6			     jne ??0001
     369					     set_dta dta
-1   370	    0238  BA 07FDr		     lea dx, dta
+1   370	    0238  BA 080Er		     lea dx, dta
 1   371	    023B  33 C0			     xor ax, ax
 1   372	    023D  B4 1A			     mov ah, 1Ah
 1   373	    023F  CD 21			     int 21h
     374	    0241			 _list_subfiles_recursive_next:
     375	    0241  E8 004A		     call find_next
     376	    0244  0F 83	FF32		     jnc _list_subfiles_recursive_loop
-    377	    0248  3A 06	087Fr		     cmp al, byte ptr [no_more_files]
+    377	    0248  3A 06	0890r		     cmp al, byte ptr [no_more_files]
     378	    024C  75 14			     jne find_next_error
     379	    024E			 _list_subfiles_recursive_end:
     380					     restore <cx, bx>
@@ -421,7 +421,7 @@ tree.ASM
     386					     print_range <find_first_fails, newline>
 2   387						 print <offset find_first_fails>
 3   388	    0253  B4 09				 mov ah, 09h
-3   389	    0255  BA 0880r			 mov dx, offset	find_first_fails
+3   389	    0255  BA 0891r			 mov dx, offset	find_first_fails
 3   390	    0258  CD 21				 int 21h
 2   391						 print <offset newline>
 3   392	    025A  B4 09				 mov ah, 09h
@@ -432,12 +432,12 @@ tree.ASM
     397					     print_range <find_next_fails, newline>
 2   398						 print <offset find_next_fails>
 3   399	    0262  B4 09				 mov ah, 09h
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 8
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 8
 tree.ASM
 
 
 
-3   400	    0264  BA 089Cr			 mov dx, offset	find_next_fails
+3   400	    0264  BA 08ADr			 mov dx, offset	find_next_fails
 3   401	    0267  CD 21				 int 21h
 2   402						 print <offset newline>
 3   403	    0269  B4 09				 mov ah, 09h
@@ -494,7 +494,7 @@ tree.ASM
 2   454	    02A8  B8 0001		     mov ax, 1
 2   455	    02AB  EB 05			     jmp _is_folder_end
 2   456	    02AD			 _is_folder_false:
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 9
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 9
 tree.ASM
 
 
@@ -556,7 +556,7 @@ tree.ASM
 2   511	    02E7  8A D0			     mov dl, al
 2   512	    02E9  80 C2	41		     add dl, 41h
 2   513	    02EC  88 14			     mov byte ptr [si],	dl
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 10
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 10
 tree.ASM
 
 
@@ -615,10 +615,10 @@ tree.ASM
 2   565	    037F  E8 FFD6		     call count_no_space_no_zero_letters
 2   566	    0382  8B C8			     mov cx, ax
 2   567	    0384  BE 0082		     mov si, 82h
-2   568	    0387  BF 08BCr		     mov di, offset root_folder
+2   568	    0387  BF 08CDr		     mov di, offset root_folder
 2   569	    038A  F3> A4		     rep movsb
 2   570
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 11
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 11
 tree.ASM
 
 
@@ -680,7 +680,7 @@ tree.ASM
 2   625					 ;   parse arguments
 2   626					 ;
 2   627	    03D1  00			 use_storage db	0
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 12
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 12
 tree.ASM
 
 
@@ -714,7 +714,7 @@ tree.ASM
 4   654	    03F4  59				 pop cx
 2   655	    03F5			 _print_pseudographic_prefix_zero_level:
 2   656
-2   657	    03F5  8B 1E	087Dr		     mov bx, word ptr [current_max_entities]
+2   657	    03F5  8B 1E	088Er		     mov bx, word ptr [current_max_entities]
 2   658	    03F9  3A C3			     cmp al, bl
 2   659	    03FB  74 1E			     je	_print_pseudographic_prefix_zero_level_end
 2   660	    03FD  3D 0001		     cmp ax, 1
@@ -742,7 +742,7 @@ tree.ASM
 5   682	    041B  B4 09				 mov ah, 09h
 5   683	    041D  BA 0475r			 mov dx, offset	end_file_char
 5   684	    0420  CD 21				 int 21h
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 13
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 13
 tree.ASM
 
 
@@ -804,7 +804,7 @@ tree.ASM
 2   739	    045F  0A*(B3) 24		 level_shift db	10 dup(179), '$'
 2   740	    046A  ?? 20	24		 space db, 32, '$'
 2   741
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 14
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 14
 tree.ASM
 
 
@@ -866,7 +866,7 @@ tree.ASM
 2   796					     mov cx, length
 2   797					     add di, cx
 2   798					     dec di
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 15
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 15
 tree.ASM
 
 
@@ -928,7 +928,7 @@ tree.ASM
 3   853					 print_range macro args
 3   854					     irp d,<args>
 3   855						 print <offset d>
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 16
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 16
 tree.ASM
 
 
@@ -949,514 +949,539 @@ tree.ASM
 3   869					     restore <arg>
 3   870					 endm
 3   871
-3   872					 parse_byte_to_str macro from, to
-3   873					     mov ax, to
+3   872					 parse_byte_to_str macro from, to, length
+3   873					     mov ax, length
 3   874					     push ax
-3   875					     xor ax, ax
-3   876					     mov al, from
-3   877					     push ax
-3   878					     call store_iint_to_string
-3   879					 endm
-3   880
-3   881					 parse_word_to_str macro from, to
-3   882					     mov ax, to
-3   883					     push ax
-3   884					     xor ax, ax
-3   885					     mov ax, from
-3   886					     push ax
-3   887					     call store_iint_to_string
-3   888					 endm
-2   889
-2   890	    0477			 print_datetimestamp:
-2   891	    0477  5B			     pop bx
-2   892	    0478  59			     pop cx ; time
-2   893	    0479  5A			     pop dx ; date
-2   894	    047A  53			     push bx
-2   895
-2   896	    047B  BE 05AEr		     lea si, datetime
-2   897
-2   898					     ;
-2   899					     ; date format
-2   900					     ;
-2   901					     load <cx, dx, si>
-4   902	    047E  51				 push cx
-4   903	    047F  52				 push dx
-4   904	    0480  56				 push si
-2   905	    0481  C1 FA	09		     sar dx, 9
-2   906	    0484  81 C2	07BC		     add dx, 1980
-2   907					     parse_word_to_str dx, si
-3   908	    0488  8B C6			     mov ax, si
-3   909	    048A  50			     push ax
-3   910	    048B  33 C0			     xor ax, ax
-3   911	    048D  8B C2			     mov ax, dx
-3   912	    048F  50			     push ax
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 17
+3   875					     mov ax, to
+3   876					     push ax
+3   877					     xor ax, ax
+3   878					     mov al, from
+3   879					     push ax
+3   880					     call store_iint_to_string
+3   881					 endm
+3   882
+3   883					 parse_word_to_str macro from, to, length
+3   884					     mov ax, length
+3   885					     push ax
+3   886					     mov ax, to
+3   887					     push ax
+3   888					     xor ax, ax
+3   889					     mov ax, from
+3   890					     push ax
+3   891					     call store_iint_to_string
+3   892					 endm
+2   893					 include pnum.asm
+3   894
+3   895	    0477			 store_iint_to_string:
+3   896	    0477  5B			     pop bx
+3   897	    0478  58			     pop ax ; integer
+3   898	    0479  5E			     pop si ; memory for storing integer
+3   899	    047A  5F			     pop di ; integer max length
+3   900	    047B  53			     push bx
+3   901
+3   902	    047C  B9 0000		     mov cx, 0
+3   903	    047F  BB 000A		     mov bx, 10
+3   904	    0482			 _store_iint_to_string_direct:
+3   905	    0482  3D 0000		     cmp ax, 0
+3   906	    0485  74 08			     je	_store_iint_to_string_zero_padding_start
+3   907
+3   908	    0487  33 D2			     xor dx, dx
+3   909	    0489  F7 F3			     div bx
+3   910	    048B  52			     push dx
+3   911	    048C  41			     inc cx
+3   912
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 17
 tree.ASM
 
 
 
-3   913	    0490  E8 00AE		     call store_iint_to_string
-2   914					     restore <si, dx, cx>
-4   915	    0493  5E				 pop si
-4   916	    0494  5A				 pop dx
-4   917	    0495  59				 pop cx
-2   918					     break_point ax
-3   919					     load <ax>
-5   920	    0496  50				 push ax
-3   921	    0497  33 C0			     xor ax, ax
-3   922	    0499  33 C0			     xor ax, ax
-3   923	    049B  33 C0			     xor ax, ax
-3   924	    049D  33 C0			     xor ax, ax
-3   925	    049F  33 C0			     xor ax, ax
-3   926	    04A1  33 C0			     xor ax, ax
-3   927	    04A3  33 C0			     xor ax, ax
-3   928	    04A5  33 C0			     xor ax, ax
-3   929					     restore <ax>
-5   930	    04A7  58				 pop ax
-2   931	    04A8  83 C6	04		     add si, 4
-2   932	    04AB  C6 04	2E		     mov byte ptr [si],	'.'
-2   933	    04AE  46			     inc si
-2   934
-2   935					     load <cx, dx, si>
-4   936	    04AF  51				 push cx
-4   937	    04B0  52				 push dx
-4   938	    04B1  56				 push si
-2   939	    04B2  81 E2	01E0		     and dx, 32	+ 64 + 128 + 256
-2   940	    04B6  C1 FA	05		     sar dx, 5
-2   941					     parse_byte_to_str dl, si
-3   942	    04B9  8B C6			     mov ax, si
-3   943	    04BB  50			     push ax
-3   944	    04BC  33 C0			     xor ax, ax
-3   945	    04BE  8A C2			     mov al, dl
-3   946	    04C0  50			     push ax
-3   947	    04C1  E8 007D		     call store_iint_to_string
-2   948					     restore <si, dx, cx>
-4   949	    04C4  5E				 pop si
-4   950	    04C5  5A				 pop dx
-4   951	    04C6  59				 pop cx
-2   952	    04C7  83 C6	02		     add si, 2
-2   953	    04CA  C6 04	2E		     mov byte ptr [si],	'.'
-2   954	    04CD  46			     inc si
-2   955
-2   956					     load <cx, dx, si>
-4   957	    04CE  51				 push cx
-4   958	    04CF  52				 push dx
-4   959	    04D0  56				 push si
-2   960	    04D1  80 E2	1F		     and dl, 1 + 2 + 4 + 8 + 16
-2   961					     parse_byte_to_str dl, si
-3   962	    04D4  8B C6			     mov ax, si
-3   963	    04D6  50			     push ax
-3   964	    04D7  33 C0			     xor ax, ax
-3   965	    04D9  8A C2			     mov al, dl
-3   966	    04DB  50			     push ax
-3   967	    04DC  E8 0062		     call store_iint_to_string
-2   968					     restore <si, dx, cx>
-4   969	    04DF  5E				 pop si
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 18
+3   913	    048D  EB F3			     jmp _store_iint_to_string_direct
+3   914
+3   915	    048F			 _store_iint_to_string_zero_padding_start:
+3   916	    048F  2B F9			     sub di, cx
+3   917	    0491			 _store_iint_to_string_zero_padding_loop:
+3   918	    0491  83 FF	00		     cmp di, 0
+3   919	    0494  7E 08			     jle _store_iint_to_string_zero_padding_end
+3   920	    0496  BB 0000		     mov bx, 0
+3   921	    0499  53			     push bx
+3   922	    049A  4F			     dec di
+3   923	    049B  41			     inc cx
+3   924	    049C  EB F3			     jmp _store_iint_to_string_zero_padding_loop
+3   925	    049E			 _store_iint_to_string_zero_padding_end:
+3   926					 ; _store_iint_to_string_leading_zeros:
+3   927					 ;     cmp cx, 0
+3   928					 ;     jne _store_iint_to_string_leading_zeros_start
+3   929					 ;     mov bx, 0
+3   930					 ;     push bx
+3   931					 ;     inc cx
+3   932					 ; _store_iint_to_string_leading_zeros_start:
+3   933					 ;     load <cx>
+3   934					 ;     and cx, 1
+3   935					 ;     cmp cx, 0
+3   936					 ;     restore <cx>
+3   937					 ;     je _store_iint_to_string_inverse
+3   938					 ;     inc cx
+3   939					 ;     mov bx, 0
+3   940					 ;     push bx
+3   941					 ;     jmp _store_iint_to_string_leading_zeros_start
+3   942	    049E			 _store_iint_to_string_inverse:
+3   943					     load <si>
+5   944	    049E  56				 push si
+3   945	    049F  03 F1			     add si, cx
+3   946	    04A1  C6 04	24		     mov byte ptr [si],	'$'
+3   947					     restore <si>
+5   948	    04A4  5E				 pop si
+3   949	    04A5			 _store_iint_to_string_inverse_loop:
+3   950	    04A5  83 F9	00		     cmp cx, 0
+3   951	    04A8  74 0A			     je	_store_iint_to_string_end
+3   952
+3   953	    04AA  5A			     pop dx
+3   954	    04AB  80 C2	30		     add dl, 30h
+3   955	    04AE  88 14			     mov byte ptr [si],	dl
+3   956	    04B0  46			     inc si
+3   957	    04B1  49			     dec cx
+3   958
+3   959	    04B2  EB F1			     jmp _store_iint_to_string_inverse_loop
+3   960
+3   961	    04B4			 _store_iint_to_string_end:
+3   962	    04B4  C3			     ret
+2   963
+2   964	    04B5			 print_datetimestamp:
+2   965	    04B5  5B			     pop bx
+2   966	    04B6  59			     pop cx ; time
+2   967	    04B7  5A			     pop dx ; date
+2   968	    04B8  53			     push bx
+2   969
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 18
 tree.ASM
 
 
 
-4   970	    04E0  5A				 pop dx
-4   971	    04E1  59				 pop cx
-2   972	    04E2  83 C6	02		     add si, 2
-2   973	    04E5  C6 04	20		     mov byte ptr [si],	' '
-2   974	    04E8  46			     inc si
-2   975
-2   976					     ;
-2   977					     ; time format
-2   978					     ;
-2   979					     load <cx, dx, si>
-4   980	    04E9  51				 push cx
-4   981	    04EA  52				 push dx
-4   982	    04EB  56				 push si
-2   983	    04EC  C1 F9	0B		     sar cx, 11
-2   984					     parse_byte_to_str cl, si
-3   985	    04EF  8B C6			     mov ax, si
-3   986	    04F1  50			     push ax
-3   987	    04F2  33 C0			     xor ax, ax
-3   988	    04F4  8A C1			     mov al, cl
-3   989	    04F6  50			     push ax
-3   990	    04F7  E8 0047		     call store_iint_to_string
-2   991					     restore <si, dx, cx>
-4   992	    04FA  5E				 pop si
-4   993	    04FB  5A				 pop dx
-4   994	    04FC  59				 pop cx
-2   995	    04FD  83 C6	02		     add si, 2
-2   996	    0500  C6 04	3A		     mov byte ptr [si],	':'
-2   997	    0503  46			     inc si
-2   998
-2   999					     load <cx, dx, si>
-4  1000	    0504  51				 push cx
-4  1001	    0505  52				 push dx
-4  1002	    0506  56				 push si
-2  1003	    0507  81 E1	07E0		     and cx, 2016
-2  1004	    050B  C1 F9	05		     sar cx, 5
-2  1005					     parse_byte_to_str cl, si
-3  1006	    050E  8B C6			     mov ax, si
-3  1007	    0510  50			     push ax
-3  1008	    0511  33 C0			     xor ax, ax
-3  1009	    0513  8A C1			     mov al, cl
-3  1010	    0515  50			     push ax
-3  1011	    0516  E8 0028		     call store_iint_to_string
-2  1012					     restore <si, dx, cx>
-4  1013	    0519  5E				 pop si
-4  1014	    051A  5A				 pop dx
-4  1015	    051B  59				 pop cx
-2  1016	    051C  83 C6	02		     add si, 2
-2  1017	    051F  C6 04	3A		     mov byte ptr [si],	':'
-2  1018	    0522  46			     inc si
-2  1019
-2  1020					     load <cx, dx, si>
-4  1021	    0523  51				 push cx
-4  1022	    0524  52				 push dx
-4  1023	    0525  56				 push si
-2  1024	    0526  80 E1	0F		     and cl, 15
-2  1025	    0529  D0 E1			     sal cl, 1
-2  1026					     parse_byte_to_str cl, si
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 19
+2   970	    04B9  BE 05BBr		     lea si, datetime
+2   971
+2   972					     ;
+2   973					     ; date format
+2   974					     ;
+2   975					     load <cx, dx, si>
+4   976	    04BC  51				 push cx
+4   977	    04BD  52				 push dx
+4   978	    04BE  56				 push si
+2   979	    04BF  C1 FA	09		     sar dx, 9
+2   980	    04C2  81 C2	07BC		     add dx, 1980
+2   981					     parse_word_to_str dx, si, 4
+3   982	    04C6  B8 0004		     mov ax, 4
+3   983	    04C9  50			     push ax
+3   984	    04CA  8B C6			     mov ax, si
+3   985	    04CC  50			     push ax
+3   986	    04CD  33 C0			     xor ax, ax
+3   987	    04CF  8B C2			     mov ax, dx
+3   988	    04D1  50			     push ax
+3   989	    04D2  E8 FFA2		     call store_iint_to_string
+2   990					     restore <si, dx, cx>
+4   991	    04D5  5E				 pop si
+4   992	    04D6  5A				 pop dx
+4   993	    04D7  59				 pop cx
+2   994					     break_point ax
+3   995					     load <ax>
+5   996	    04D8  50				 push ax
+3   997	    04D9  33 C0			     xor ax, ax
+3   998	    04DB  33 C0			     xor ax, ax
+3   999	    04DD  33 C0			     xor ax, ax
+3  1000	    04DF  33 C0			     xor ax, ax
+3  1001	    04E1  33 C0			     xor ax, ax
+3  1002	    04E3  33 C0			     xor ax, ax
+3  1003	    04E5  33 C0			     xor ax, ax
+3  1004	    04E7  33 C0			     xor ax, ax
+3  1005					     restore <ax>
+5  1006	    04E9  58				 pop ax
+2  1007	    04EA  83 C6	04		     add si, 4
+2  1008	    04ED  C6 04	2E		     mov byte ptr [si],	'.'
+2  1009	    04F0  46			     inc si
+2  1010
+2  1011					     load <cx, dx, si>
+4  1012	    04F1  51				 push cx
+4  1013	    04F2  52				 push dx
+4  1014	    04F3  56				 push si
+2  1015	    04F4  81 E2	01E0		     and dx, 32	+ 64 + 128 + 256
+2  1016	    04F8  C1 FA	05		     sar dx, 5
+2  1017					     parse_byte_to_str dl, si, 2
+3  1018	    04FB  B8 0002		     mov ax, 2
+3  1019	    04FE  50			     push ax
+3  1020	    04FF  8B C6			     mov ax, si
+3  1021	    0501  50			     push ax
+3  1022	    0502  33 C0			     xor ax, ax
+3  1023	    0504  8A C2			     mov al, dl
+3  1024	    0506  50			     push ax
+3  1025	    0507  E8 FF6D		     call store_iint_to_string
+2  1026					     restore <si, dx, cx>
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 19
 tree.ASM
 
 
 
-3  1027	    052B  8B C6			     mov ax, si
-3  1028	    052D  50			     push ax
-3  1029	    052E  33 C0			     xor ax, ax
-3  1030	    0530  8A C1			     mov al, cl
-3  1031	    0532  50			     push ax
-3  1032	    0533  E8 000B		     call store_iint_to_string
-2  1033					     restore <si, dx, cx>
-4  1034	    0536  5E				 pop si
-4  1035	    0537  5A				 pop dx
-4  1036	    0538  59				 pop cx
-2  1037	    0539  83 C6	02		     add si, 2
-2  1038	    053C  C6 04	24		     mov byte ptr [si],	'$'
-2  1039	    053F  46			     inc si
-2  1040
-2  1041	    0540  C3			     ret
-2  1042
-2  1043	    0541			 store_iint_to_string:
-2  1044	    0541  5B			     pop bx
-2  1045	    0542  58			     pop ax ; integer
-2  1046	    0543  5E			     pop si ; memory for integer storage
-2  1047	    0544  53			     push bx
-2  1048
-2  1049	    0545  B9 0000		     mov cx, 0
-2  1050	    0548  BB 000A		     mov bx, 10
-2  1051	    054B			 _store_iint_to_string_direct:
-2  1052	    054B  3D 0000		     cmp ax, 0
-2  1053	    054E  74 08			     je	_store_iint_to_string_leading_zeros
-2  1054
-2  1055	    0550  33 D2			     xor dx, dx
-2  1056	    0552  F7 F3			     div bx
-2  1057	    0554  52			     push dx
-2  1058	    0555  41			     inc cx
-2  1059
-2  1060	    0556  EB F3			     jmp _store_iint_to_string_direct
-2  1061
-2  1062	    0558			 _store_iint_to_string_leading_zeros:
-2  1063	    0558  83 F9	00		     cmp cx, 0
-2  1064	    055B  75 05			     jne _store_iint_to_string_leading_zeros_start
-2  1065	    055D  BB 0000		     mov bx, 0
-2  1066	    0560  53			     push bx
-2  1067	    0561  41			     inc cx
-2  1068	    0562			 _store_iint_to_string_leading_zeros_start:
-2  1069					     load <cx>
-4  1070	    0562  51				 push cx
-2  1071	    0563  83 E1	01		     and cx, 1
-2  1072	    0566  83 F9	00		     cmp cx, 0
-2  1073					     restore <cx>
-4  1074	    0569  59				 pop cx
-2  1075	    056A  74 07			     je	_store_iint_to_string_inverse
-2  1076	    056C  41			     inc cx
-2  1077	    056D  BB 0000		     mov bx, 0
-2  1078	    0570  53			     push bx
-2  1079	    0571  EB EF			     jmp _store_iint_to_string_leading_zeros_start
-2  1080	    0573			 _store_iint_to_string_inverse:
-2  1081					     load <si>
-4  1082	    0573  56				 push si
-2  1083	    0574  03 F1			     add si, cx
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 20
+4  1027	    050A  5E				 pop si
+4  1028	    050B  5A				 pop dx
+4  1029	    050C  59				 pop cx
+2  1030	    050D  83 C6	02		     add si, 2
+2  1031	    0510  C6 04	2E		     mov byte ptr [si],	'.'
+2  1032	    0513  46			     inc si
+2  1033
+2  1034					     load <cx, dx, si>
+4  1035	    0514  51				 push cx
+4  1036	    0515  52				 push dx
+4  1037	    0516  56				 push si
+2  1038	    0517  80 E2	1F		     and dl, 1 + 2 + 4 + 8 + 16
+2  1039					     parse_byte_to_str dl, si, 2
+3  1040	    051A  B8 0002		     mov ax, 2
+3  1041	    051D  50			     push ax
+3  1042	    051E  8B C6			     mov ax, si
+3  1043	    0520  50			     push ax
+3  1044	    0521  33 C0			     xor ax, ax
+3  1045	    0523  8A C2			     mov al, dl
+3  1046	    0525  50			     push ax
+3  1047	    0526  E8 FF4E		     call store_iint_to_string
+2  1048					     restore <si, dx, cx>
+4  1049	    0529  5E				 pop si
+4  1050	    052A  5A				 pop dx
+4  1051	    052B  59				 pop cx
+2  1052	    052C  83 C6	02		     add si, 2
+2  1053	    052F  C6 04	20		     mov byte ptr [si],	' '
+2  1054	    0532  46			     inc si
+2  1055
+2  1056					     ;
+2  1057					     ; time format
+2  1058					     ;
+2  1059					     load <cx, dx, si>
+4  1060	    0533  51				 push cx
+4  1061	    0534  52				 push dx
+4  1062	    0535  56				 push si
+2  1063	    0536  C1 F9	0B		     sar cx, 11
+2  1064					     parse_byte_to_str cl, si, 2
+3  1065	    0539  B8 0002		     mov ax, 2
+3  1066	    053C  50			     push ax
+3  1067	    053D  8B C6			     mov ax, si
+3  1068	    053F  50			     push ax
+3  1069	    0540  33 C0			     xor ax, ax
+3  1070	    0542  8A C1			     mov al, cl
+3  1071	    0544  50			     push ax
+3  1072	    0545  E8 FF2F		     call store_iint_to_string
+2  1073					     restore <si, dx, cx>
+4  1074	    0548  5E				 pop si
+4  1075	    0549  5A				 pop dx
+4  1076	    054A  59				 pop cx
+2  1077	    054B  83 C6	02		     add si, 2
+2  1078	    054E  C6 04	3A		     mov byte ptr [si],	':'
+2  1079	    0551  46			     inc si
+2  1080
+2  1081					     load <cx, dx, si>
+4  1082	    0552  51				 push cx
+4  1083	    0553  52				 push dx
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 20
 tree.ASM
 
 
 
-2  1084	    0576  C6 04	24		     mov byte ptr [si],	'$'
-2  1085					     restore <si>
-4  1086	    0579  5E				 pop si
-2  1087	    057A			 _store_iint_to_string_inverse_loop:
-2  1088	    057A  83 F9	00		     cmp cx, 0
-2  1089	    057D  74 0A			     je	_store_iint_to_string_end
-2  1090
-2  1091	    057F  5A			     pop dx
-2  1092	    0580  80 C2	30		     add dl, 30h
-2  1093	    0583  88 14			     mov byte ptr [si],	dl
-2  1094	    0585  46			     inc si
-2  1095	    0586  49			     dec cx
-2  1096
-2  1097	    0587  EB F1			     jmp _store_iint_to_string_inverse_loop
-2  1098
-2  1099	    0589			 _store_iint_to_string_end:
-2  1100	    0589  C3			     ret
-2  1101
-2  1102	    058A  43 75	72 72 65 6E 74+	 hello_time db 'Current	time is: $'
-   1103		  20 74	69 6D 65 20 69+
-   1104		  73 3A	20 24
-2  1105	    059C  43 75	72 72 65 6E 74+	 hello_date db 'Current	date is: $'
-   1106		  20 64	61 74 65 20 69+
-   1107		  73 3A	20 24
-2  1108	    05AE  14*(24)		 datetime db 20	dup('$')
-2  1109	    05C2  3A 24			 time_semicolon	db ':',	'$'
-2  1110	    05C4  20 24			 time_space db ' ', '$'
-2  1111	    05C6  0A 24			 time_newline db 0Ah, '$'
-2  1112	    05C8  80*(24)		 num db	128 dup('$')
-1  1113
-1  1114	    0648			 count_subfiles_here:
-1  1115	    0648  B8 03D4r		     lea ax, file_mask
-1  1116	    064B  BE 0274r		     lea si, find_first_file
-1  1117
-1  1118	    064E  50			     push ax
-1  1119	    064F  56			     push si
-1  1120	    0650  E8 0017		     call count_subfiles_here_by_mask
-1  1121					     load <ax>
-3  1122	    0653  50				 push ax
-1  1123	    0654  B8 03DAr		     mov ax, offset folder_mask
-1  1124	    0657  BE 0281r		     mov si, offset find_first_folder
-1  1125
-1  1126	    065A  50			     push ax
-1  1127	    065B  56			     push si
-1  1128	    065C  E8 000B		     call count_subfiles_here_by_mask
-1  1129	    065F  8B D8			     mov bx, ax
-1  1130					     restore <ax>
-3  1131	    0661  58				 pop ax
-1  1132	    0662  03 D8			     add bx, ax
-1  1133	    0664  8B C3			     mov ax, bx
-1  1134	    0666  A3 087Dr		     mov word ptr [current_max_entities], ax
-1  1135	    0669  C3			     ret
-1  1136
-1  1137	    066A			 count_subfiles_here_by_mask:
-1  1138	    066A  5B			     pop bx
-1  1139	    066B  5E			     pop si		 ; find_first address
-1  1140	    066C  58			     pop ax		 ; mask	address
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 21
+4  1084	    0554  56				 push si
+2  1085	    0555  81 E1	07E0		     and cx, 2016
+2  1086	    0559  C1 F9	05		     sar cx, 5
+2  1087					     parse_byte_to_str cl, si, 2
+3  1088	    055C  B8 0002		     mov ax, 2
+3  1089	    055F  50			     push ax
+3  1090	    0560  8B C6			     mov ax, si
+3  1091	    0562  50			     push ax
+3  1092	    0563  33 C0			     xor ax, ax
+3  1093	    0565  8A C1			     mov al, cl
+3  1094	    0567  50			     push ax
+3  1095	    0568  E8 FF0C		     call store_iint_to_string
+2  1096					     restore <si, dx, cx>
+4  1097	    056B  5E				 pop si
+4  1098	    056C  5A				 pop dx
+4  1099	    056D  59				 pop cx
+2  1100	    056E  83 C6	02		     add si, 2
+2  1101	    0571  C6 04	3A		     mov byte ptr [si],	':'
+2  1102	    0574  46			     inc si
+2  1103
+2  1104					     load <cx, dx, si>
+4  1105	    0575  51				 push cx
+4  1106	    0576  52				 push dx
+4  1107	    0577  56				 push si
+2  1108	    0578  80 E1	0F		     and cl, 15
+2  1109	    057B  D0 E1			     sal cl, 1
+2  1110					     parse_byte_to_str cl, si, 2
+3  1111	    057D  B8 0002		     mov ax, 2
+3  1112	    0580  50			     push ax
+3  1113	    0581  8B C6			     mov ax, si
+3  1114	    0583  50			     push ax
+3  1115	    0584  33 C0			     xor ax, ax
+3  1116	    0586  8A C1			     mov al, cl
+3  1117	    0588  50			     push ax
+3  1118	    0589  E8 FEEB		     call store_iint_to_string
+2  1119					     restore <si, dx, cx>
+4  1120	    058C  5E				 pop si
+4  1121	    058D  5A				 pop dx
+4  1122	    058E  59				 pop cx
+2  1123	    058F  83 C6	02		     add si, 2
+2  1124	    0592  C6 04	24		     mov byte ptr [si],	'$'
+2  1125	    0595  46			     inc si
+2  1126
+2  1127	    0596  C3			     ret
+2  1128
+2  1129	    0597  43 75	72 72 65 6E 74+	 hello_time db 'Current	time is: $'
+   1130		  20 74	69 6D 65 20 69+
+   1131		  73 3A	20 24
+2  1132	    05A9  43 75	72 72 65 6E 74+	 hello_date db 'Current	date is: $'
+   1133		  20 64	61 74 65 20 69+
+   1134		  73 3A	20 24
+2  1135	    05BB  14*(24)		 datetime db 20	dup('$')
+2  1136	    05CF  3A 24			 time_semicolon	db ':',	'$'
+2  1137	    05D1  20 24			 time_space db ' ', '$'
+2  1138	    05D3  0A 24			 time_newline db 0Ah, '$'
+2  1139	    05D5  80*(24)		 num db	128 dup('$')
+1  1140
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 21
 tree.ASM
 
 
 
-1  1141	    066D  53			     push bx
-1  1142
-1  1143					     load <ax, si>
-3  1144	    066E  50				 push ax
-3  1145	    066F  56				 push si
-1  1146					     set_dta count_dta
-2  1147	    0670  BA 077Dr		     lea dx, count_dta
-2  1148	    0673  33 C0			     xor ax, ax
-2  1149	    0675  B4 1A			     mov ah, 1Ah
-2  1150	    0677  CD 21			     int 21h
-1  1151					     restore <si, ax>
-3  1152	    0679  5E				 pop si
-3  1153	    067A  58				 pop ax
-1  1154
-1  1155	    067B  B9 0000		     mov cx, 0
-1  1156					     load <cx>
-3  1157	    067E  51				 push cx
-1  1158	    067F  50			     push ax
-1  1159	    0680  FF D6			     call si
-1  1160	    0682  72 17			     jc	_count_subfiles_from_end
-1  1161	    0684			 _count_subfiles_from_loop:
-1  1162	    0684  B8 077Dr		     lea ax, count_dta
-1  1163	    0687  05 001E		     add ax, 1Eh
-1  1164	    068A  8B D8			     mov bx, ax
-1  1165	    068C  80 3F	2E		     cmp byte ptr [bx],	'.'
-1  1166	    068F  74 03			     je	_count_subfiles_from_loop_next
-1  1167
-1  1168					     restore <cx>
-3  1169	    0691  59				 pop cx
-1  1170	    0692  41			     inc cx
-1  1171					     load <cx>
-3  1172	    0693  51				 push cx
-1  1173	    0694			 _count_subfiles_from_loop_next:
-1  1174	    0694  E8 FBF7		     call find_next
-1  1175	    0697  72 02			     jc	_count_subfiles_from_end
-1  1176
-1  1177	    0699  EB E9			     jmp _count_subfiles_from_loop
-1  1178	    069B			 _count_subfiles_from_end:
-1  1179					     restore <cx>
-3  1180	    069B  59				 pop cx
-1  1181	    069C  8B C1			     mov ax, cx
-1  1182	    069E  C3			     ret
-1  1183
-1  1184	    069F			 show_filename_from_dta:
-1  1185	    069F  5B			     pop bx
-1  1186	    06A0  59			     pop cx  ; deep level
-1  1187	    06A1  58			     pop ax  ; entity count
-1  1188	    06A2  53			     push bx
-1  1189
-1  1190	    06A3			 _show_filename_from_dta_valid_name:
-1  1191					     ;
-1  1192					     ;	 pseudo	graphic	prefix
-1  1193					     ;
-1  1194					     load <ax>
-3  1195	    06A3  50				 push ax
-1  1196	    06A4  B8 07FDr		     lea ax, dta
-1  1197
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 22
+1  1141	    0655			 count_subfiles_here:
+1  1142	    0655  B8 03D4r		     lea ax, file_mask
+1  1143	    0658  BE 0274r		     lea si, find_first_file
+1  1144
+1  1145	    065B  50			     push ax
+1  1146	    065C  56			     push si
+1  1147	    065D  E8 0017		     call count_subfiles_here_by_mask
+1  1148					     load <ax>
+3  1149	    0660  50				 push ax
+1  1150	    0661  B8 03DAr		     mov ax, offset folder_mask
+1  1151	    0664  BE 0281r		     mov si, offset find_first_folder
+1  1152
+1  1153	    0667  50			     push ax
+1  1154	    0668  56			     push si
+1  1155	    0669  E8 000B		     call count_subfiles_here_by_mask
+1  1156	    066C  8B D8			     mov bx, ax
+1  1157					     restore <ax>
+3  1158	    066E  58				 pop ax
+1  1159	    066F  03 D8			     add bx, ax
+1  1160	    0671  8B C3			     mov ax, bx
+1  1161	    0673  A3 088Er		     mov word ptr [current_max_entities], ax
+1  1162	    0676  C3			     ret
+1  1163
+1  1164	    0677			 count_subfiles_here_by_mask:
+1  1165	    0677  5B			     pop bx
+1  1166	    0678  5E			     pop si		 ; find_first address
+1  1167	    0679  58			     pop ax		 ; mask	address
+1  1168	    067A  53			     push bx
+1  1169
+1  1170					     load <ax, si>
+3  1171	    067B  50				 push ax
+3  1172	    067C  56				 push si
+1  1173					     set_dta count_dta
+2  1174	    067D  BA 078Er		     lea dx, count_dta
+2  1175	    0680  33 C0			     xor ax, ax
+2  1176	    0682  B4 1A			     mov ah, 1Ah
+2  1177	    0684  CD 21			     int 21h
+1  1178					     restore <si, ax>
+3  1179	    0686  5E				 pop si
+3  1180	    0687  58				 pop ax
+1  1181
+1  1182	    0688  B9 0000		     mov cx, 0
+1  1183					     load <cx>
+3  1184	    068B  51				 push cx
+1  1185	    068C  50			     push ax
+1  1186	    068D  FF D6			     call si
+1  1187	    068F  72 17			     jc	_count_subfiles_from_end
+1  1188	    0691			 _count_subfiles_from_loop:
+1  1189	    0691  B8 078Er		     lea ax, count_dta
+1  1190	    0694  05 001E		     add ax, 1Eh
+1  1191	    0697  8B D8			     mov bx, ax
+1  1192	    0699  80 3F	2E		     cmp byte ptr [bx],	'.'
+1  1193	    069C  74 03			     je	_count_subfiles_from_loop_next
+1  1194
+1  1195					     restore <cx>
+3  1196	    069E  59				 pop cx
+1  1197	    069F  41			     inc cx
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 22
 tree.ASM
 
 
 
-1  1198	    06A7  05 001E		     add ax, 1Eh
-1  1199	    06AA  8B D8			     mov bx, ax
-1  1200					     restore <ax>
-3  1201	    06AC  58				 pop ax
-1  1202
-1  1203					     load <cx, bx>
-3  1204	    06AD  51				 push cx
-3  1205	    06AE  53				 push bx
-1  1206	    06AF  50			     push ax	 ; entity count
-1  1207	    06B0  51			     push cx	 ; deep	level
-1  1208	    06B1  E8 FD2C		     call print_pseudographic_prefix
-1  1209					     restore <bx, cx>
-3  1210	    06B4  5B				 pop bx
-3  1211	    06B5  59				 pop cx
-1  1212
-1  1213					     load <bx>
-3  1214	    06B6  53				 push bx
-1  1215	    06B7  B9 000D		     mov cx, 13
-1  1216	    06BA  51			     push cx
-1  1217	    06BB  53			     push bx
-1  1218	    06BC  E8 FC99		     call count_no_space_no_zero_letters
-1  1219	    06BF  8B C8			     mov cx, ax
-1  1220					     restore <bx>
-3  1221	    06C1  5B				 pop bx
-1  1222	    06C2  51			     push cx
-1  1223	    06C3  53			     push bx
-1  1224	    06C4  E8 FD80		     call print_string_with_length
-1  1225
-1  1226	    06C7			 _show_filename_from_dta_datetime:
-1  1227	    06C7  B0 01			     mov al, 1
-1  1228	    06C9  38 06	03D2r		     cmp byte ptr [use_time], al
-1  1229	    06CD  75 05			     jne _show_filename_from_dta_storage
-1  1230	    06CF  E8 001A		     call show_datetime
-1  1231	    06D2  EB 00			     jmp _show_filename_from_dta_storage
-1  1232
-1  1233	    06D4			 _show_filename_from_dta_storage:
-1  1234	    06D4  B0 01			     mov al, 1
-1  1235	    06D6  38 06	03D1r		     cmp byte ptr [use_storage], al
-1  1236	    06DA  75 05			     jne _show_filename_from_dta_end
-1  1237	    06DC  E8 002A		     call show_storage
-1  1238	    06DF  EB 00			     jmp _show_filename_from_dta_end
-1  1239					     ; print_range <time_newline>
-1  1240
-1  1241					 ; _show_filename_from_dta_with_datetime:
-1  1242					 ;     call show_datetime
-1  1243
-1  1244	    06E1			  _show_filename_from_dta_end:
-1  1245					     print_range <newline>
-3  1246						 print <offset newline>
-4  1247	    06E1  B4 09				 mov ah, 09h
-4  1248	    06E3  BA 0356r			 mov dx, offset	newline
-4  1249	    06E6  CD 21				 int 21h
-1  1250	    06E8  B8 0001		     mov ax, 1
-1  1251	    06EB  C3			     ret
+1  1198					     load <cx>
+3  1199	    06A0  51				 push cx
+1  1200	    06A1			 _count_subfiles_from_loop_next:
+1  1201	    06A1  E8 FBEA		     call find_next
+1  1202	    06A4  72 02			     jc	_count_subfiles_from_end
+1  1203
+1  1204	    06A6  EB E9			     jmp _count_subfiles_from_loop
+1  1205	    06A8			 _count_subfiles_from_end:
+1  1206					     restore <cx>
+3  1207	    06A8  59				 pop cx
+1  1208	    06A9  8B C1			     mov ax, cx
+1  1209	    06AB  C3			     ret
+1  1210
+1  1211	    06AC			 show_filename_from_dta:
+1  1212	    06AC  5B			     pop bx
+1  1213	    06AD  59			     pop cx  ; deep level
+1  1214	    06AE  58			     pop ax  ; entity count
+1  1215	    06AF  53			     push bx
+1  1216
+1  1217	    06B0			 _show_filename_from_dta_valid_name:
+1  1218					     ;
+1  1219					     ;	 pseudo	graphic	prefix
+1  1220					     ;
+1  1221					     load <ax>
+3  1222	    06B0  50				 push ax
+1  1223	    06B1  B8 080Er		     lea ax, dta
+1  1224
+1  1225	    06B4  05 001E		     add ax, 1Eh
+1  1226	    06B7  8B D8			     mov bx, ax
+1  1227					     restore <ax>
+3  1228	    06B9  58				 pop ax
+1  1229
+1  1230					     load <cx, bx>
+3  1231	    06BA  51				 push cx
+3  1232	    06BB  53				 push bx
+1  1233	    06BC  50			     push ax	 ; entity count
+1  1234	    06BD  51			     push cx	 ; deep	level
+1  1235	    06BE  E8 FD1F		     call print_pseudographic_prefix
+1  1236					     restore <bx, cx>
+3  1237	    06C1  5B				 pop bx
+3  1238	    06C2  59				 pop cx
+1  1239
+1  1240					     load <bx>
+3  1241	    06C3  53				 push bx
+1  1242	    06C4  B9 000D		     mov cx, 13
+1  1243	    06C7  51			     push cx
+1  1244	    06C8  53			     push bx
+1  1245	    06C9  E8 FC8C		     call count_no_space_no_zero_letters
+1  1246	    06CC  8B C8			     mov cx, ax
+1  1247					     restore <bx>
+3  1248	    06CE  5B				 pop bx
+1  1249	    06CF  51			     push cx
+1  1250	    06D0  53			     push bx
+1  1251	    06D1  E8 FD73		     call print_string_with_length
 1  1252
-1  1253	    06EC			 show_datetime:
-1  1254	    06EC  BB 07FDr		     lea bx, dta
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 23
+1  1253	    06D4			 _show_filename_from_dta_datetime:
+1  1254	    06D4  B0 01			     mov al, 1
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 23
 tree.ASM
 
 
 
-1  1255	    06EF  8B 4F	16		     mov cx, word ptr [bx + 16h]
-1  1256	    06F2  8B 57	18		     mov dx, word ptr [bx + 18h]
-1  1257	    06F5  52			     push dx
-1  1258	    06F6  51			     push cx
-1  1259	    06F7  E8 FD7D		     call print_datetimestamp
-1  1260					     print_range <time_space, datetime>
-3  1261						 print <offset time_space>
-4  1262	    06FA  B4 09				 mov ah, 09h
-4  1263	    06FC  BA 05C4r			 mov dx, offset	time_space
-4  1264	    06FF  CD 21				 int 21h
-3  1265						 print <offset datetime>
-4  1266	    0701  B4 09				 mov ah, 09h
-4  1267	    0703  BA 05AEr			 mov dx, offset	datetime
-4  1268	    0706  CD 21				 int 21h
-1  1269	    0708  C3			     ret
-1  1270
-1  1271	    0709			 show_storage:
-1  1272	    0709  BB 07FDr		     lea bx, dta
-1  1273	    070C  BA 073Dr		     lea dx, storage
-1  1274	    070F  52			     push dx
-1  1275	    0710  8B 57	1A		     mov dx, word ptr [bx + 1Ah]
-1  1276	    0713  52			     push dx
-1  1277	    0714  E8 FE2A		     call store_iint_to_string
-1  1278					     print_range <time_space, storage>
-3  1279						 print <offset time_space>
-4  1280	    0717  B4 09				 mov ah, 09h
-4  1281	    0719  BA 05C4r			 mov dx, offset	time_space
-4  1282	    071C  CD 21				 int 21h
-3  1283						 print <offset storage>
-4  1284	    071E  B4 09				 mov ah, 09h
-4  1285	    0720  BA 073Dr			 mov dx, offset	storage
-4  1286	    0723  CD 21				 int 21h
-1  1287	    0725  C3			     ret
-1  1288
-1  1289	    0726			 is_valid_name:
-1  1290	    0726  5B			     pop bx
-1  1291	    0727  59			     pop cx	 ; deep	level
-1  1292	    0728  53			     push bx
+1  1255	    06D6  38 06	03D2r		     cmp byte ptr [use_time], al
+1  1256	    06DA  75 05			     jne _show_filename_from_dta_storage
+1  1257	    06DC  E8 001A		     call show_datetime
+1  1258	    06DF  EB 00			     jmp _show_filename_from_dta_storage
+1  1259
+1  1260	    06E1			 _show_filename_from_dta_storage:
+1  1261	    06E1  B0 01			     mov al, 1
+1  1262	    06E3  38 06	03D1r		     cmp byte ptr [use_storage], al
+1  1263	    06E7  75 05			     jne _show_filename_from_dta_end
+1  1264	    06E9  E8 002A		     call show_storage
+1  1265	    06EC  EB 00			     jmp _show_filename_from_dta_end
+1  1266
+1  1267	    06EE			  _show_filename_from_dta_end:
+1  1268					     print_range <newline>
+3  1269						 print <offset newline>
+4  1270	    06EE  B4 09				 mov ah, 09h
+4  1271	    06F0  BA 0356r			 mov dx, offset	newline
+4  1272	    06F3  CD 21				 int 21h
+1  1273	    06F5  B8 0001		     mov ax, 1
+1  1274	    06F8  C3			     ret
+1  1275
+1  1276	    06F9			 show_datetime:
+1  1277	    06F9  BB 080Er		     lea bx, dta
+1  1278	    06FC  8B 4F	16		     mov cx, word ptr [bx + 16h]
+1  1279	    06FF  8B 57	18		     mov dx, word ptr [bx + 18h]
+1  1280	    0702  52			     push dx
+1  1281	    0703  51			     push cx
+1  1282	    0704  E8 FDAE		     call print_datetimestamp
+1  1283					     print_range <time_space, datetime>
+3  1284						 print <offset time_space>
+4  1285	    0707  B4 09				 mov ah, 09h
+4  1286	    0709  BA 05D1r			 mov dx, offset	time_space
+4  1287	    070C  CD 21				 int 21h
+3  1288						 print <offset datetime>
+4  1289	    070E  B4 09				 mov ah, 09h
+4  1290	    0710  BA 05BBr			 mov dx, offset	datetime
+4  1291	    0713  CD 21				 int 21h
+1  1292	    0715  C3			     ret
 1  1293
-1  1294	    0729  B8 07FDr		     lea ax, dta
-1  1295	    072C  05 001E		     add ax, 1Eh
-1  1296	    072F  8B D8			     mov bx, ax
-1  1297	    0731  B8 0001		     mov ax, 1
-1  1298	    0734  80 3F	2E		     cmp byte ptr [bx],	'.'
-1  1299	    0737  75 03			     jne _is_valid_name_end
-1  1300	    0739  B8 0000		     mov ax, 0
-1  1301	    073C			 _is_valid_name_end:
-1  1302	    073C  C3			     ret
-1  1303
-1  1304	    073D  40*(24)		 storage db 64 dup('$')
-1  1305	    077D  80*(00)		 count_dta db 128 dup(0)
-1  1306	    07FD  80*(00)		 dta db	128 dup(0)
-1  1307	    087D  0000			 current_max_entities dw 0
-1  1308
-   1309
-   1310					 ;
-   1311					 ; error codes
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 24
+1  1294	    0716			 show_storage:
+1  1295	    0716  BA 0000		     mov dx, 0
+1  1296	    0719  52			     push dx
+1  1297	    071A  BB 080Er		     lea bx, dta
+1  1298	    071D  BA 074Er		     lea dx, storage
+1  1299	    0720  52			     push dx
+1  1300	    0721  8B 57	1A		     mov dx, word ptr [bx + 1Ah]
+1  1301	    0724  52			     push dx
+1  1302	    0725  E8 FD4F		     call store_iint_to_string
+1  1303					     print_range <time_space, storage>
+3  1304						 print <offset time_space>
+4  1305	    0728  B4 09				 mov ah, 09h
+4  1306	    072A  BA 05D1r			 mov dx, offset	time_space
+4  1307	    072D  CD 21				 int 21h
+3  1308						 print <offset storage>
+4  1309	    072F  B4 09				 mov ah, 09h
+4  1310	    0731  BA 074Er			 mov dx, offset	storage
+4  1311	    0734  CD 21				 int 21h
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 24
 tree.ASM
 
 
 
-   1312					 ;
-   1313	    087F  12			 no_more_files db 18
-   1314
-   1315					 ;
-   1316					 ; error messages
-   1317					 ;
-   1318	    0880  66 69	6E 64 5F 66 69+	 find_first_fails db 'find_first filenames fails.$'
-   1319		  72 73	74 20 66 69 6C+
-   1320		  65 6E	61 6D 65 73 20+
-   1321		  66 61	69 6C 73 2E 24
-   1322	    089C  66 69	6E 64 5F 6E 65+	 find_next_fails db  'find_next	filenames fails.$'
-   1323		  78 74	20 66 69 6C 65+
-   1324		  6E 61	6D 65 73 20 66+
-   1325		  61 69	6C 73 2E 24
-   1326
-   1327					 ;
-   1328					 ; int variables
-   1329					 ;
-   1330	    08B7  0000			 current_id_entity dw 0
-   1331
-   1332
-   1333					 ;
-   1334					 ; strings
+1  1312	    0736  C3			     ret
+1  1313
+1  1314	    0737			 is_valid_name:
+1  1315	    0737  5B			     pop bx
+1  1316	    0738  59			     pop cx	 ; deep	level
+1  1317	    0739  53			     push bx
+1  1318
+1  1319	    073A  B8 080Er		     lea ax, dta
+1  1320	    073D  05 001E		     add ax, 1Eh
+1  1321	    0740  8B D8			     mov bx, ax
+1  1322	    0742  B8 0001		     mov ax, 1
+1  1323	    0745  80 3F	2E		     cmp byte ptr [bx],	'.'
+1  1324	    0748  75 03			     jne _is_valid_name_end
+1  1325	    074A  B8 0000		     mov ax, 0
+1  1326	    074D			 _is_valid_name_end:
+1  1327	    074D  C3			     ret
+1  1328
+1  1329	    074E  40*(24)		 storage db 64 dup('$')
+1  1330	    078E  80*(00)		 count_dta db 128 dup(0)
+1  1331	    080E  80*(00)		 dta db	128 dup(0)
+1  1332	    088E  0000			 current_max_entities dw 0
+1  1333
+   1334
    1335					 ;
-   1336	    08B9  2E 2E	00		 parent_folder db '..',	00h
-   1337	    08BC  40*(00)		 root_folder db	64 dup(00h)
-   1338					 end start
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 25
+   1336					 ; error codes
+   1337					 ;
+   1338	    0890  12			 no_more_files db 18
+   1339
+   1340					 ;
+   1341					 ; error messages
+   1342					 ;
+   1343	    0891  66 69	6E 64 5F 66 69+	 find_first_fails db 'find_first filenames fails.$'
+   1344		  72 73	74 20 66 69 6C+
+   1345		  65 6E	61 6D 65 73 20+
+   1346		  66 61	69 6C 73 2E 24
+   1347	    08AD  66 69	6E 64 5F 6E 65+	 find_next_fails db  'find_next	filenames fails.$'
+   1348		  78 74	20 66 69 6C 65+
+   1349		  6E 61	6D 65 73 20 66+
+   1350		  61 69	6C 73 2E 24
+   1351
+   1352					 ;
+   1353					 ; int variables
+   1354					 ;
+   1355	    08C8  0000			 current_id_entity dw 0
+   1356
+   1357
+   1358					 ;
+   1359					 ; strings
+   1360					 ;
+   1361	    08CA  2E 2E	00		 parent_folder db '..',	00h
+   1362	    08CD  40*(00)		 root_folder db	64 dup(00h)
+   1363					 end start
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 25
 Symbol Table
 
 
@@ -1466,9 +1491,9 @@ Symbol Name			  Type	 Value
 
 ??0000				  Near	 DGROUP:01CE
 ??0001				  Near	 DGROUP:022E
-??DATE				  Text	 "12/22/19"
+??DATE				  Text	 "12/23/19"
 ??FILENAME			  Text	 "tree	  "
-??TIME				  Text	 "22:59:35"
+??TIME				  Text	 "12:13:29"
 ??VERSION			  Number 040A
 @32BIT				  Text	 0
 @CODE				  Text	 DGROUP
@@ -1486,45 +1511,45 @@ ALL_FILES			  Byte	 DGROUP:03DC
 CD				  Near	 DGROUP:02B3
 CD_ERROR			  Near	 DGROUP:02C1
 CD_FAILS			  Byte	 DGROUP:033E
-COUNT_DTA			  Byte	 DGROUP:077D
+COUNT_DTA			  Byte	 DGROUP:078E
 COUNT_NO_SPACE_NO_ZERO_LETTERS	  Near	 DGROUP:0358
-COUNT_SUBFILES_HERE		  Near	 DGROUP:0648
-COUNT_SUBFILES_HERE_BY_MASK	  Near	 DGROUP:066A
-CURRENT_ID_ENTITY		  Word	 DGROUP:08B7
-CURRENT_MAX_ENTITIES		  Word	 DGROUP:087D
-DATETIME			  Byte	 DGROUP:05AE
+COUNT_SUBFILES_HERE		  Near	 DGROUP:0655
+COUNT_SUBFILES_HERE_BY_MASK	  Near	 DGROUP:0677
+CURRENT_ID_ENTITY		  Word	 DGROUP:08C8
+CURRENT_MAX_ENTITIES		  Word	 DGROUP:088E
+DATETIME			  Byte	 DGROUP:05BB
 DEEP_LEVEL			  Byte	 DGROUP:03D3
-DTA				  Byte	 DGROUP:07FD
+DTA				  Byte	 DGROUP:080E
 END_FILE_CHAR			  Byte	 DGROUP:0475
 FILE_EXT			  Byte	 DGROUP:03D5
 FILE_MASK			  Byte	 DGROUP:03D4
 FIND_FIRST_ERROR		  Near	 DGROUP:0253
-FIND_FIRST_FAILS		  Byte	 DGROUP:0880
+FIND_FIRST_FAILS		  Byte	 DGROUP:0891
 FIND_FIRST_FILE			  Near	 DGROUP:0274
 FIND_FIRST_FOLDER		  Near	 DGROUP:0281
 FIND_NEXT			  Near	 DGROUP:028E
 FIND_NEXT_ERROR			  Near	 DGROUP:0262
-FIND_NEXT_FAILS			  Byte	 DGROUP:089C
+FIND_NEXT_FAILS			  Byte	 DGROUP:08AD
 FIRST_FILE_CHAR			  Byte	 DGROUP:0471
 FOLDER_MASK			  Byte	 DGROUP:03DA
-HELLO_DATE			  Byte	 DGROUP:059C
-HELLO_TIME			  Byte	 DGROUP:058A
+HELLO_DATE			  Byte	 DGROUP:05A9
+HELLO_TIME			  Byte	 DGROUP:0597
 IS_FOLDER			  Near	 DGROUP:0293
-IS_VALID_NAME			  Near	 DGROUP:0726
+IS_VALID_NAME			  Near	 DGROUP:0737
 LEVEL_SHIFT			  Byte	 DGROUP:045F
 LIST_SUBFILES_RECURSIVE		  Near	 DGROUP:0153
 LIST_SUBFILES_RECURSIVE_FROM	  Near	 DGROUP:0125
 MIDDLE_FILE_CHAR		  Byte	 DGROUP:0473
 NEWLINE				  Byte	 DGROUP:0356
-NO_MORE_FILES			  Byte	 DGROUP:087F
-NUM				  Byte	 DGROUP:05C8
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 26
+NO_MORE_FILES			  Byte	 DGROUP:0890
+NUM				  Byte	 DGROUP:05D5
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 26
 Symbol Table
 
 
 
 OLD_LEVEL_SHIFT			  Byte	 DGROUP:045D
-PARENT_FOLDER			  Byte	 DGROUP:08B9
+PARENT_FOLDER			  Byte	 DGROUP:08CA
 PARSE_ARGS			  Near	 DGROUP:038C
 PARSE_COMMAND_LINE		  Near	 DGROUP:0377
 PARSE_D				  Near	 DGROUP:03A4
@@ -1532,23 +1557,23 @@ PARSE_END			  Near	 DGROUP:03D0
 PARSE_F				  Near	 DGROUP:03B2
 PARSE_S				  Near	 DGROUP:03BE
 PARSE_T				  Near	 DGROUP:03C7
-PRINT_DATETIMESTAMP		  Near	 DGROUP:0477
+PRINT_DATETIMESTAMP		  Near	 DGROUP:04B5
 PRINT_PSEUDOGRAPHIC_PREFIX	  Near	 DGROUP:03E0
 PRINT_STRING_WITH_LENGTH	  Near	 DGROUP:0447
 RESET_LEVEL_SHIFT		  Near	 DGROUP:0436
-ROOT_FOLDER			  Byte	 DGROUP:08BC
+ROOT_FOLDER			  Byte	 DGROUP:08CD
 SAVE_CWD			  Near	 DGROUP:02E0
 SET_LEVEL_SHIFT			  Near	 DGROUP:0425
-SHOW_DATETIME			  Near	 DGROUP:06EC
-SHOW_FILENAME_FROM_DTA		  Near	 DGROUP:069F
-SHOW_STORAGE			  Near	 DGROUP:0709
+SHOW_DATETIME			  Near	 DGROUP:06F9
+SHOW_FILENAME_FROM_DTA		  Near	 DGROUP:06AC
+SHOW_STORAGE			  Near	 DGROUP:0716
 SPACE				  Byte	 DGROUP:046A
 START				  Near	 DGROUP:0100
-STORAGE				  Byte	 DGROUP:073D
-STORE_IINT_TO_STRING		  Near	 DGROUP:0541
-TIME_NEWLINE			  Byte	 DGROUP:05C6
-TIME_SEMICOLON			  Byte	 DGROUP:05C2
-TIME_SPACE			  Byte	 DGROUP:05C4
+STORAGE				  Byte	 DGROUP:074E
+STORE_IINT_TO_STRING		  Near	 DGROUP:0477
+TIME_NEWLINE			  Byte	 DGROUP:05D3
+TIME_SEMICOLON			  Byte	 DGROUP:05CF
+TIME_SPACE			  Byte	 DGROUP:05D1
 USE_STORAGE			  Byte	 DGROUP:03D1
 USE_TIME			  Byte	 DGROUP:03D2
 WORKING_FOLDER			  Byte	 DGROUP:02FE
@@ -1556,13 +1581,13 @@ ZERO_END_FILE			  Byte	 DGROUP:046F
 ZERO_FIRST_FILE			  Byte	 DGROUP:046D
 _COUNT_NON_SPACE_SYMBOLS_END	  Near	 DGROUP:0376
 _COUNT_NON_SPACE_SYMBOLS_LOOP	  Near	 DGROUP:035F
-_COUNT_SUBFILES_FROM_END	  Near	 DGROUP:069B
-_COUNT_SUBFILES_FROM_LOOP	  Near	 DGROUP:0684
-_COUNT_SUBFILES_FROM_LOOP_NEXT	  Near	 DGROUP:0694
+_COUNT_SUBFILES_FROM_END	  Near	 DGROUP:06A8
+_COUNT_SUBFILES_FROM_LOOP	  Near	 DGROUP:0691
+_COUNT_SUBFILES_FROM_LOOP_NEXT	  Near	 DGROUP:06A1
 _IS_FOLDER_END			  Near	 DGROUP:02B2
 _IS_FOLDER_FALSE		  Near	 DGROUP:02AD
 _IS_FOLDER_TRUE			  Near	 DGROUP:02A8
-_IS_VALID_NAME_END		  Near	 DGROUP:073C
+_IS_VALID_NAME_END		  Near	 DGROUP:074D
 _LIST_SUBFILES_RECURSIVE_END	  Near	 DGROUP:024E
 _LIST_SUBFILES_RECURSIVE_LOOP	  Near	 DGROUP:017A
 _LIST_SUBFILES_RECURSIVE_LOOP_PS  Near	 DGROUP:01C4
@@ -1579,25 +1604,27 @@ _PRINT_PSEUDOGRAPHIC_PREFIX_ZERO  Near	 DGROUP:0412
 _LEVEL_MIDDLE
 _PRINT_STRING_WITH_LENGTH_END	  Near	 DGROUP:045C
 _PRINT_STRING_WITH_LENGTH_LOOP	  Near	 DGROUP:044D
-_SHOW_FILENAME_FROM_DTA_DATETIME  Near	 DGROUP:06C7
-Turbo Assembler	 Version 4.1	    12/22/19 22:59:37	    Page 27
+_SHOW_FILENAME_FROM_DTA_DATETIME  Near	 DGROUP:06D4
+Turbo Assembler	 Version 4.1	    12/23/19 12:13:31	    Page 27
 Symbol Table
 
 
 
-_SHOW_FILENAME_FROM_DTA_END	  Near	 DGROUP:06E1
-_SHOW_FILENAME_FROM_DTA_STORAGE	  Near	 DGROUP:06D4
-_SHOW_FILENAME_FROM_DTA_VALID_NA  Near	 DGROUP:06A3
+_SHOW_FILENAME_FROM_DTA_END	  Near	 DGROUP:06EE
+_SHOW_FILENAME_FROM_DTA_STORAGE	  Near	 DGROUP:06E1
+_SHOW_FILENAME_FROM_DTA_VALID_NA  Near	 DGROUP:06B0
 ME
-_STORE_IINT_TO_STRING_DIRECT	  Near	 DGROUP:054B
-_STORE_IINT_TO_STRING_END	  Near	 DGROUP:0589
-_STORE_IINT_TO_STRING_INVERSE	  Near	 DGROUP:0573
-_STORE_IINT_TO_STRING_INVERSE_LO  Near	 DGROUP:057A
+_STORE_IINT_TO_STRING_DIRECT	  Near	 DGROUP:0482
+_STORE_IINT_TO_STRING_END	  Near	 DGROUP:04B4
+_STORE_IINT_TO_STRING_INVERSE	  Near	 DGROUP:049E
+_STORE_IINT_TO_STRING_INVERSE_LO  Near	 DGROUP:04A5
 OP
-_STORE_IINT_TO_STRING_LEADING_ZE  Near	 DGROUP:0558
-ROS
-_STORE_IINT_TO_STRING_LEADING_ZE  Near	 DGROUP:0562
-ROS_START
+_STORE_IINT_TO_STRING_ZERO_PADDI  Near	 DGROUP:049E
+NG_END
+_STORE_IINT_TO_STRING_ZERO_PADDI  Near	 DGROUP:0491
+NG_LOOP
+_STORE_IINT_TO_STRING_ZERO_PADDI  Near	 DGROUP:048F
+NG_START
 
 Macro Name
 
@@ -1617,5 +1644,5 @@ Groups & Segments		  Bit Size Align  Combine Class
 
 DGROUP				  Group
   _DATA				  16  0000 Word	  Public  DATA
-  _TEXT				  16  08FC Word	  Public  CODE
+  _TEXT				  16  090D Word	  Public  CODE
 

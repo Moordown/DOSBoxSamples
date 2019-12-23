@@ -40,7 +40,9 @@ break_point macro arg
     restore <arg>
 endm
 
-parse_byte_to_str macro from, to
+parse_byte_to_str macro from, to, length
+    mov ax, length
+    push ax
     mov ax, to
     push ax
     xor ax, ax
@@ -49,7 +51,9 @@ parse_byte_to_str macro from, to
     call store_iint_to_string
 endm
 
-parse_word_to_str macro from, to
+parse_word_to_str macro from, to, length
+    mov ax, length
+    push ax
     mov ax, to
     push ax
     xor ax, ax
