@@ -148,14 +148,8 @@ show_storage:
 _show_storage_file:
     lea bx, dta
     add bx, 1Ah
-    ; mov bx, word ptr [bx]
     push bx
     jmp _print_storage
-    ; call dadd_from
-    ; call get_dword
-    ; pop ax
-    ; pop bx
-    ; push ax
 _show_storage_folder:
     lea ax, accumulative_storage
     push ax
@@ -211,7 +205,6 @@ set_accumulative_storage_from_dir:
     ;
     ; this function suppose that we count subfiles sizes from current directory
     ;
-    ; ret
     call zeros_dword
     call zeros_accumulative_storage
     mov bx, 1
@@ -353,15 +346,6 @@ _list_subfiles_recursive_loop:
     restore <cx, bx>
     inc bx
     load <bx, cx>
-
-    ; ;
-    ; ;   set current space counter to zero
-    ; ;
-    ; mov ax, 0
-    ; push ax
-    ; push ax
-    ; call set_dword
-
     ;
     ;   check if folder
     ;
