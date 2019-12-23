@@ -130,7 +130,7 @@ show_storage:
     ;
     ; print without padding
     ;
-    mov dx, 0
+    mov dx, 1
     push dx
 
     ;
@@ -231,7 +231,7 @@ set_accumulative_storage_from_dir:
     ;   list subfiles from subfolder
     ;
     mov bx, 0
-    mov cx, 10
+    mov cx, 0
     mov ax, offset file_mask
     mov si, offset find_first_file
     
@@ -243,7 +243,7 @@ set_accumulative_storage_from_dir:
     ;
     ;   list subfolders from subfolder
     ;
-    mov cx, 10
+    mov cx, 0
     mov bx, ax
     mov ax, offset folder_mask
     mov si, offset find_first_folder
@@ -486,6 +486,10 @@ _list_subfiles_recursive_loop_pseudographic_hack_end:
     push cx
     call list_subfiles_recursive
     restore <cx>
+
+    mov ax, word ptr [is_silent]
+    cmp ax, 1
+    je list_subfiles_recursive_loop_cd_back
     ;
     ;   reverse pseudographic hack
     ;
@@ -493,6 +497,8 @@ _list_subfiles_recursive_loop_pseudographic_hack_end:
     push cx
     call reset_level_shift
     restore <cx, bx, ax>
+
+list_subfiles_recursive_loop_cd_back:
     ;
     ;   cd back to this function
     ;
