@@ -21,6 +21,28 @@ get_dword:
 
     ret
 
+set_dword_from:
+    pop dx
+    pop bx ; address from
+    push dx
+    mov dx, word ptr [bx + 2]
+    push dx 
+    mov dx, word ptr [bx]
+    push dx 
+    call set_dword
+    ret
+
+dadd_from:
+    pop dx
+    pop bx ; address from
+    push dx
+    mov ax, word ptr [bx + 2]
+    push ax 
+    mov ax, word ptr [bx]
+    push ax
+    call dadd
+    ret
+
 dadd:
     pop si
     ;

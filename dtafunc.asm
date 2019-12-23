@@ -61,6 +61,9 @@ _count_subfiles_from_end:
     ret
 
 show_filename_from_dta:
+    ;
+    ; returns file storage
+    ;
     pop bx
     pop cx  ; deep level 
     pop ax  ; entity count

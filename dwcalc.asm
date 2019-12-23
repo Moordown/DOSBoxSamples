@@ -35,16 +35,12 @@ example_div_ext:
 
 
 example_add:
-    mov ax, word ptr [add_word]
-    mov bx, word ptr [add_word + 2]
-    push bx
+    lea ax, add_word
     push ax
-    call set_dword
-    mov ax, word ptr [add_word]
-    mov bx, word ptr [add_word + 2]
-    push bx
+    call set_dword_from
+    lea ax, add_word
     push ax
-    call dadd
+    call dadd_from
     call get_dword
     pop ax ; l
     pop dx ; h
