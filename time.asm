@@ -70,15 +70,18 @@ print_datetimestamp:
     ret
 
 store_iint_to_string:
+    xor eax, eax
     pop bx
-    pop ax ; integer
+    pop ax ; low 16 bit integer
+    sal eax, 16
+    pop ax ; hight 16 bit integer
     pop si ; memory for integer storage
     push bx
 
     mov cx, 0
     mov bx, 10
 _store_iint_to_string_direct:
-    cmp ax, 0
+    cmp eax, 0
     je _store_iint_to_string_leading_zeros
     
     xor dx, dx

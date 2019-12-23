@@ -1,0 +1,248 @@
+Turbo Assembler	 Version 4.1	    12/23/19 11:51:50	    Page 1
+dwcalc.ASM
+
+
+
+      1					 include bmacro.asm
+1     2					 load macro args
+1     3					     irp d,<args>
+1     4						 push d
+1     5					     endm
+1     6					 endm
+1     7
+1     8					 restore macro args
+1     9					     irp d,<args>
+1    10						 pop d
+1    11					     endm
+1    12					 endm
+1    13
+1    14					 exit macro
+1    15					     mov ah, 00h
+1    16					     int 21h
+1    17					 endm
+1    18
+1    19					 print macro buf
+1    20						 mov ah, 09h
+1    21						 mov dx, buf
+1    22						 int 21h
+1    23					 endm
+1    24
+1    25					 print_range macro args
+1    26					     irp d,<args>
+1    27						 print <offset d>
+1    28					     endm
+1    29					 endm
+1    30
+1    31					 break_point macro arg
+1    32					     load <arg>
+1    33					     xor arg, arg
+1    34					     xor arg, arg
+1    35					     xor arg, arg
+1    36					     xor arg, arg
+1    37					     xor arg, arg
+1    38					     xor arg, arg
+1    39					     xor arg, arg
+1    40					     xor arg, arg
+1    41					     restore <arg>
+1    42					 endm
+1    43
+1    44					 parse_byte_to_str macro from, to
+1    45					     mov ax, to
+1    46					     push ax
+1    47					     xor ax, ax
+1    48					     mov al, from
+1    49					     push ax
+1    50					     call store_iint_to_string
+1    51					 endm
+1    52
+1    53					 parse_word_to_str macro from, to
+1    54					     mov ax, to
+1    55					     push ax
+1    56					     xor ax, ax
+1    57					     mov ax, from
+Turbo Assembler	 Version 4.1	    12/23/19 11:51:50	    Page 2
+dwcalc.ASM
+
+
+
+1    58					     push ax
+1    59					     call store_iint_to_string
+1    60					 endm
+     61
+     62	    0000			 .model	tiny
+     63					 .386
+     64	    0000			 .code
+     65					 org 100h
+     66	    0100			 start:
+     67	    0100  E8 0054		     call ddiv10
+     68	    0103  8B 16	017Er		     mov dx, word ptr [remainder]
+     69	    0107  83 FA	02		     cmp dx, 2
+     70	    010A  75 1F			     jne l1
+     71	    010C  E8 003C		     call ddiv10_get_word
+     72	    010F  58			     pop ax ; l
+     73	    0110  5A			     pop dx ; h
+     74	    0111  83 FA	66		     cmp dx, 102
+     75	    0114  75 15			     jne l1
+     76	    0116  3D B373		     cmp ax, 45939
+     77	    0119  75 10			     jne l1
+     78					     print_range <ddiv10ok, ddiv10newline>
+2    79						 print <offset ddiv10ok>
+3    80	    011B  B4 09				 mov ah, 09h
+3    81	    011D  BA 0184r			 mov dx, offset	ddiv10ok
+3    82	    0120  CD 21				 int 21h
+2    83						 print <offset ddiv10newline>
+3    84	    0122  B4 09				 mov ah, 09h
+3    85	    0124  BA 018Br			 mov dx, offset	ddiv10newline
+3    86	    0127  CD 21				 int 21h
+     87	    0129  EB 10			     jmp ext
+     88	    012B			 l1:
+     89					     print_range <ddiv10err, ddiv10newline>
+2    90						 print <offset ddiv10err>
+3    91	    012B  B4 09				 mov ah, 09h
+3    92	    012D  BA 0187r			 mov dx, offset	ddiv10err
+3    93	    0130  CD 21				 int 21h
+2    94						 print <offset ddiv10newline>
+3    95	    0132  B4 09				 mov ah, 09h
+3    96	    0134  BA 018Br			 mov dx, offset	ddiv10newline
+3    97	    0137  CD 21				 int 21h
+     98	    0139  EB 00			     jmp ext
+     99	    013B			 ext:
+    100					     exit
+1   101	    013B  B4 00			     mov ah, 00h
+1   102	    013D  CD 21			     int 21h
+    103
+    104	    013F			 ddiv10_set_word:
+    105	    013F  59			     pop cx ; ret address
+    106	    0140  58			     pop ax ; word ptr [l16]
+    107	    0141  5A			     pop dx ; word ptr [h16]
+    108
+    109	    0142  51			     push cx
+    110	    0143  A3 0180r		     mov word ptr [doubleword],	ax
+    111	    0146  89 16	0182r		     mov word ptr [doubleword +	2], dx
+    112
+    113	    014A  C3			     ret
+    114
+Turbo Assembler	 Version 4.1	    12/23/19 11:51:50	    Page 3
+dwcalc.ASM
+
+
+
+    115	    014B			 ddiv10_get_word:
+    116	    014B  59			     pop cx ; ret address
+    117
+    118	    014C  A1 0180r		     mov ax, word ptr [doubleword]
+    119	    014F  8B 16	0182r		     mov dx, word ptr [doubleword + 2]
+    120
+    121	    0153  52			     push dx
+    122	    0154  50			     push ax
+    123	    0155  51			     push cx
+    124
+    125	    0156  C3			     ret
+    126
+    127	    0157			 ddiv10:
+    128	    0157  E8 FFF1		     call ddiv10_get_word
+    129					     ; mov ax, word ptr	[num]
+    130					     ; mov dx, word ptr	[num + 2]
+    131					     ; push dx
+    132					     ; push ax
+    133	    015A  E8 0008		     call _ddiv10
+    134
+    135	    015D  89 16	017Er		     mov word ptr [remainder], dx
+    136	    0161  E8 FFDB		     call ddiv10_set_word
+    137					     ; pop ax ;	l
+    138					     ; pop dx ;	h
+    139					     ; mov word	ptr [num], ax
+    140					     ; mov word	ptr [num + 2], dx
+    141
+    142	    0164  C3			     ret
+    143
+    144	    0165			 _ddiv10:
+    145	    0165  59			     pop cx ; ret address
+    146	    0166  58			     pop ax ; word ptr [l16]
+    147	    0167  5A			     pop dx ; word ptr [h16]
+    148
+    149					     load <ax>
+2   150	    0168  50				 push ax
+    151	    0169  8B C2			     mov ax, dx
+    152	    016B  33 D2			     xor dx, dx
+    153	    016D  BB 000A		     mov bx, 10
+    154	    0170  F7 F3			     div bx
+    155	    0172  8B D8			     mov bx, ax	; word ptr [h16]
+    156					     restore <ax>
+2   157	    0174  58				 pop ax
+    158	    0175  53			     push bx
+    159
+    160	    0176  BB 000A		     mov bx, 10
+    161	    0179  F7 F3			     div bx
+    162	    017B  50			     push ax ; word ptr	[l15]
+    163
+    164	    017C  51			     push cx
+    165	    017D  C3			     ret
+    166
+    167	    017E  0000			 remainder dw 0
+    168	    0180  04030280		 doubleword dd 67306112
+    169
+    170	    0184  6F 6B	24		 ddiv10ok db 'ok$'
+    171	    0187  65 72	72 24		 ddiv10err db 'err$'
+Turbo Assembler	 Version 4.1	    12/23/19 11:51:50	    Page 4
+dwcalc.ASM
+
+
+
+    172	    018B  0A 24			 ddiv10newline db 0Ah, '$'
+    173
+    174					 end start
+Turbo Assembler	 Version 4.1	    12/23/19 11:51:50	    Page 5
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "12/23/19"
+??FILENAME			  Text	 "dwcalc  "
+??TIME				  Text	 "11:51:50"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 DGROUP
+@CODESIZE			  Text	 0
+@CPU				  Text	 0F0FH
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 DWCALC
+@INTERFACE			  Text	 000H
+@MODEL				  Text	 1
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+DDIV10				  Near	 DGROUP:0157
+DDIV10ERR			  Byte	 DGROUP:0187
+DDIV10NEWLINE			  Byte	 DGROUP:018B
+DDIV10OK			  Byte	 DGROUP:0184
+DDIV10_GET_WORD			  Near	 DGROUP:014B
+DDIV10_SET_WORD			  Near	 DGROUP:013F
+DOUBLEWORD			  Dword	 DGROUP:0180
+EXT				  Near	 DGROUP:013B
+L1				  Near	 DGROUP:012B
+REMAINDER			  Word	 DGROUP:017E
+START				  Near	 DGROUP:0100
+_DDIV10				  Near	 DGROUP:0165
+
+Macro Name
+
+BREAK_POINT
+EXIT
+LOAD
+PARSE_BYTE_TO_STR
+PARSE_WORD_TO_STR
+PRINT
+PRINT_RANGE
+RESTORE
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  _DATA				  16  0000 Word	  Public  DATA
+  _TEXT				  16  018D Word	  Public  CODE
+
