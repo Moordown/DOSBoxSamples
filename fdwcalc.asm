@@ -21,6 +21,13 @@ get_dword:
 
     ret
 
+get_dword_addr:
+    pop bx
+    lea ax, doubleword
+    push bx 
+
+    ret
+
 set_dword_from:
     pop dx
     pop bx ; address from

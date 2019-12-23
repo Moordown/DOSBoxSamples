@@ -3,7 +3,7 @@ store_iint_to_string:
     pop bx
     pop ax ; integer
     pop si ; memory for storing integer
-    pop di ; integer max length
+    pop di ; integer min length
     push bx
 
     mov cx, 0
@@ -30,22 +30,6 @@ _store_iint_to_string_zero_padding_loop:
     inc cx
     jmp _store_iint_to_string_zero_padding_loop
 _store_iint_to_string_zero_padding_end:
-; _store_iint_to_string_leading_zeros:
-;     cmp cx, 0
-;     jne _store_iint_to_string_leading_zeros_start
-;     mov bx, 0
-;     push bx
-;     inc cx
-; _store_iint_to_string_leading_zeros_start:
-;     load <cx>
-;     and cx, 1
-;     cmp cx, 0
-;     restore <cx>
-;     je _store_iint_to_string_inverse
-;     inc cx
-;     mov bx, 0
-;     push bx
-;     jmp _store_iint_to_string_leading_zeros_start
 _store_iint_to_string_inverse:
     load <si>
     add si, cx

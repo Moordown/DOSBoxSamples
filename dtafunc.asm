@@ -3,6 +3,7 @@ include clfunc.asm
 include pgraph.asm
 include tmacro.asm
 include time.asm
+include fdwcalc.asm
 
 count_subfiles_here:
     lea ax, file_mask
@@ -127,13 +128,30 @@ show_datetime:
     ret
 
 show_storage:
+    ;
+    ; print without padding
+    ;
     mov dx, 0
     push dx
-    lea bx, dta
+
+    ;
+    ; memory for storing integer 
+    ;
     lea dx, storage
     push dx
-    mov dx, word ptr [bx + 1Ah]
-    push dx
+
+    ;
+    ; move low 16 bit as integer to printing integer
+    ;
+    lea bx, dta
+    add bx, 1Ah
+    push bx
+    call dadd_from
+    call get_dword
+    pop ax
+    pop bx
+    push ax
+
     call store_iint_to_string
     print_range <time_space, storage>
     ret
@@ -153,6 +171,23 @@ is_valid_name:
 _is_valid_name_end:
     ret
 
+load_accumulative_storage:
+    pop bx
+    pop ax
+    mov word ptr [accumulative_storage], ax
+    pop ax
+    mov word ptr [accumulative_storage + 2], ax
+    push bx
+    ret
+
+set_accumulative_storage_from_dir:
+    ;
+    ; this function suppose that we count subfiles sizes from current directory
+    ;
+
+    ret
+
+accumulative_storage dd 0
 storage db 64 dup('$')
 count_dta db 128 dup(0)
 dta db 128 dup(0)

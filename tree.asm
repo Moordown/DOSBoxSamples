@@ -6,6 +6,10 @@ model tiny
 org 100h
 start:
     call save_cwd
+    mov ax, 0
+    push ax
+    push ax
+    call set_dword
     set_dta dta
     call parse_command_line
     ;
@@ -97,9 +101,15 @@ _list_subfiles_recursive_loop:
     restore <cx, bx>
     inc bx
     load <bx, cx>
-    push bx
-    push cx
-    call show_filename_from_dta
+
+    ;
+    ;   set current space counter to zero
+    ;
+    mov ax, 0
+    push ax
+    push ax
+    call set_dword
+
     ;
     ;   check if folder
     ;
@@ -110,7 +120,33 @@ _list_subfiles_recursive_loop:
     push cx
     call is_folder
     cmp ax, 1
-    jne _list_subfiles_recursive_next
+    je _list_subfiles_recursive_folder
+
+    ;
+    ;   show filename 
+    ;
+    restore <cx, bx>
+    load <bx, cx>
+    push bx
+    push cx
+    call show_filename_from_dta
+
+    jmp _list_subfiles_recursive_next
+_list_subfiles_recursive_folder:
+    ;
+    ;   count storages
+    ;
+    call set_accumulative_storage_from_dir
+
+    ;
+    ;   show folder name
+    ;
+    restore <cx, bx>
+    load <bx, cx>
+    push bx
+    push cx
+    call show_filename_from_dta
+
     ;
     ;   check deep level
     ;
@@ -240,7 +276,6 @@ find_next_fails db  'find_next filenames fails.$'
 ; int variables
 ;
 current_id_entity dw 0
-
 
 ;
 ; strings
