@@ -1,7 +1,22 @@
-create_table:
+parse_file_from:
     call create_first_transition_table
     call create_middle_transition_table
     call create_last_transition_table
+
+    pop bx  ; ret address
+    pop dx  ; filename pointer
+    push bx
+    push dx
+    call open_read
+    jc ext
+    load <ax>
+    push ax
+    call parse_file
+    restore <ax>
+    push ax
+    call close_file
+    jc ext
+ext:
     ret
 
 parse_file:
@@ -36,17 +51,23 @@ _parse_file_next:
     mov byte ptr [state], al
     cmp al, byte ptr [first_terminal]
     jne _parse_file_next_terminal_1
-    print_range <first_parsed, buf, open_newline>
+    mov al, byte ptr [buf]
+    mov byte ptr [fp], al
+    ; print_range <first_parsed, buf, open_newline>
     jmp _parse_file_loop
 _parse_file_next_terminal_1:
     cmp al, byte ptr [middle_terminal]
     jne _parse_file_next_terminal_2
-    print_range <middle_parsed, buf, open_newline>
+    mov al, byte ptr [buf]
+    mov byte ptr [mp], al
+    ; print_range <middle_parsed, buf, open_newline>
     jmp _parse_file_loop
 _parse_file_next_terminal_2:
     cmp al, byte ptr [last_terminal]
     jne _parse_file_loop
-    print_range <last_parsed, buf, open_newline>
+    mov al, byte ptr [buf]
+    mov byte ptr [lp], al
+    ; print_range <last_parsed, buf, open_newline>
     jmp _parse_file_loop
 _parse_file_ext:
     restore <bx>
@@ -109,7 +130,7 @@ create_last_transition_table:
     set_transition transition_table 45 0 0ah
     ret
 
-
+include ffile.asm
 
 ;
 ; errors
@@ -129,6 +150,13 @@ last_terminal db 45
 first_parsed db 'first parsed: $'
 middle_parsed db 'middle parsed: $'
 last_parsed db 'last parsed: $'
+
+;
+; parsed symbols
+;
+fp db '$$'
+mp db '$$'
+lp db '$$'
 
 state db 0
 buf db '$$'
