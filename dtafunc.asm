@@ -143,15 +143,25 @@ show_storage:
     ;
     ; move low 16 bit as integer to printing integer
     ;
+    mov ax, word ptr [is_file]
+    cmp ax, 0
+    je _show_storage_folder
+_show_storage_file:
     lea bx, dta
     add bx, 1Ah
+    mov bx, word ptr [bx]
     push bx
-    call dadd_from
-    call get_dword
-    pop ax
-    pop bx
+    jmp _print_storage
+    ; call dadd_from
+    ; call get_dword
+    ; pop ax
+    ; pop bx
+    ; push ax
+_show_storage_folder:
+    mov ax, word ptr [accumulative_storage]
     push ax
-
+    jmp _print_storage
+_print_storage:
     call store_iint_to_string
     print_range <time_space, storage>
     ret
@@ -171,20 +181,104 @@ is_valid_name:
 _is_valid_name_end:
     ret
 
-load_accumulative_storage:
-    pop bx
-    pop ax
-    mov word ptr [accumulative_storage], ax
-    pop ax
-    mov word ptr [accumulative_storage + 2], ax
+add_accumulative_storage_from_dta:
+    lea bx, dta
+    add bx, 1Ah
     push bx
+    call dadd_from
+    call get_dword
+    lea bx, accumulative_storage
+    pop dx
+    mov word ptr [bx], dx
+    pop dx
+    mov word ptr [bx + 2], dx
+
+    ret
+
+zeros_accumulative_storage:
+    mov ax, 0
+    mov word ptr [accumulative_storage], ax
+    mov word ptr [accumulative_storage + 2], ax
+    ret
+
+zeros_dword:
+    mov ax, 0
+    push ax
+    push ax
+    call set_dword
     ret
 
 set_accumulative_storage_from_dir:
     ;
     ; this function suppose that we count subfiles sizes from current directory
     ;
+    ; ret
+    call zeros_dword
+    call zeros_accumulative_storage
+    mov bx, 1
+    mov word ptr [is_silent], bx
+    mov word ptr [skip_storage_accumulating], bx
+    ;
+    ;   save dta
+    ;
+    push_fragment dta, 128
+    ;
+    ; start new search
+    ;
+    mov ax, word ptr [current_max_entities]
+    load <ax>
+    ;
+    ;   cd to subfolder
+    ;
+    lea ax, dta
+    add ax, 1Eh
 
+    push ax
+    call cd
+    ;
+    ;   list subfiles from subfolder
+    ;
+    mov bx, 0
+    mov cx, 1
+    mov ax, offset file_mask
+    mov si, offset find_first_file
+    
+    push si
+    push bx
+    push ax
+    push cx
+    call list_subfiles_recursive
+    ;
+    ;   list subfolders from subfolder
+    ;
+    mov cx, 1
+    mov bx, ax
+    mov ax, offset folder_mask
+    mov si, offset find_first_folder
+    
+    push si
+    push bx
+    push ax
+    push cx
+    call list_subfiles_recursive
+    ;
+    ;   cd back to this function
+    ;
+    mov ax, offset parent_folder
+    push ax
+    call cd
+
+    restore<ax>
+    mov word ptr [current_max_entities], ax
+    ;
+    ;   restore dta
+    ;
+    pop_fragment dta, 128
+    set_dta dta
+
+    mov bx, 0
+    mov word ptr [is_silent], bx
+    mov word ptr [skip_storage_accumulating], bx
     ret
 
 list_subfiles_recursive_from:
@@ -261,13 +355,13 @@ _list_subfiles_recursive_loop:
     inc bx
     load <bx, cx>
 
-    ;
-    ;   set current space counter to zero
-    ;
-    mov ax, 0
-    push ax
-    push ax
-    call set_dword
+    ; ;
+    ; ;   set current space counter to zero
+    ; ;
+    ; mov ax, 0
+    ; push ax
+    ; push ax
+    ; call set_dword
 
     ;
     ;   check if folder
@@ -281,6 +375,14 @@ _list_subfiles_recursive_loop:
     cmp ax, 1
     je _list_subfiles_recursive_folder
 
+    call add_accumulative_storage_from_dta
+
+    mov ax, word ptr [is_silent]
+    cmp ax, 1
+    je _list_subfiles_recursive_next
+
+    mov bx, 1
+    mov word ptr [is_file], bx
     ;
     ;   show filename 
     ;
@@ -290,12 +392,23 @@ _list_subfiles_recursive_loop:
     push cx
     call show_filename_from_dta
 
+    mov bx, 0
+    mov word ptr [is_file], bx
+
     jmp _list_subfiles_recursive_next
 _list_subfiles_recursive_folder:
+    mov ax, word ptr [skip_storage_accumulating]
+    cmp ax, 1
+    je _list_subfiles_recursive_folder_check_silence
+
     ;
     ;   count storages
     ;
     call set_accumulative_storage_from_dir
+_list_subfiles_recursive_folder_check_silence:
+    mov ax, word ptr [is_silent]
+    cmp ax, 1
+    je _list_subfiles_recursive_folder_serach_logic
 
     ;
     ;   show folder name
@@ -306,6 +419,11 @@ _list_subfiles_recursive_folder:
     push cx
     call show_filename_from_dta
 
+    call zeros_dword
+    call zeros_accumulative_storage
+
+_list_subfiles_recursive_folder_serach_logic:
+
     ;
     ;   check deep level
     ;
@@ -315,12 +433,16 @@ _list_subfiles_recursive_folder:
     mov bl, byte ptr [deep_level]
     cmp cx, bx
     jge _list_subfiles_recursive_next
+    
+    restore <cx, bx>
+    load <bx, cx>
+    
+    mov ax, word ptr [is_silent]
+    cmp ax, 1
+    je _list_subfiles_recursive_loop_pseudographic_hack_end
     ;
     ;   pseudographic hack
     ;
-    restore <cx, bx>
-    load <bx, cx>
-
     cmp bx, word ptr [current_max_entities]
     jne _list_subfiles_recursive_loop_pseudographic_hack_end
     load <ax, bx, cx>
@@ -438,8 +560,19 @@ current_id_entity dw 0
 ; strings
 ;
 parent_folder db '..', 00h
+current_folder db '.', 00h
 root_folder db 64 dup(00h)
 
+;
+; mode variables
+;
+is_silent dw 0
+is_file dw 0
+skip_storage_accumulating dw 0
+
+;
+; storages
+;
 accumulative_storage dd 0
 storage db 64 dup('$')
 count_dta db 128 dup(0)
